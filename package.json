@@ -2,15 +2,13 @@
   "name": "posventa-taller",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "pnpm@9.12.0",
+  "packageManager": "pnpm@9.15.9",
   "engines": { "node": ">=22" },
   "scripts": {
-    "db:up": "docker compose -f infra/docker-compose.yml up -d",
-    "db:down": "docker compose -f infra/docker-compose.yml down",
-    "db:migrate": "prisma migrate dev --schema database/prisma/schema.prisma",
-    "db:seed": "prisma db seed --schema database/prisma/schema.prisma"
-  },
-  "devDependencies": {
-    "prisma": "5.22.0"
+    "db:dev": "pnpm --filter @posventa/database dev-db",
+    "db:migrate": "pnpm --filter @posventa/database migrate",
+    "db:deploy": "pnpm --filter @posventa/database deploy",
+    "db:seed": "pnpm --filter @posventa/database seed",
+    "db:studio": "pnpm --filter @posventa/database studio"
   }
 }

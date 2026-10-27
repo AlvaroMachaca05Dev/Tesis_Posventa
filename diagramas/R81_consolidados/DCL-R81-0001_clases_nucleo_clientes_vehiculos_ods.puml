@@ -14,48 +14,81 @@ skinparam classAttributeIconSize 0
 
 title Clases del núcleo: identidad, maestros y órdenes de servicio
 class Organizacion {
-  nombre\nruc
+  nombre
+  ruc
+  activa
+}
+class ModuloHabilitado {
+  modulo
 }
 class Local {
-  nombre\ndireccion
+  nombre
+  direccion
 }
 class Usuario {
-  nombre\nactivo
+  nombre
+  correo
+  activo
 }
 class Rol {
   nombre
+  ambito (plataforma | empresa)
+  esBase
+  nivel (1 a 5)
+  asignableAServicios
 }
 class Permiso {
-  modulo\naccion
+  modulo
+  nivel (A | E | V)
 }
 class Cliente {
-  nombre\ndocumento
+  nombre
+  documento
 }
 class Vehiculo {
-  placa\nmarca\nmodelo\nanio
+  placa
+  marca
+  modelo
+  anio
 }
 class Proveedor {
-  nombre\ndocumento
+  nombre
+  documento
 }
 class Kilometraje {
-  km\nfecha\nfuente
+  km
+  fecha
+  fuente
 }
 class OrdenServicio {
-  codigo\nestado\nfechaLlegada\nkm\ncerrar()\nreabrir()
+  codigo
+  estado
+  fechaLlegada
+  km
+  cerrar()
+  reabrir()
 }
 class DetalleODS {
-  descripcion\nobservacion
+  descripcion
+  observacion
 }
 class ServicioODS {
-  duracionPlanificada\nresponsable\ncantidadHH
+  duracionPlanificada
+  responsable
+  cantidadHH
 }
 class Evidencia {
-  archivo\ntipo
+  archivo
+  tipo
 }
 Organizacion "1" o-- "*" Local
+Organizacion "1" o-- "*" ModuloHabilitado
+Organizacion "1" o-- "*" Rol : roles de la empresa
+Organizacion "1" o-- "*" Usuario
 Local "1" o-- "*" Usuario
-Usuario "*" -- "1" Rol
+Usuario "*" -- "1..*" Rol : uno o más roles
 Rol "*" -- "*" Permiso
+Organizacion "1" o-- "*" Cliente
 Cliente "1" o-- "*" Vehiculo
 Vehiculo "1" o-- "*" Kilometraje
 Vehiculo "1" <-- "*" OrdenServicio

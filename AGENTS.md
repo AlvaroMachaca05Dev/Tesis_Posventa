@@ -111,3 +111,12 @@ El núcleo son 50 requisitos organizados en 11 slices (`docs/plan/SLICES_NUCLEO.
 - **Contexto y registro de cambios:** `J:\Mi unidad\Trabajo RSA\Tesis sistema posventa\3_contexto-drive\` (incluye `REGISTRO_CAMBIOS.md`).
 - **Datos de la base de desarrollo:** `F:\Tesis\datos-pg` (fuera del repositorio).
 - **Herramientas locales:** Node portable en `F:\Tesis\reverse-lab\node` y pnpm en `F:\Tesis\dev-tools`.
+
+## 15. Roles del sistema real (DEC-59 y DEC-60, 27/10/2026)
+Siete roles con jerarquía, guardados como **datos** (el código nunca pregunta «¿es Cajera?», pregunta si el usuario tiene permiso sobre un módulo):
+1. **Desarrollador** (nivel 5, plataforma): dueño del software. Da de alta empresas, habilita sus módulos, usa «Ver como…», gestiona vistas y actualizaciones.
+2. **Superadministrador** (nivel 4): TI de cada empresa. Crea usuarios y roles propios, define permisos por rol y los nombres visibles de estados y cajas. **No renombra módulos.**
+3. **Administrador** (nivel 3): opera todo el negocio, incluidas las funciones de finanzas. No recibe servicios ni sale en la agenda.
+4. **Jefe de taller** (nivel 2): puede todo lo del Técnico y nada de Cajera ni de Logístico. Sale en la agenda.
+5. **Cajera, Técnico y Logístico** (nivel 1, mismo nivel). El Técnico sale en la agenda.
+Un usuario puede tener **varios roles** (suma de permisos, gana el nivel más alto) y solo gestiona roles de nivel inferior al suyo. **No existen los roles Finanzas ni Externo.** El prototipo HTML conserva siete roles distintos solo como referencia visual; en la diferencia manda esta decisión. Los permisos base salen de `database/seeds/permisos_matriz.json`. Multiempresa preparado con una empresa activa; las pantallas de alta de empresas y de edición de permisos son segunda ola.

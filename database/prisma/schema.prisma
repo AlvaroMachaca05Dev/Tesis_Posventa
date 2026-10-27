@@ -1,5 +1,7 @@
 // Esquema del núcleo (Sprint 1). Fuente: diagrama DMD-R81-0001.
-// Borrador: cualquier cambio pasa por la skill guardian-coherencia-tesis.
+// Decisiones del 27/10/2026: roles como datos por empresa, varios roles por usuario,
+// datos de negocio ligados a su empresa (multiempresa preparado, una empresa activa) y módulos habilitados por empresa.
+// Cualquier cambio pasa por la skill guardian-coherencia-tesis.
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,29 +12,60 @@ datasource db {
 }
 
 model Organizacion {
-  id      String  @id @default(uuid())
-  nombre  String
-  ruc     String?
-  locales Local[]
+  id          String             @id @default(uuid())
+  nombre      String
+  ruc         String?
+  activa      Boolean            @default(true)
+  locales     Local[]
+  roles       Rol[]
+  usuarios    Usuario[]
+  modulos     ModuloHabilitado[]
+  clientes    Cliente[]
+  vehiculos   Vehiculo[]
+  ordenes     OrdenServicio[]
+}
+
+// Qué módulos tiene contratados cada empresa. Lo define el Propietario de la plataforma.
+model ModuloHabilitado {
+  organizacionId String
+  modulo         String
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+
+  @@id([organizacionId, modulo])
 }
 
 model Local {
-  id             String       @id @default(uuid())
+  id             String          @id @default(uuid())
   organizacionId String
   nombre         String
   direccion      String?
-  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  organizacion   Organizacion    @relation(fields: [organizacionId], references: [id])
   usuarios       Usuario[]
   ordenes        OrdenServicio[]
 }
 
+// Los roles son datos: los base se crean por empresa y el Superadministrador puede crear roles propios.
+// organizacionId vacío = rol de plataforma (Propietario).
 model Rol {
-  id       String        @id @default(uuid())
-  nombre   String        @unique
-  usuarios Usuario[]
-  permisos RolPermiso[]
+  id             String        @id @default(uuid())
+  organizacionId String?
+  nombre         String
+  ambito         String        @default("empresa") // "plataforma" | "empresa"
+  esBase         Boolean       @default(false)
+  // Nivel jerárquico: 5 Desarrollador, 4 Superadministrador, 3 Administrador, 2 Jefe de taller, 1 Cajera, Técnico, Logístico y roles propios.
+  // Un usuario solo gestiona roles de nivel inferior al suyo.
+  nivel          Int           @default(1)
+  // Si la persona puede aparecer en la agenda y recibir servicios (Técnico y Jefe de taller sí; el Administrador no).
+  asignableAServicios Boolean  @default(false)
+  organizacion   Organizacion? @relation(fields: [organizacionId], references: [id])
+  usuarios       UsuarioRol[]
+  permisos       RolPermiso[]
+
+  @@unique([organizacionId, nombre])
 }
 
+// Un permiso es un módulo con un nivel: A (ver, editar y acciones sensibles), E (ver y editar) o V (solo ver).
+// Sin enlace = sin acceso.
 model Permiso {
   id     String       @id @default(uuid())
   modulo String
@@ -52,36 +85,56 @@ model RolPermiso {
 }
 
 model Usuario {
-  id      String  @id @default(uuid())
-  localId String
-  rolId   String
-  nombre  String
-  correo  String  @unique
-  activo  Boolean @default(true)
-  local   Local   @relation(fields: [localId], references: [id])
-  rol     Rol     @relation(fields: [rolId], references: [id])
-  detalles DetalleODS[]
-  bitacora Bitacora[]
+  id             String        @id @default(uuid())
+  organizacionId String?
+  localId        String?
+  nombre         String
+  correo         String        @unique
+  passwordHash   String
+  activo         Boolean       @default(true)
+  organizacion   Organizacion? @relation(fields: [organizacionId], references: [id])
+  local          Local?        @relation(fields: [localId], references: [id])
+  roles          UsuarioRol[]
+  detalles       DetalleODS[]
+  bitacora       Bitacora[]
+}
+
+// Un usuario puede tener uno o más roles; sus permisos son la suma de los de cada rol.
+model UsuarioRol {
+  usuarioId String
+  rolId     String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  rol       Rol     @relation(fields: [rolId], references: [id])
+
+  @@id([usuarioId, rolId])
 }
 
 model Cliente {
-  id        String     @id @default(uuid())
-  nombre    String
-  documento String     @unique
-  vehiculos Vehiculo[]
+  id             String       @id @default(uuid())
+  organizacionId String
+  nombre         String
+  documento      String
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  vehiculos      Vehiculo[]
+
+  @@unique([organizacionId, documento])
 }
 
 model Vehiculo {
-  id        String        @id @default(uuid())
-  clienteId String
-  placa     String        @unique
-  marca     String?
-  modelo    String?
-  anio      Int?
-  grupo     String?
-  cliente   Cliente       @relation(fields: [clienteId], references: [id])
-  lecturas  LecturaKm[]
-  ordenes   OrdenServicio[]
+  id             String          @id @default(uuid())
+  organizacionId String
+  clienteId      String
+  placa          String
+  marca          String?
+  modelo         String?
+  anio           Int?
+  grupo          String?
+  organizacion   Organizacion    @relation(fields: [organizacionId], references: [id])
+  cliente        Cliente         @relation(fields: [clienteId], references: [id])
+  lecturas       LecturaKm[]
+  ordenes        OrdenServicio[]
+
+  @@unique([organizacionId, placa])
 }
 
 model LecturaKm {
@@ -94,17 +147,21 @@ model LecturaKm {
 }
 
 model OrdenServicio {
-  id           String       @id @default(uuid())
-  vehiculoId   String
-  localId      String
-  codigo       String       @unique
-  estado       String       @default("Recepcion")
-  fechaLlegada DateTime
-  km           Int?
-  vehiculo     Vehiculo     @relation(fields: [vehiculoId], references: [id])
-  local        Local        @relation(fields: [localId], references: [id])
-  detalles     DetalleODS[]
-  bitacora     Bitacora[]
+  id             String       @id @default(uuid())
+  organizacionId String
+  vehiculoId     String
+  localId        String
+  codigo         String
+  estado         String       @default("Recepcion")
+  fechaLlegada   DateTime
+  km             Int?
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  vehiculo       Vehiculo     @relation(fields: [vehiculoId], references: [id])
+  local          Local        @relation(fields: [localId], references: [id])
+  detalles       DetalleODS[]
+  bitacora       Bitacora[]
+
+  @@unique([organizacionId, codigo])
 }
 
 model DetalleODS {
@@ -137,13 +194,16 @@ model Evidencia {
   bitacora   Bitacora @relation(fields: [bitacoraId], references: [id])
 }
 
+// Auditoría: guarda quién hizo el cambio y, si actuaba «como» otra persona (Ver como…), también eso.
 model Auditoria {
-  id         String   @id @default(uuid())
-  tabla      String
-  registroId String
-  actor      String
-  antes      Json?
-  despues    Json?
-  motivo     String?
-  fecha      DateTime @default(now())
+  id             String   @id @default(uuid())
+  organizacionId String?
+  tabla          String
+  registroId     String
+  actor          String
+  actuandoComo   String?
+  antes          Json?
+  despues        Json?
+  motivo         String?
+  fecha          DateTime @default(now())
 }

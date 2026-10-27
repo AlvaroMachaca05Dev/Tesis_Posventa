@@ -1,0 +1,471 @@
+{
+  "roles": [
+    "Desarrollador",
+    "Superadministrador",
+    "Administrador",
+    "Jefe de taller",
+    "Cajera",
+    "Técnico",
+    "Logístico"
+  ],
+  "rows": [
+    {
+      "id": "ods",
+      "label": "Órdenes de servicio",
+      "group": "",
+      "lv": "AAAAEVV",
+      "note": "Técnico y externo ven solo lo asignado; sin costos ni márgenes"
+    },
+    {
+      "id": "inicio",
+      "label": "Métricas",
+      "group": "",
+      "lv": "AAAV---",
+      "note": ""
+    },
+    {
+      "id": "tareas",
+      "label": "Espacio de trabajo",
+      "group": "",
+      "lv": "AAAEEEE",
+      "note": "Cada persona ve sus tareas y las de las listas a las que pertenece; incluye la lista CRM"
+    },
+    {
+      "id": "timeline",
+      "label": "Línea temporal",
+      "group": "",
+      "lv": "AAAEEV-",
+      "note": ""
+    },
+    {
+      "id": "clientes",
+      "label": "Maestros › Clientes",
+      "group": "Maestros",
+      "lv": "AAAEEVV",
+      "note": ""
+    },
+    {
+      "id": "proveedores",
+      "label": "Maestros › Proveedores",
+      "group": "Maestros",
+      "lv": "AAAVV-E",
+      "note": ""
+    },
+    {
+      "id": "vehiculos",
+      "label": "Maestros › Vehículos",
+      "group": "Maestros",
+      "lv": "AAAEEVV",
+      "note": ""
+    },
+    {
+      "id": "grupos",
+      "label": "Maestros › Grupos de vehículos",
+      "group": "Maestros",
+      "lv": "AAAEV--",
+      "note": ""
+    },
+    {
+      "id": "planes",
+      "label": "Maestros › Planes preventivos",
+      "group": "Maestros",
+      "lv": "AAAEVV-",
+      "note": ""
+    },
+    {
+      "id": "paquetes",
+      "label": "Beta › Paquetes de servicios y productos",
+      "group": "Beta",
+      "lv": "AAAEV-V",
+      "note": "Beta: Los usa la cajera desde el detalle de la ODS"
+    },
+    {
+      "id": "solapes",
+      "label": "Maestros › Solapamientos de servicios",
+      "group": "Maestros",
+      "lv": "AAAEV--",
+      "note": ""
+    },
+    {
+      "id": "marcasv",
+      "label": "Maestros › Marcas de vehículo",
+      "group": "Maestros",
+      "lv": "AAAEV--",
+      "note": ""
+    },
+    {
+      "id": "series",
+      "label": "Maestros › Series de comprobantes",
+      "group": "Maestros",
+      "lv": "AAA----",
+      "note": ""
+    },
+    {
+      "id": "cajasm",
+      "label": "Beta › Cajas",
+      "group": "Beta",
+      "lv": "AA--V--",
+      "note": "Beta"
+    },
+    {
+      "id": "catalogo",
+      "label": "Inventario › Productos y servicios",
+      "group": "Inventario",
+      "lv": "AAAVVVA",
+      "note": "Precios de venta por local: superusuario y logístico; ajuste de stock con contraseña"
+    },
+    {
+      "id": "locales",
+      "label": "Inventario › Almacenes (locales)",
+      "group": "Inventario",
+      "lv": "AAAVV-E",
+      "note": ""
+    },
+    {
+      "id": "movinv",
+      "label": "Inventario › Movimientos y requerimientos",
+      "group": "Inventario",
+      "lv": "AAAEEEA",
+      "note": "Solicitan: jefe, cajera y técnico; aceptan: logístico y superusuario"
+    },
+    {
+      "id": "kardex",
+      "label": "Inventario › Kárdex de productos",
+      "group": "Inventario",
+      "lv": "AAAV--V",
+      "note": ""
+    },
+    {
+      "id": "marcasp",
+      "label": "Inventario › Marcas de producto",
+      "group": "Inventario",
+      "lv": "AAAVV-E",
+      "note": ""
+    },
+    {
+      "id": "categorias",
+      "label": "Inventario › Categorías",
+      "group": "Inventario",
+      "lv": "AAAVV-E",
+      "note": ""
+    },
+    {
+      "id": "cotizaciones",
+      "label": "Ingresos › Cotizaciones",
+      "group": "Ingresos",
+      "lv": "AAAEEVV",
+      "note": ""
+    },
+    {
+      "id": "notas",
+      "label": "Ingresos › Emitir comprobante (nota de venta)",
+      "group": "Ingresos",
+      "lv": "AAA-E--",
+      "note": ""
+    },
+    {
+      "id": "cobrar",
+      "label": "Ingresos › Cuentas por cobrar",
+      "group": "Ingresos",
+      "lv": "AAAVE--",
+      "note": ""
+    },
+    {
+      "id": "ing_var",
+      "label": "Beta › Ingreso (sin comprobante)",
+      "group": "Beta",
+      "lv": "AAA-E--",
+      "note": "Beta: no se implementa en la primera versión; los ingresos se registran desde Bancos"
+    },
+    {
+      "id": "compras",
+      "label": "Egresos › Compras y comprobantes",
+      "group": "Egresos",
+      "lv": "AAA---E",
+      "note": ""
+    },
+    {
+      "id": "pagar",
+      "label": "Egresos › Cuentas por pagar",
+      "group": "Egresos",
+      "lv": "AAA-E-E",
+      "note": "Paga facturas de compra eligiendo de qué banco sale; la cajera no ve el saldo del banco"
+    },
+    {
+      "id": "egr_var",
+      "label": "Beta › Egreso (sin comprobante)",
+      "group": "Beta",
+      "lv": "AAA-E--",
+      "note": "Beta: no se implementa en la primera versión; los egresos se registran desde Bancos con proveedor"
+    },
+    {
+      "id": "citas",
+      "label": "Seguimiento › Citas",
+      "group": "Seguimiento",
+      "lv": "AAAEEV-",
+      "note": ""
+    },
+    {
+      "id": "bitacora",
+      "label": "Seguimiento › Bitácora",
+      "group": "Seguimiento",
+      "lv": "AAAEEEE",
+      "note": "Todos pueden comentar; nadie borra comentarios ajenos"
+    },
+    {
+      "id": "flujo",
+      "label": "Beta › Flujo de caja",
+      "group": "Beta",
+      "lv": "AAA---V",
+      "note": "Beta: Flujo diario por rubro, armado con lo que registra el sistema"
+    },
+    {
+      "id": "comparativo",
+      "label": "Beta › Comparativo (estado de resultados)",
+      "group": "Beta",
+      "lv": "AAA---V",
+      "note": "Beta: Mes a mes en soles y % de las ventas"
+    },
+    {
+      "id": "bancos",
+      "label": "Finanzas › Bancos",
+      "group": "Finanzas",
+      "lv": "AAA-E--",
+      "note": "Cada persona ve las cuentas de su sede (superusuario y finanzas, todas); acciones: movimientos, trasladar, ingreso y egreso"
+    },
+    {
+      "id": "rep_post",
+      "label": "Reportes › Posventa",
+      "group": "Reportes",
+      "lv": "AAAVV--",
+      "note": ""
+    },
+    {
+      "id": "rep_ventas",
+      "label": "Reportes › Ventas generales",
+      "group": "Reportes",
+      "lv": "AAAV---",
+      "note": ""
+    },
+    {
+      "id": "rep_items",
+      "label": "Reportes › Ventas por ítems",
+      "group": "Reportes",
+      "lv": "AAAV---",
+      "note": ""
+    },
+    {
+      "id": "rep_ops",
+      "label": "Reportes › Operaciones",
+      "group": "Reportes",
+      "lv": "AAAV---",
+      "note": ""
+    },
+    {
+      "id": "rep_rent",
+      "label": "Reportes › Rentabilidades",
+      "group": "Reportes",
+      "lv": "AAA----",
+      "note": "Muestra costos y márgenes"
+    },
+    {
+      "id": "rep_igv",
+      "label": "Reportes › IGV y detracciones",
+      "group": "Reportes",
+      "lv": "AAA----",
+      "note": ""
+    },
+    {
+      "id": "rep_tec",
+      "label": "Reportes › Técnicos",
+      "group": "Reportes",
+      "lv": "AAAV---",
+      "note": "Beta"
+    },
+    {
+      "id": "rep_gar",
+      "label": "Reportes › Garantías",
+      "group": "Reportes",
+      "lv": "AAAVV--",
+      "note": ""
+    },
+    {
+      "id": "automatizaciones",
+      "label": "Configuración › Automatizaciones",
+      "group": "Configuración",
+      "lv": "AAAEV--",
+      "note": ""
+    },
+    {
+      "id": "usuarios",
+      "label": "Configuración › Usuarios",
+      "group": "Configuración",
+      "lv": "AAA----",
+      "note": ""
+    },
+    {
+      "id": "ajustes",
+      "label": "Configuración › Configuración (horarios y avisos)",
+      "group": "Configuración",
+      "lv": "AAVV---",
+      "note": ""
+    },
+    {
+      "id": "importar",
+      "label": "Configuración › Carga masiva",
+      "group": "Configuración",
+      "lv": "AAA----",
+      "note": ""
+    },
+    {
+      "id": "estados",
+      "label": "Configuración › Estados de tarea",
+      "group": "Configuración",
+      "lv": "AAV----",
+      "note": ""
+    },
+    {
+      "id": "gemini",
+      "label": "Beta › Asistente Gemini",
+      "group": "Beta",
+      "lv": "AAAV---",
+      "note": "Beta"
+    },
+    {
+      "id": "integraciones",
+      "label": "Beta › Integraciones",
+      "group": "Beta",
+      "lv": "AA-----",
+      "note": "Beta"
+    },
+    {
+      "id": "superusuario",
+      "label": "Configuración › Configuración de superusuario",
+      "group": "Configuración",
+      "lv": "AA-----",
+      "note": "APIs de placa y de DNI/RUC, contraseña de inventario, stock negativo e impuestos"
+    }
+  ],
+  "actions": [
+    {
+      "id": "costos",
+      "label": "Ver costos y márgenes",
+      "who": "ACL",
+      "applied": true,
+      "note": ""
+    },
+    {
+      "id": "precio_local",
+      "label": "Cambiar el precio de venta por local",
+      "who": "AL",
+      "applied": true,
+      "note": ""
+    },
+    {
+      "id": "ajuste_stock",
+      "label": "Ajuste de inventario (con contraseña)",
+      "who": "AL",
+      "applied": true,
+      "note": ""
+    },
+    {
+      "id": "mov_aceptar",
+      "label": "Aceptar movimientos y requerimientos de inventario",
+      "who": "AL",
+      "applied": true,
+      "note": ""
+    },
+    {
+      "id": "mov_pedir",
+      "label": "Solicitar movimientos y requerimientos",
+      "who": "AJCT",
+      "applied": false,
+      "note": "La visibilidad del módulo sí se aplica"
+    },
+    {
+      "id": "corr_aprobar",
+      "label": "Aprobar la edición de una ODS cerrada",
+      "who": "AJ",
+      "applied": false,
+      "note": ""
+    },
+    {
+      "id": "ods_eliminar",
+      "label": "Eliminar una ODS",
+      "who": "A",
+      "applied": false,
+      "note": ""
+    },
+    {
+      "id": "nota_emitir",
+      "label": "Emitir nota de venta",
+      "who": "AC",
+      "applied": false,
+      "note": ""
+    },
+    {
+      "id": "detra_deposito",
+      "label": "Registrar el depósito de una detracción",
+      "who": "A",
+      "applied": true,
+      "note": ""
+    },
+    {
+      "id": "caja_cerrar",
+      "label": "Abrir y cerrar caja",
+      "who": "AC",
+      "applied": false,
+      "note": "Cada cajera opera su caja"
+    },
+    {
+      "id": "bancos_ver",
+      "label": "Ver bancos y montos",
+      "who": "AC",
+      "applied": true,
+      "note": ""
+    },
+    {
+      "id": "api_config",
+      "label": "Configurar APIs y tokens (placa, DNI/RUC)",
+      "who": "A",
+      "applied": true,
+      "note": "Solo en Configuración de superusuario"
+    },
+    {
+      "id": "impuestos",
+      "label": "Cambiar IGV, detracción y contraseña de inventario",
+      "who": "A",
+      "applied": true,
+      "note": ""
+    },
+    {
+      "id": "usuarios_crear",
+      "label": "Crear y desactivar usuarios",
+      "who": "A",
+      "applied": true,
+      "note": "Por la visibilidad del módulo"
+    },
+    {
+      "id": "auto_editar",
+      "label": "Crear y editar automatizaciones",
+      "who": "AJ",
+      "applied": false,
+      "note": "El jefe de taller puede editarlas en esta propuesta; ajusta si prefieres"
+    },
+    {
+      "id": "crm_gestionar",
+      "label": "Gestionar contactos del CRM y registrar clientes desde ahí",
+      "who": "AJC",
+      "applied": false,
+      "note": ""
+    },
+    {
+      "id": "consultar_api",
+      "label": "Usar «Consultar placa» y «Consultar DNI/RUC»",
+      "who": "AJC",
+      "applied": true,
+      "note": "Usan el token sin verlo"
+    }
+  ],
+  "_nota": "Jerarquía (27/10/2026): Desarrollador > Superadministrador > Administrador > Jefe de taller > Cajera, Técnico y Logístico (mismo nivel bajo). El Jefe de taller incluye todo lo del Técnico; el Administrador puede todo lo operativo; lo de sistema (ajustes, estados, inventario/impuestos/APIs, integraciones, cajas) lo edita el Superadministrador."
+}

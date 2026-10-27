@@ -14,52 +14,126 @@ title Modelo de datos del núcleo: identidad, maestros, órdenes y bitácora
 hide circle
 left to right direction
 entity organizacion {
-  *id\nnombre\nruc
+  *id
+  nombre
+  ruc
+  activa
+}
+entity modulo_habilitado {
+  #organizacion_id
+  modulo
 }
 entity local {
-  *id\n#organizacion_id\nnombre\ndireccion
-}
-entity usuario {
-  *id\n#local_id\n#rol_id\nnombre\nactivo
+  *id
+  #organizacion_id
+  nombre
+  direccion
 }
 entity rol {
-  *id\nnombre
+  *id
+  #organizacion_id
+  nombre
+  ambito
+  es_base
+  nivel
+  asignable_a_servicios
 }
 entity permiso {
-  *id\nmodulo\naccion
+  *id
+  modulo
+  accion
 }
 entity rol_permiso {
-  #rol_id\n#permiso_id
+  #rol_id
+  #permiso_id
+}
+entity usuario {
+  *id
+  #organizacion_id
+  #local_id
+  nombre
+  correo
+  password_hash
+  activo
+}
+entity usuario_rol {
+  #usuario_id
+  #rol_id
 }
 entity cliente {
-  *id\nnombre\ndocumento
+  *id
+  #organizacion_id
+  nombre
+  documento
 }
 entity vehiculo {
-  *id\n#cliente_id\nplaca\nmarca\nmodelo\nanio\ngrupo
+  *id
+  #organizacion_id
+  #cliente_id
+  placa
+  marca
+  modelo
+  anio
 }
 entity lectura_km {
-  *id\n#vehiculo_id\nkm\nfecha\nfuente
+  *id
+  #vehiculo_id
+  km
+  fecha
+  fuente
 }
 entity orden_servicio {
-  *id\n#vehiculo_id\n#local_id\ncodigo\nestado\nfecha_llegada\nkm
+  *id
+  #organizacion_id
+  #vehiculo_id
+  #local_id
+  codigo
+  estado
+  fecha_llegada
+  km
 }
 entity detalle_ods {
-  *id\n#orden_id\ndescripcion\ncantidad_hh\n#tecnico_id\nduracion_minutos
+  *id
+  #orden_id
+  descripcion
+  cantidad_hh
+  #tecnico_id
+  duracion_minutos
 }
 entity bitacora {
-  *id\n#orden_id\n#tarea_id\n#actor_id\ntexto\nfecha
+  *id
+  #orden_id
+  #actor_id
+  texto
+  fecha
 }
 entity evidencia {
-  *id\n#bitacora_id\narchivo\ntipo
+  *id
+  #bitacora_id
+  archivo
+  tipo
 }
 entity auditoria {
-  *id\ntabla\nregistro_id\nactor\nantes\ndespues\nmotivo\nfecha
+  *id
+  #organizacion_id
+  tabla
+  registro_id
+  actor
+  actuando_como
+  antes
+  despues
+  motivo
+  fecha
 }
 organizacion ||--o{ local
-local ||--o{ usuario
-rol ||--o{ usuario
+organizacion ||--o{ modulo_habilitado
+organizacion ||--o{ rol
+organizacion ||--o{ usuario
+rol ||--o{ usuario_rol
+usuario ||--o{ usuario_rol
 rol ||--o{ rol_permiso
 permiso ||--o{ rol_permiso
+organizacion ||--o{ cliente
 cliente ||--o{ vehiculo
 vehiculo ||--o{ lectura_km
 vehiculo ||--o{ orden_servicio

@@ -25,7 +25,7 @@ Metodología: Scrum + IA-ASE (`docs/plan/METODOLOGIA_SCRUM_IA_ASE.md`). El inves
 
 ## Reglas que no se rompen
 - Solo los 99 RF de la primera versión; los módulos beta no se programan.
-- Vocabulario: «local», «cerrar», Cant./H-H en pasos de 0.25; siete roles (Administrador, Jefe de taller, Cajera, Técnico, Logístico, Externo y Finanzas).
+- Vocabulario: «local», «cerrar», Cant./H-H en pasos de 0.25; siete roles con jerarquía como datos (ver AGENTS.md, sección 15).
 - Permisos en el servidor, no solo en la pantalla. Costos, márgenes y bancos restringidos.
 - Migraciones versionadas: nunca se edita una ya aplicada.
 - Cero datos reales, claves ni tokens (`.env.example` sí, `.env` no).

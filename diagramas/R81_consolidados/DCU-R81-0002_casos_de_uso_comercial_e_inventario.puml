@@ -14,9 +14,9 @@ title Casos de uso comerciales, de inventario y de finanzas
 left to right direction
 actor "Cajera" as CA
 actor "Logístico" as LO
-actor "Finanzas" as FI
+actor "Administrador" as AD
 actor "Técnico" as TE
-actor "Superusuario" as SU
+actor "Superadministrador" as SA
 rectangle "Sistema de posventa" {
   usecase "Emitir cotización\n(desde ODS o rápida)" as U1
   usecase "Emitir nota de venta\n(PDF o ticket)" as U2
@@ -41,12 +41,12 @@ LO --> U8
 LO --> U5
 LO --> U10
 LO --> U11
-FI --> U4
-FI --> U5
-FI --> U6
-FI --> U3
+AD --> U4
+AD --> U5
+AD --> U6
+AD --> U3
 TE --> U7
 TE --> U9
-SU --> U12
+SA --> U12
 U2 ..> U3 : <<extend>>
 @enduml

@@ -48,6 +48,6 @@ infra/
 2. Costos, permisos, bitácora y evidencias pertenecen al dominio; las maquetas HTML no son la fuente de verdad.
 3. Migraciones versionadas y datos sintéticos para desarrollo/pruebas.
 4. Antes de escribir aplicación se debe aceptar o modificar ADR-001: tecnología, versiones LTS, responsable, ambiente y seguridad. Se evaluarán explícitamente ExcelJS/SheetJS y PDFKit/Puppeteer frente a las alternativas Python `openpyxl` y `reportlab`.
-5. La API aplica permisos para siete roles: Administrador, Jefe de taller, Cajera, Técnico, Logístico, Externo y Asistente administrativo de finanzas.
+5. La API aplica permisos por módulo y nivel según los roles de cada usuario (siete roles base en tres niveles; ver DEC-59).
 
 Si el equipo domina Python de manera superior, FastAPI sigue siendo válida. Se recomienda TypeScript por reutilizar el motor JavaScript y reducir lenguajes, no como obligación académica.

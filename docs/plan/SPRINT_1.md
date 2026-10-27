@@ -17,7 +17,7 @@
 | Monorepo con workspaces y configuración común | raíz | `pnpm install` funciona en un equipo limpio |
 | Base de datos PostgreSQL en Docker Compose | `infra/` | `docker compose up -d` levanta la base |
 | Esquema Prisma del núcleo (organización, local, usuario, rol, permiso, cliente, vehículo, lectura de km, ODS, bitácora, auditoría) | `database/` | `prisma migrate dev` aplica la migración inicial |
-| Semillas sintéticas (un local, siete roles, usuarios de ejemplo) | `database/seeds` | `prisma db seed` carga datos de ejemplo |
+| Semillas sintéticas (dos locales, siete roles, usuarios de ejemplo) | `database/seeds` | `prisma db seed` carga datos de ejemplo |
 | API NestJS mínima: salud, autenticación y guardia de roles | `apps/api` | Una ruta protegida responde 401 sin sesión y 403 sin el rol |
 | Web React mínima: inicio de sesión y menú por rol | `apps/web` | Se ve el menú del rol; los módulos beta se pueden ocultar |
 | CI en GitHub Actions | `.github/` | Compila y corre las pruebas en cada push |

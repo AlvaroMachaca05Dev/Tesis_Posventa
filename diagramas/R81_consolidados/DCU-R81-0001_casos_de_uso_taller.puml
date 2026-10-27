@@ -15,7 +15,9 @@ left to right direction
 actor "Cajera" as CA
 actor "Jefe de taller" as JT
 actor "Técnico" as TE
-actor "Superusuario" as SU
+actor "Administrador" as AD
+actor "Superadministrador" as SA
+actor "Desarrollador" as PR
 rectangle "Sistema de posventa" {
   usecase "Cargar órdenes del día\n(Excel o CSV)" as U1
   usecase "Registrar clientes y vehículos" as U2
@@ -29,9 +31,23 @@ rectangle "Sistema de posventa" {
   usecase "Comentar en la bitácora" as U10
   usecase "Dar seguimiento de posventa\ny encuesta" as U11
   usecase "Consultar reportes" as U12
-  usecase "Configurar usuarios, roles,\nlocales y módulos beta" as U13
+  usecase "Gestionar usuarios y roles\nde la empresa" as U13
+  usecase "Definir roles propios y\npermisos por módulo" as U14
+  usecase "Cambiar nombres visibles de\nestados y cajas" as U15
+  usecase "Habilitar módulos por empresa\ny ver como otro usuario" as U16
 }
-SU --> U13
+note as N1
+  Jerarquía de roles:
+  Desarrollador > Superadministrador > Administrador
+  > Jefe de taller > Cajera, Técnico y Logístico
+end note
+PR --> U16
+SA --> U13
+SA --> U14
+SA --> U15
+AD --> U13
+AD --> U1
+AD --> U12
 CA --> U1
 CA --> U2
 CA --> U3

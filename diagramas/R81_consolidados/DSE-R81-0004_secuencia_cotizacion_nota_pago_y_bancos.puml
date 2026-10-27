@@ -15,7 +15,7 @@ skinparam ParticipantPadding 18
 
 title Cotización, nota de venta, pago y movimientos de bancos
 actor Cajera
-actor Finanzas
+actor Administrador
 participant "API" as A
 database "PostgreSQL" as DB
 Cajera -> A : crear cotización (cliente, vehículo, local, km)
@@ -31,8 +31,8 @@ end
 Cajera -> A : registrar pago (cuenta, método, fecha, importe)
 A -> DB : pago y saldo de la nota; suma al saldo de la cuenta
 == Bancos y proveedores ==
-Finanzas -> A : egreso a proveedor (pago de factura de compra)
+Administrador -> A : egreso a proveedor (pago de factura de compra)
 A -> DB : pago de la factura y movimiento de cuenta
-Finanzas -> A : traslado entre cuentas
+Administrador -> A : traslado entre cuentas
 A -> DB : movimiento de salida y de ingreso
 @enduml

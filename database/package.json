@@ -1,0 +1,31 @@
+{
+    "name":  "@posventa/database",
+    "private":  true,
+    "version":  "0.1.0",
+    "type":  "module",
+    "scripts":  {
+                    "dev-db":  "node dev-db.mjs",
+                    "generate":  "dotenv -e ../.env -- prisma generate --schema prisma/schema.prisma",
+                    "migrate":  "dotenv -e ../.env -- prisma migrate dev --schema prisma/schema.prisma",
+                    "deploy":  "dotenv -e ../.env -- prisma migrate deploy --schema prisma/schema.prisma",
+                    "seed":  "dotenv -e ../.env -- tsx seeds/seed.ts",
+                    "studio":  "dotenv -e ../.env -- prisma studio --schema prisma/schema.prisma"
+                },
+    "prisma":  {
+                   "schema":  "prisma/schema.prisma",
+                   "seed":  "tsx seeds/seed.ts"
+               },
+    "dependencies":  {
+                         "@prisma/client":  "5.22.0",
+                         "bcryptjs":  "^3.0.3"
+                     },
+    "devDependencies":  {
+                            "@types/bcryptjs":  "^3.0.0",
+                            "@types/node":  "^26.6.5",
+                            "dotenv-cli":  "^11.0.0",
+                            "embedded-postgres":  "18.4.0-beta.17",
+                            "prisma":  "5.22.0",
+                            "tsx":  "^4.23.15",
+                            "typescript":  "^7.0.2"
+                        }
+}

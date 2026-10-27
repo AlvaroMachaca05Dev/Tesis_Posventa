@@ -1,7 +1,7 @@
-RF,Requisito
+﻿RF,Requisito
 RF-001,El sistema permite autenticar al usuario antes de acceder a información operativa.
-RF-002,"El sistema permite aplicar permisos por rol, local y responsabilidad asignada."
-RF-003,"El sistema permite administrar usuarios activos, roles y acceso a información sensible."
+RF-002,"El sistema permite aplicar permisos por rol, módulo y local, sumando los permisos cuando un usuario tiene varios roles."
+RF-003,"El sistema permite administrar usuarios con uno o más roles, crear roles propios con sus permisos por módulo y registrar cada cambio, gestionando solo roles de nivel inferior al propio."
 RF-004,El sistema permite registrar y editar clientes conservando su historial operativo.
 RF-005,El sistema permite registrar y editar vehículos vinculados a su propietario e historial.
 RF-006,"El sistema permite buscar clientes y vehículos por placa, documento, VIN o nombre."
@@ -53,7 +53,7 @@ RF-051,El sistema permite mantener subtareas o bloques relacionados bajo la mism
 RF-052,"El sistema permite notificar al responsable ante asignación, cambio relevante o comentario mencionado."
 RF-053,"El sistema permite crear citas vinculadas a cliente, vehículo y responsable."
 RF-054,El sistema permite registrar llegada y convertir la atención en una ODS cuando corresponda.
-RF-055,El sistema permite visualizar agenda de técnicos por día y franjas horarias.
+RF-055,El sistema permite visualizar la agenda de técnicos y jefes de taller por día y franjas horarias; el Administrador no aparece en la agenda.
 RF-056,El sistema permite validar capacidad y advertir empalmes antes de programar trabajo.
 RF-057,"El sistema permite mover, redimensionar o dividir bloques de agenda en pasos de 15 minutos."
 RF-058,El sistema permite mostrar almuerzo y horario no disponible sin contabilizarlos como servicio.
@@ -82,7 +82,7 @@ RF-080,El sistema permite completar la tarea logística solo cuando el técnico 
 RF-081,El sistema permite medir el tiempo desde aprobación de compra hasta entrega y conformidad técnica.
 RF-082,El sistema permite permitir al técnico editar la duración prevista de cada servicio asignado.
 RF-083,El sistema permite asociar retraso de repuesto o logística como causa reportable sin alterar el historial.
-RF-084,El sistema permite gestionar el rol Asistente administrativo de finanzas y sus permisos por módulo.
+RF-084,El sistema permite que el Administrador asuma las funciones de finanzas: bancos, cuentas por cobrar y por pagar y reportes de pagos.
 RF-085,"El sistema permite configurar empresa, locales, dos logotipos y formatos de documento."
 RF-086,El sistema permite asignar series de comprobantes por local.
 RF-087,"El sistema permite emitir una cotización desde ODS con kilometraje, ítems, impuesto, descuento, observaciones y registro en bitácora."

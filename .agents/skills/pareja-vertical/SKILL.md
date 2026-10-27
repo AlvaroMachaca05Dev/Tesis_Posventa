@@ -39,4 +39,4 @@ Cuando el criterio incluya una pantalla, compárala con la del prototipo: mismos
 - Propón el mensaje de commit (`tipo(área): resumen (RF-xxx)`) y **espera la orden** para hacerlo.
 
 ## Reglas del proyecto que no se rompen
-Vocabulario («local», «cerrar», Cant./H-H en 0.25), siete roles, permisos en el servidor, migraciones versionadas, cero datos reales o claves, y solo los RF del núcleo (50) salvo que el investigador amplíe. Detalle en `AGENTS.md`.
+Vocabulario («local», «cerrar», Cant./H-H en 0.25), siete roles con jerarquía como datos (AGENTS.md, sección 15), permisos en el servidor, migraciones versionadas, cero datos reales o claves, y solo los RF del núcleo (50) salvo que el investigador amplíe. Detalle en `AGENTS.md`.
