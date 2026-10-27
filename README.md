@@ -1,6 +1,6 @@
 # Tesis — Sistema de posventa para R Motriz
 
-> **Ubicación de trabajo:** este repositorio se trabaja en `F:\Tesis\Tesis_Posventa` y se sube a `https://github.com/AlvaroMachaca0503/Tesis_Posventa.git`. La carpeta de Drive ya no contiene el código.
+> **Ubicación de trabajo:** este repositorio se trabaja en `F:\Tesis\Tesis_Posventa` y se sube a `https://github.com/AlvaroMachaca05Dev/Tesis_Posventa.git`. La carpeta de Drive ya no contiene el código.
 
 
 Tesis de Ingeniería de Software (La Salle, Arequipa) de Álvaro Machaca: una aplicación web que convierte el historial de órdenes de servicio (ODS) en **planes de mantenimiento preventivo, reajuste, citas y posventa**. Esta carpeta reúne **todo el contexto, las decisiones, las especificaciones, los agentes y las skills** para ejecutar el desarrollo con Claude Code o Codex.
