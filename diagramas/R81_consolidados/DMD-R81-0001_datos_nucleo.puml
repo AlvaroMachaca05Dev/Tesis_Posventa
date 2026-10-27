@@ -1,0 +1,71 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Modelo de datos del núcleo: identidad, maestros, órdenes y bitácora
+hide circle
+left to right direction
+entity organizacion {
+  *id\nnombre\nruc
+}
+entity local {
+  *id\n#organizacion_id\nnombre\ndireccion
+}
+entity usuario {
+  *id\n#local_id\n#rol_id\nnombre\nactivo
+}
+entity rol {
+  *id\nnombre
+}
+entity permiso {
+  *id\nmodulo\naccion
+}
+entity rol_permiso {
+  #rol_id\n#permiso_id
+}
+entity cliente {
+  *id\nnombre\ndocumento
+}
+entity vehiculo {
+  *id\n#cliente_id\nplaca\nmarca\nmodelo\nanio\ngrupo
+}
+entity lectura_km {
+  *id\n#vehiculo_id\nkm\nfecha\nfuente
+}
+entity orden_servicio {
+  *id\n#vehiculo_id\n#local_id\ncodigo\nestado\nfecha_llegada\nkm
+}
+entity detalle_ods {
+  *id\n#orden_id\ndescripcion\ncantidad_hh\n#tecnico_id\nduracion_minutos
+}
+entity bitacora {
+  *id\n#orden_id\n#tarea_id\n#actor_id\ntexto\nfecha
+}
+entity evidencia {
+  *id\n#bitacora_id\narchivo\ntipo
+}
+entity auditoria {
+  *id\ntabla\nregistro_id\nactor\nantes\ndespues\nmotivo\nfecha
+}
+organizacion ||--o{ local
+local ||--o{ usuario
+rol ||--o{ usuario
+rol ||--o{ rol_permiso
+permiso ||--o{ rol_permiso
+cliente ||--o{ vehiculo
+vehiculo ||--o{ lectura_km
+vehiculo ||--o{ orden_servicio
+local ||--o{ orden_servicio
+orden_servicio ||--o{ detalle_ods
+orden_servicio ||--o{ bitacora
+bitacora ||--o{ evidencia
+usuario ||--o{ detalle_ods
+@enduml

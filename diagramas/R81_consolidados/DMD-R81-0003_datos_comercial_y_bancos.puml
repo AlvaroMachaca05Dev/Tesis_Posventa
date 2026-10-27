@@ -1,0 +1,49 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Modelo de datos comercial, de cuentas y de bancos
+hide circle
+entity cotizacion {
+  *id\n#cliente_id\n#orden_id\nestado\nkm\nobservacion
+}
+entity item_cotizado {
+  *id\n#cotizacion_id\ndescripcion\ncantidad\nprecio_centavos\nimpuesto
+}
+entity nota_venta {
+  *id\n#serie_id\nnumero\n#cliente_id\n#orden_id\ncondicion\ntotal_centavos
+}
+entity serie_comprobante {
+  *id\n#local_id\nserie
+}
+entity pago {
+  *id\n#nota_id\n#factura_id\n#cuenta_id\nimporte_centavos\nmetodo\nfecha
+}
+entity cuenta_bancaria {
+  *id\n#local_id\nnombre\ntipo\nsaldo_centavos
+}
+entity movimiento_cuenta {
+  *id\n#cuenta_id\ntipo\nimporte_centavos\nfecha
+}
+entity factura_compra {
+  *id\n#proveedor_id\ncodigo\ntotal_centavos
+}
+entity proveedor {
+  *id\nnombre\ndocumento
+}
+cotizacion ||--o{ item_cotizado
+nota_venta }o--|| serie_comprobante
+nota_venta ||--o{ pago
+factura_compra ||--o{ pago
+cuenta_bancaria ||--o{ pago
+cuenta_bancaria ||--o{ movimiento_cuenta
+proveedor ||--o{ factura_compra
+@enduml

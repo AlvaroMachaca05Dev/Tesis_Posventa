@@ -1,0 +1,41 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+autonumber
+skinparam sequenceMessageAlign left
+skinparam ParticipantPadding 18
+
+title Productos de una ODS y requerimiento de inventario
+actor Técnico
+actor Cajera
+actor Logístico
+participant "API" as A
+database "PostgreSQL" as DB
+Técnico -> A : solicitar producto para la ODS
+A -> DB : una tarea logística de productos por ODS
+Logístico -> A : cotizar con proveedor (costo, venta, alternativas)
+A -> DB : nueva versión, sin borrar las anteriores
+Cajera -> A : revisar y enviar a aprobación del cliente
+A -> DB : decisión del cliente (aprobada o no)
+Logístico -> A : comprar con comprobante y entregar al técnico
+Técnico -> A : dar conformidad o marcar observado
+alt conforme
+  A -> DB : completa la tarea logística
+else observado
+  A -> DB : reabre la misma tarea
+end
+== Requerimiento de inventario ==
+Cajera -> A : solicitar productos al local
+Logístico -> A : asignar origen y asociar facturas de compra
+Logístico -> A : aprobar
+A -> DB : movimiento de salida y de ingreso solo de lo que tiene código
+A -> DB : aviso al solicitante
+@enduml

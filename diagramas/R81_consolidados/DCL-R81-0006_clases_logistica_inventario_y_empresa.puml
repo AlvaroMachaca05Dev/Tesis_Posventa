@@ -1,0 +1,66 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+hide empty members
+skinparam classAttributeIconSize 0
+
+title Clases de logística de productos, requerimientos, inventario y empresa
+class Tarea {
+  estado
+}
+class SolicitudProducto {
+  descripcion\ncantidad\nestado
+}
+class CotizacionProducto {
+  proveedor\ncosto\nventa\nmargen\nversion
+}
+class CompraProducto {
+  comprobante\nfecha
+}
+class ConformidadTecnica {
+  resultado (conforme | observado)\nobservacion
+}
+class Requerimiento {
+  codigo\norigen\ndestino\nestado\naprobar()\nrechazar()
+}
+class ItemRequerimiento {
+  producto\ncantidad
+}
+class MovimientoInventario {
+  tipo\ncantidad\nfecha
+}
+class Producto {
+  codigo\nnombre\ncategoria
+}
+class Almacen {
+  nombre\ndireccion
+}
+class Kardex {
+  saldo
+}
+class FacturaCompra
+class Empresa {
+  nombre\nlogoOscuro\nlogoClaro\ncuentas
+}
+Tarea "1" *-- "*" SolicitudProducto
+SolicitudProducto "1" *-- "*" CotizacionProducto
+SolicitudProducto "1" --> "0..1" CompraProducto
+CompraProducto "*" --> "1" FacturaCompra
+SolicitudProducto "1" --> "0..1" ConformidadTecnica
+Requerimiento "1" *-- "*" ItemRequerimiento
+Requerimiento "*" --> "*" FacturaCompra : comprobantes
+Requerimiento "1" ..> "*" MovimientoInventario : al aprobar, solo lo que tiene código
+ItemRequerimiento "*" --> "0..1" Producto
+MovimientoInventario "*" --> "1" Producto
+MovimientoInventario "*" --> "1" Almacen
+Almacen "1" o-- "*" Kardex
+Kardex "*" --> "1" Producto
+@enduml

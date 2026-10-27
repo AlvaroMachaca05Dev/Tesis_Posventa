@@ -13,7 +13,7 @@ Fuente única de instrucciones del proyecto para **Claude Code** (y Codex si el 
 - **NO existe:** el sistema. No hay servidor, base de datos operativa, autenticación real, importación XLSX ejecutada ni aceptación de usuarios o de un experto mecánico.
 - **Delimitación (19/10/2026):** producto = software automotriz de **posventa**; las ODS se cargan a diario de forma masiva (Excel/CSV; la API queda como contrato beta); lo que no es beta es la primera versión; los módulos beta van al final del menú y son ocultables; quitados: reglas de precios, auditoría interna y movimientos de cuentas; sin apertura/cierre de caja (apagada); series por sede. Fuente: `docs/alcance/DELIMITACION_PRIMERA_VERSION_R77.md` y `DECISIONES_CERRADAS.md` §10.
 - **Línea A** (`../archivo/avance_implementacion/`, Python/SQLite, INC-01): **antecedente**; no se desarrolla.
-- **Pila tecnológica: sin decidir** (`docs/decisiones/ADR-001-pila-tecnologica.md`, estado PROPUESTO).
+- **Pila tecnológica: ACEPTADA el 20/10/2026** (`docs/decisiones/ADR-001-pila-tecnologica.md`): React + TypeScript + Vite, NestJS, PostgreSQL con Prisma. El código vive en el repositorio de GitHub del proyecto (cierra OPEN-01 y OPEN-03).
 
 ## 3. Reglas de la carpeta
 - **Las fuentes se editan aquí; nunca se editan a mano `../../1_github-proyecto/` ni `../../2_documento-tesis-overleaf/`.**
@@ -45,7 +45,7 @@ Fuente única de instrucciones del proyecto para **Claude Code** (y Codex si el 
 | `diagramas/R8_propuesta/` | UML R8 (clases, estados, secuencias) y verificador |
 | `diagramas/R77_delimitacion/` | UML de la delimitación R7.7 (casos de uso, módulos, clases, secuencias y estados) y verificador |
 | `../fuentes-latex/` | LaTeX, PDF, trazabilidad, capturas y modelo SQL propuesto |
-| `src/`, `tests/` | Implementación real (**vacías** hasta aceptar el ADR-001) |
+| `src/`, `tests/` | Implementación real (**vacías hasta que el Sprint 1 cree el esqueleto) |
 | `agentes/definiciones/` | Fuente de los 6 agentes |
 | `.agents/skills/`, `.codex/agents/`, `.claude/` | Skills y agentes de Codex y de Claude Code (**generados/sincronizados**) |
 | `herramientas/` | Scripts de apoyo y binarios (`herramientas/bin/`: PlantUML, Tectonic) |
@@ -64,7 +64,7 @@ Metodología unificada y decidida el 19/10/2026: `docs/plan/METODOLOGIA_SCRUM_IA
 
 Product Backlog → Sprint Planning → **especificación** → **pruebas primero** → implementación → revisión → evidencia → revisión humana. Detalle y mensajes listos en `docs/plan/FLUJO_DE_TRABAJO.md`.
 
-**Puerta del código:** **no escribas código de aplicación** mientras `ADR-001` no esté **ACEPTADO** y OPEN-03 (dónde vive el código) no esté cerrada. Si te lo piden, explica qué falta y no lo hagas.
+**Puerta del código:** el ADR-001 está ACEPTADO (20/10/2026), así que se puede escribir código de aplicación **solo dentro de un Sprint** con su especificación (`specs/S<n>-*.md`), pruebas primero y revisión del investigador (skill `ejecutar-sprint`). Fuera de eso, pregunta.
 
 | Agente (Codex / Claude) | Para qué |
 |---|---|
@@ -95,3 +95,12 @@ Python 3.13.3 está instalado pero el comando `python3` apunta a la tienda de Wi
 
 ## 10. Decisiones abiertas que más pesan
 OPEN-01 pila · OPEN-02 sede piloto · OPEN-03 dónde vive el código · OPEN-07 datos reales anonimizados · OPEN-08 validador mecánico · OPEN-21 reajuste directo o con aprobación · OPEN-22/26 estados de cita y «convertida». Lista completa: `docs/decisiones/DECISIONES_ABIERTAS.md`.
+
+## 11. Antes de cambiar documentos, diagramas, requisitos o el modelo de datos
+Los diagramas, los requisitos, la matriz de trazabilidad, las especificaciones, el código y las pruebas dependen entre sí (ver `docs/plan/MAPA_DE_DEPENDENCIAS.md`). **Ningún agente cambia el LaTeX de la tesis, un diagrama, un RF, una especificación, el modelo de datos o un contrato de la API sin pasar antes por la skill `guardian-coherencia-tesis`:** mide el impacto con `python herramientas/analizar_impacto.py <código>`, presenta el informe (qué se afecta, qué rompe lógica y qué no) y **espera la aprobación del investigador**. Sin un «sí» claro no se edita. Agente asociado: `agentes/definiciones/guardian_coherencia.md`.
+
+## 12. Sprints de desarrollo
+El código de aplicación solo se escribe con el **ADR-001 aceptado** por el investigador. Cada Sprint tiene su plan (`docs/plan/SPRINT_<n>.md`) y su especificación (`specs/S<n>-*.md`); se ejecuta con la skill `ejecutar-sprint` (prueba primero, una tarea pequeña por rama, commit `tipo(área): resumen (RF-xxx)`).
+
+## 13. Desarrollo por funcionalidad (vigente desde el 27/10/2026)
+El núcleo son 50 requisitos organizados en 11 slices (`docs/plan/SLICES_NUCLEO.md`). Cada slice se desarrolla de punta a punta con la skill `pareja-vertical`, consultando el prototipo con `consultar-prototipo-html` y cerrando la sesión con `resumen-de-sesion`. La skill `ejecutar-sprint` queda como guía general; si chocan, manda `pareja-vertical`.

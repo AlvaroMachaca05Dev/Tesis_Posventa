@@ -1,0 +1,35 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+skinparam wrapWidth 190
+title Cotización, aprobación, compra, entrega y conformidad
+start
+:Técnico: Solicitar productos para la ODS;
+:Logístico: Cotizar con proveedor y definir venta y margen;
+:Logístico: Agregar alternativas sin borrar versiones;
+:Cajera: Revisar y enviar al cliente;
+if (¿El cliente aprueba?) then (sí)
+  :Logístico: Comprar con comprobante;
+  :Logístico: Entregar al técnico;
+  if (¿Conforme?) then (sí)
+    :Técnico: Confirmar los productos;
+    :Cajera: Emitir nota de venta;
+    :Cajera: Registrar pagos y saldo;
+  else (observado)
+    :Técnico: Marcar observado o por cambiar;
+    :Logístico: Reabrir la misma tarea;
+  endif
+else (no)
+  :Cajera: Registrar la decisión del cliente;
+endif
+stop
+@enduml

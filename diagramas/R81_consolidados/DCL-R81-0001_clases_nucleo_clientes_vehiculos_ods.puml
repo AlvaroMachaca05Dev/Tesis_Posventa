@@ -1,0 +1,67 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+hide empty members
+skinparam classAttributeIconSize 0
+
+title Clases del núcleo: identidad, maestros y órdenes de servicio
+class Organizacion {
+  nombre\nruc
+}
+class Local {
+  nombre\ndireccion
+}
+class Usuario {
+  nombre\nactivo
+}
+class Rol {
+  nombre
+}
+class Permiso {
+  modulo\naccion
+}
+class Cliente {
+  nombre\ndocumento
+}
+class Vehiculo {
+  placa\nmarca\nmodelo\nanio
+}
+class Proveedor {
+  nombre\ndocumento
+}
+class Kilometraje {
+  km\nfecha\nfuente
+}
+class OrdenServicio {
+  codigo\nestado\nfechaLlegada\nkm\ncerrar()\nreabrir()
+}
+class DetalleODS {
+  descripcion\nobservacion
+}
+class ServicioODS {
+  duracionPlanificada\nresponsable\ncantidadHH
+}
+class Evidencia {
+  archivo\ntipo
+}
+Organizacion "1" o-- "*" Local
+Local "1" o-- "*" Usuario
+Usuario "*" -- "1" Rol
+Rol "*" -- "*" Permiso
+Cliente "1" o-- "*" Vehiculo
+Vehiculo "1" o-- "*" Kilometraje
+Vehiculo "1" <-- "*" OrdenServicio
+Local "1" <-- "*" OrdenServicio
+OrdenServicio "1" *-- "*" DetalleODS
+DetalleODS "1" *-- "*" ServicioODS
+OrdenServicio "1" o-- "*" Evidencia
+ServicioODS "*" --> "1" Usuario : responsable
+@enduml

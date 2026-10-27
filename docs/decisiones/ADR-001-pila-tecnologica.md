@@ -1,6 +1,6 @@
 # ADR-001 — Pila tecnológica de la implementación
 
-**Estado: PROPUESTA R7.8. NO DECIDIDO.**  
+**Estado: ACEPTADO el 20/10/2026 por Álvaro Machaca (investigador).** Pila: React + TypeScript + Vite, NestJS (monolito modular), PostgreSQL con Prisma, OpenAPI, Docker Compose y GitHub Actions. Los cambios posteriores pasan por la skill `guardian-coherencia-tesis`.
 **Fecha de la propuesta:** 19/10/2026.  
 **Decisor requerido:** investigador (OPEN-03); equipo, Claude y profesor solo revisan.  
 Hasta que el investigador acepte este ADR, **ningún agente escribe código de aplicación** (ver `AGENTS.md`).

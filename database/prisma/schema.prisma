@@ -1,0 +1,149 @@
+// Esquema del núcleo (Sprint 1). Fuente: diagrama DMD-R81-0001.
+// Borrador: cualquier cambio pasa por la skill guardian-coherencia-tesis.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organizacion {
+  id      String  @id @default(uuid())
+  nombre  String
+  ruc     String?
+  locales Local[]
+}
+
+model Local {
+  id             String       @id @default(uuid())
+  organizacionId String
+  nombre         String
+  direccion      String?
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  usuarios       Usuario[]
+  ordenes        OrdenServicio[]
+}
+
+model Rol {
+  id       String        @id @default(uuid())
+  nombre   String        @unique
+  usuarios Usuario[]
+  permisos RolPermiso[]
+}
+
+model Permiso {
+  id     String       @id @default(uuid())
+  modulo String
+  accion String
+  roles  RolPermiso[]
+
+  @@unique([modulo, accion])
+}
+
+model RolPermiso {
+  rolId     String
+  permisoId String
+  rol       Rol     @relation(fields: [rolId], references: [id])
+  permiso   Permiso @relation(fields: [permisoId], references: [id])
+
+  @@id([rolId, permisoId])
+}
+
+model Usuario {
+  id      String  @id @default(uuid())
+  localId String
+  rolId   String
+  nombre  String
+  correo  String  @unique
+  activo  Boolean @default(true)
+  local   Local   @relation(fields: [localId], references: [id])
+  rol     Rol     @relation(fields: [rolId], references: [id])
+  detalles DetalleODS[]
+  bitacora Bitacora[]
+}
+
+model Cliente {
+  id        String     @id @default(uuid())
+  nombre    String
+  documento String     @unique
+  vehiculos Vehiculo[]
+}
+
+model Vehiculo {
+  id        String        @id @default(uuid())
+  clienteId String
+  placa     String        @unique
+  marca     String?
+  modelo    String?
+  anio      Int?
+  grupo     String?
+  cliente   Cliente       @relation(fields: [clienteId], references: [id])
+  lecturas  LecturaKm[]
+  ordenes   OrdenServicio[]
+}
+
+model LecturaKm {
+  id         String   @id @default(uuid())
+  vehiculoId String
+  km         Int
+  fecha      DateTime
+  fuente     String
+  vehiculo   Vehiculo @relation(fields: [vehiculoId], references: [id])
+}
+
+model OrdenServicio {
+  id           String       @id @default(uuid())
+  vehiculoId   String
+  localId      String
+  codigo       String       @unique
+  estado       String       @default("Recepcion")
+  fechaLlegada DateTime
+  km           Int?
+  vehiculo     Vehiculo     @relation(fields: [vehiculoId], references: [id])
+  local        Local        @relation(fields: [localId], references: [id])
+  detalles     DetalleODS[]
+  bitacora     Bitacora[]
+}
+
+model DetalleODS {
+  id              String        @id @default(uuid())
+  ordenId         String
+  descripcion     String
+  cantidadHH      Decimal?      @db.Decimal(6, 2)
+  tecnicoId       String?
+  duracionMinutos Int?
+  orden           OrdenServicio @relation(fields: [ordenId], references: [id])
+  tecnico         Usuario?      @relation(fields: [tecnicoId], references: [id])
+}
+
+model Bitacora {
+  id         String         @id @default(uuid())
+  ordenId    String?
+  actorId    String
+  texto      String
+  fecha      DateTime       @default(now())
+  orden      OrdenServicio? @relation(fields: [ordenId], references: [id])
+  actor      Usuario        @relation(fields: [actorId], references: [id])
+  evidencias Evidencia[]
+}
+
+model Evidencia {
+  id         String   @id @default(uuid())
+  bitacoraId String
+  archivo    String
+  tipo       String
+  bitacora   Bitacora @relation(fields: [bitacoraId], references: [id])
+}
+
+model Auditoria {
+  id         String   @id @default(uuid())
+  tabla      String
+  registroId String
+  actor      String
+  antes      Json?
+  despues    Json?
+  motivo     String?
+  fecha      DateTime @default(now())
+}

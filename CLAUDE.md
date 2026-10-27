@@ -6,7 +6,7 @@ Este archivo no duplica reglas: la fuente única es `AGENTS.md`. Se importa aqu�
 
 ## Resumen mínimo (por si el importador no carga)
 - **Antes de trabajar:** ejecuta `herramientas\revisar_cambios.ps1` y lee `../REGISTRO_CAMBIOS.md`. **Al terminar:** skill `registrar-cambios`.
-- **Línea principal: B** (prototipo HTML R7.x y tesis LaTeX). **No existe el sistema** todavía; la pila tecnológica está **sin decidir** (`docs/decisiones/ADR-001-pila-tecnologica.md`): **no escribas código de aplicación** hasta que esté ACEPTADO.
+- **Línea principal: B** (prototipo HTML R7.x y tesis LaTeX). **No existe el sistema** todavía; la pila tecnológica está **aceptada (ADR-001, 20/10/2026)** (`docs/decisiones/ADR-001-pila-tecnologica.md`): **no escribas código de aplicación** hasta que esté ACEPTADO.
 - **No toques `../RMotriz_tesis_contexto/`** (solo lectura).
 - **Solo datos sintéticos**; usa `sanear-datos-reales`. Hay datos reales en material antiguo (`docs/decisiones/INCONSISTENCIAS.md` INC-E5): no los abras ni los copies.
 - **No resuelvas en silencio** decisiones abiertas ni inconsistencias.

@@ -1,0 +1,36 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Arquitectura lógica y pila tecnológica
+rectangle "Interfaz web · React + TypeScript + Vite\npantallas por rol · módulos beta ocultables" as WEB #e3f2fd
+package "API REST · NestJS (monolito modular) · OpenAPI · permisos por rol y por local" #e8f5e9 {
+  rectangle "Identidad y configuración\nMaestros e identidad\nODS y auditoría\nBitácora y auditoría" as G1
+  rectangle "Importación y conciliación\nPlanes y reajuste\nSeguimiento y automatizaciones\nReportes operativos" as G2
+  rectangle "Tareas y ejecución técnica\nCitas y capacidad" as G3
+  rectangle "Documentos comerciales internos\nBancos, compras e inventario\nTarea logística de productos" as G4
+}
+rectangle "Dominio compartido (TypeScript)\nestados de la ODS · pasos de 0.25 H-H · capacidad de 2 bloques · planes y reajuste" as DOM #fff3e0
+rectangle "Worker\nrecordatorios · importaciones · automatizaciones" as WRK #f3e5f5
+database "PostgreSQL + Prisma\nmigraciones · auditoría" as DB #ede7f6
+folder "Archivos\nExcel/CSV · evidencias" as FS #eceff1
+WEB -down-> G1 : HTTPS
+G1 -[hidden]right- G2
+G3 -[hidden]right- G4
+G1 -[hidden]down- G3
+G2 -[hidden]down- G4
+G3 -down-> DOM
+G4 -down-> DOM
+DOM -down-> DB
+DOM -down-> WRK
+G4 -down-> FS
+WRK -right-> DB
+@enduml

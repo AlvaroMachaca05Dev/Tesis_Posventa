@@ -1,0 +1,32 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+skinparam StateBackgroundColor #f4f8fc
+skinparam StateBorderColor #44546a
+
+title Estados de la ODS y de la tarea
+state "ODS" as O {
+  state "En proceso" as OP
+  [*] --> Recepción
+  Recepción --> OP : iniciar
+  OP --> Entrega : terminar servicios
+  Entrega --> Cerrada : cerrar
+  Cerrada --> OP : reabrir (auditado)
+}
+state "Tarea" as T {
+  state "En proceso" as TP
+  [*] --> Pendiente
+  Pendiente --> TP : iniciar
+  TP --> Completada : completar
+  TP --> TP : dividir o continuar
+}
+O -[hidden]-> T
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam wrapWidth 190
+skinparam MaxMessageSize 190
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Importación atómica y propuesta de plan revisable
+start
+:Cajera: Elegir archivo y modo de carga;
+:Sistema: Reconocer el perfil y los encabezados;
+:Sistema: Validar todo el lote;
+if (¿Todas las filas son válidas?) then (sí)
+  :Sistema: Aplicar en una transacción;
+  :Sistema: Crear ODS, ítems, vehículo y cliente que falten;
+  :Sistema: Registrar fila original y fuente;
+else (no)
+  :Sistema: No cambiar nada;
+  :Sistema: Registrar el lote rechazado;
+  stop
+endif
+:Sistema: Evaluar la aplicabilidad de la regla al vehículo;
+:Sistema: Proponer plan con su fundamento;
+:Jefe de taller: Revisar la propuesta;
+if (¿Acepta?) then (sí)
+  :Jefe de taller: Asignar el plan vigente al vehículo;
+else (no)
+  :Jefe de taller: Postergar o rechazar y registrar el motivo;
+endif
+:Sistema: Generar proyecciones y tareas;
+stop
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+skinparam StateBackgroundColor #f4f8fc
+skinparam StateBorderColor #44546a
+
+title Estados del producto solicitado y del requerimiento de inventario
+state "Producto de una ODS" as P {
+  [*] --> Solicitado
+  Solicitado --> Cotizado
+  Cotizado --> AprobadoCliente : el cliente aprueba
+  AprobadoCliente --> Comprado
+  Comprado --> Entregado
+  Entregado --> Conforme
+  Entregado --> Observado
+  Observado --> Cotizado : reabre la misma tarea
+}
+state "Requerimiento" as R {
+  [*] --> Pendiente
+  Pendiente --> Aprobado : mueve el stock con código
+  Pendiente --> Rechazado
+}
+P -[hidden]-> R
+@enduml

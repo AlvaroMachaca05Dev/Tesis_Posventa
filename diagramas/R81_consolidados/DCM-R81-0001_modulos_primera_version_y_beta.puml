@@ -1,0 +1,51 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Módulos de la primera versión y módulos beta
+package "Núcleo" {
+  component "Identidad y configuración" as M1
+  component "Maestros e identidad" as M2
+  component "ODS y auditoría" as M3
+  component "Bitácora y auditoría" as M8
+}
+package "Datos y operación técnica" {
+  component "Importación y conciliación" as M4
+  component "Planes y reajuste" as M5
+  component "Tareas y ejecución técnica" as M6
+  component "Citas y capacidad" as M7
+}
+package "Posventa y reportes" {
+  component "Seguimiento y automatizaciones" as M12
+  component "Reportes operativos" as M13
+}
+package "Comercial, bancos e inventario" {
+  component "Documentos comerciales internos" as M9
+  component "Bancos, compras e inventario" as M10
+  component "Tarea logística de productos" as M11
+}
+package "Beta · al final del menú y ocultables en Empresa" #fff8e1 {
+  component "Cajas · Flujo de caja · Paquetes\nIntegraciones y API · Facturación electrónica" as N1
+}
+M1 -[hidden]right- M2
+M2 -[hidden]right- M3
+M3 -[hidden]right- M8
+M4 -[hidden]right- M5
+M5 -[hidden]right- M6
+M6 -[hidden]right- M7
+M12 -[hidden]right- M13
+M9 -[hidden]right- M10
+M10 -[hidden]right- M11
+M1 -[hidden]down- M4
+M4 -[hidden]down- M12
+M12 -[hidden]down- M9
+M9 -[hidden]down- N1
+@enduml

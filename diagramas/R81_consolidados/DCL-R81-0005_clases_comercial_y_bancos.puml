@@ -1,0 +1,59 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+hide empty members
+skinparam classAttributeIconSize 0
+
+title Clases de cotización, nota de venta, cuentas y bancos
+left to right direction
+class Cotizacion {
+  codigo\nestado\nkm\nobservacion\nvencimiento\nemitir()\npasarAOrden()
+}
+class ItemCotizado {
+  descripcion\ncantidad\nprecio\ndescuento\nimpuesto
+}
+class NotaVenta {
+  serie\nnumero\ncondicion\ntotal\nimprimir(pdf | ticket)
+}
+class SerieComprobante {
+  serie\nlocal
+}
+class Pago {
+  fecha\nimporte\nmetodo\nobservacion
+}
+class CuentaBancaria {
+  nombre\ntipo\nsaldo\nlocal
+}
+class Movimiento {
+  fecha\ntipo (ingreso | egreso | traslado)\nimporte
+}
+class FacturaCompra {
+  codigo\nproveedor\ntotal
+}
+class Cliente
+class Proveedor
+class OrdenServicio
+class Local
+Cotizacion "1" *-- "*" ItemCotizado
+Cotizacion "*" --> "0..1" OrdenServicio
+Cotizacion "*" --> "0..1" Cliente
+NotaVenta "*" --> "1" Cliente
+NotaVenta "*" --> "0..1" OrdenServicio
+NotaVenta "*" --> "1" SerieComprobante
+SerieComprobante "*" --> "1" Local
+NotaVenta "1" o-- "*" Pago
+FacturaCompra "*" --> "1" Proveedor
+FacturaCompra "1" o-- "*" Pago : pagos a proveedor
+Pago "*" --> "1" CuentaBancaria
+CuentaBancaria "1" o-- "*" Movimiento
+CuentaBancaria "*" --> "1" Local
+note bottom of NotaVenta : Documento interno,\nno es factura electrónica.
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Casos de uso del taller (núcleo)
+left to right direction
+actor "Cajera" as CA
+actor "Jefe de taller" as JT
+actor "Técnico" as TE
+actor "Superusuario" as SU
+rectangle "Sistema de posventa" {
+  usecase "Cargar órdenes del día\n(Excel o CSV)" as U1
+  usecase "Registrar clientes y vehículos" as U2
+  usecase "Crear y editar ODS" as U3
+  usecase "Cerrar o corregir ODS" as U4
+  usecase "Asignar un plan al vehículo" as U5
+  usecase "Ver línea de tiempo y reajustar" as U6
+  usecase "Programar cita y agenda" as U7
+  usecase "Registrar llegada (crea ODS)" as U8
+  usecase "Gestionar tareas y tiempos" as U9
+  usecase "Comentar en la bitácora" as U10
+  usecase "Dar seguimiento de posventa\ny encuesta" as U11
+  usecase "Consultar reportes" as U12
+  usecase "Configurar usuarios, roles,\nlocales y módulos beta" as U13
+}
+SU --> U13
+CA --> U1
+CA --> U2
+CA --> U3
+CA --> U7
+CA --> U8
+CA --> U11
+JT --> U3
+JT --> U4
+JT --> U5
+JT --> U6
+JT --> U9
+JT --> U12
+TE --> U9
+TE --> U10
+TE --> U6
+CA --> U10
+U8 ..> U3 : <<include>>
+U1 ..> U3 : <<include>>
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Despliegue propuesto (Docker Compose)
+node "Navegador del usuario\n(cajera, técnico, jefe de taller, logístico, finanzas)" as NAV
+node "Servidor del taller o nube simple\nDocker Compose" as SRV {
+  node "web\nVite compilado (Nginx)" as C1
+  node "api\nNestJS · Node LTS" as C2
+  node "worker\nNode LTS" as C3
+  database "postgres\nPostgreSQL" as C4
+  folder "volumen de archivos" as C5
+}
+cloud "GitHub\nrepositorio · Actions (pruebas y construcción)" as GH
+node "Respaldo diario\nde base de datos y archivos" as BK
+NAV --> C1 : HTTPS
+C1 --> C2
+C2 --> C4
+C2 --> C5
+C3 --> C4
+C3 --> C5
+GH ..> SRV : imágenes y migraciones
+C4 ..> BK
+@enduml

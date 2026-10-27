@@ -1,0 +1,42 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+autonumber
+skinparam sequenceMessageAlign left
+skinparam ParticipantPadding 18
+
+title Cierre de ODS, reajuste del plan, consulta de km, seguimiento y encuesta
+actor "Jefe de taller" as J
+participant "API" as A
+participant "Reajuste" as R
+participant "Automatizaciones" as AU
+database "PostgreSQL" as DB
+actor Cliente
+J -> A : cerrar ODS
+A -> DB : cierra la ODS y conserva la salida
+alt hay servicio confirmado con vínculo a la ODS
+  A -> R : reajustarFuturo(vehículo, servicio)
+  R -> DB : nueva versión de proyecciones futuras
+else sin evidencia
+  R --> A : no reajusta
+end
+A -> AU : evento ODS cerrada
+AU -> DB : tarea de posventa a los cinco días hábiles
+AU -> DB : enlace de encuesta
+== Consulta de kilometraje ==
+J -> A : registrar km (llamada, WhatsApp u otro)
+A -> DB : lectura de km con fuente y fecha
+A -> R : recalcular proyección
+== Seguimiento ==
+Cliente -> A : responde la encuesta por el enlace
+A -> DB : guarda la respuesta y actualiza el NPS
+AU -> DB : cierra la tarea de contacto
+@enduml

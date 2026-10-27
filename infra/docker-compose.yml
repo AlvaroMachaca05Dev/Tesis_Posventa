@@ -1,0 +1,21 @@
+# Entorno de desarrollo: solo la base de datos. La API y la web se ejecutan con pnpm.
+services:
+  postgres:
+    image: postgres:16
+    container_name: posventa-postgres
+    environment:
+      POSTGRES_USER: posventa
+      POSTGRES_PASSWORD: posventa_dev
+      POSTGRES_DB: posventa
+    ports:
+      - "5432:5432"
+    volumes:
+      - posventa_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U posventa"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  posventa_pgdata:

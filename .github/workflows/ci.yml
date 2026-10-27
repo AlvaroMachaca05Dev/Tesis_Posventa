@@ -1,0 +1,40 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  construir-y-probar:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: posventa
+          POSTGRES_PASSWORD: posventa_dev
+          POSTGRES_DB: posventa
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U posventa"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://posventa:posventa_dev@localhost:5432/posventa?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Instalar
+        run: pnpm install
+      - name: Migraciones
+        run: pnpm --if-present db:migrate
+      - name: Revisión de estilo
+        run: pnpm -r --if-present lint
+      - name: Compilar
+        run: pnpm -r --if-present build
+      - name: Pruebas
+        run: pnpm -r --if-present test

@@ -1,0 +1,57 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+hide empty members
+skinparam classAttributeIconSize 0
+
+title Clases de planes preventivos, línea de tiempo y reajuste
+left to right direction
+class Plan {
+  nombre\ngrupoVehiculos\nvigente
+}
+class VersionPlan {
+  numero\nfecha
+}
+class Regla {
+  servicio\nkmIntervalo\ntiempoIntervalo\nplanActual\naplicable()
+}
+class Aplicabilidad {
+  marca\nmodelo\nanio\ncompatibilidad
+}
+class Asignacion {
+  fechaInicio\nestado
+}
+class Proyeccion {
+  servicio\nkmEstimado\nfechaEstimada\nestado
+}
+class Recomendacion {
+  fundamento\ndecision (aceptada | postergada | rechazada)
+}
+class Vehiculo
+class Kilometraje
+class ServicioConfirmado {
+  fecha\nkm\nsupuesto
+}
+class Reajuste {
+  reajustarFuturo()
+}
+Plan "1" *-- "*" VersionPlan
+VersionPlan "1" *-- "*" Regla
+Plan "1" o-- "*" Aplicabilidad
+Vehiculo "1" o-- "*" Asignacion
+Asignacion "*" --> "1" VersionPlan
+Asignacion "1" *-- "*" Proyeccion
+Proyeccion "1" --> "*" Recomendacion
+Vehiculo "1" o-- "*" Kilometraje
+ServicioConfirmado ..> Reajuste : dispara
+Reajuste ..> Proyeccion : solo futuras
+note right of Reajuste : El historial realizado\nnunca se modifica.
+@enduml

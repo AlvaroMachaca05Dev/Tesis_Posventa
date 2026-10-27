@@ -1,0 +1,30 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+autonumber
+skinparam sequenceMessageAlign left
+skinparam ParticipantPadding 18
+
+title Reportes operativos y métricas mensuales
+actor "Jefe de taller" as J
+participant "API" as A
+participant "Métricas" as M
+database "PostgreSQL" as DB
+J -> A : abrir reporte (local, fecha, técnico, estado)
+A -> DB : consulta con el filtro por local
+A -> M : calcular indicadores
+M -> DB : horas por técnico del servicio, ODS por estado, cumplimiento
+M --> A : valores del periodo
+A --> J : tabla y gráfico
+J -> A : exportar
+A --> J : archivo para revisión administrativa
+note right of A : Los costos y márgenes solo se\nmuestran a los roles autorizados.
+@enduml

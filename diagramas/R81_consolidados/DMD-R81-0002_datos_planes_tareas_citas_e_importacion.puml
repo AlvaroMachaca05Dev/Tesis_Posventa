@@ -1,0 +1,61 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Modelo de datos de planes, tareas, citas e importación
+hide circle
+left to right direction
+entity plan {
+  *id\nnombre\ngrupo\nvigente
+}
+entity version_plan {
+  *id\n#plan_id\nnumero\nfecha
+}
+entity regla {
+  *id\n#version_id\nservicio\nkm_intervalo\ntiempo_intervalo
+}
+entity asignacion_plan {
+  *id\n#vehiculo_id\n#version_id\nestado
+}
+entity proyeccion {
+  *id\n#asignacion_id\nservicio\nkm_estimado\nfecha_estimada\nestado
+}
+entity tarea {
+  *id\n#orden_id\n#responsable_id\ntipo\nestado\nduracion_estimada_min\nduracion_real_min
+}
+entity bloque_tiempo {
+  *id\n#tarea_id\n#cita_id\n#tecnico_id\ninicio\nfin
+}
+entity cita {
+  *id\n#vehiculo_id\n#orden_id\nfecha\nestado
+}
+entity jornada {
+  *id\n#tecnico_id\ndia\nalmuerzo\nhorario
+}
+entity lote_importacion {
+  *id\narchivo\nmodo\nestado\n#usuario_id\nfecha
+}
+entity fila_importacion {
+  *id\n#lote_id\nhoja\nnumero_fila\nvalores\nresultado
+}
+entity identidad_externa {
+  *id\nsistema_origen\nentidad\nid_externo\nid_interno
+}
+plan ||--o{ version_plan
+version_plan ||--o{ regla
+version_plan ||--o{ asignacion_plan
+asignacion_plan ||--o{ proyeccion
+tarea ||--o{ bloque_tiempo
+cita ||--o{ bloque_tiempo
+jornada ||--o{ bloque_tiempo
+lote_importacion ||--o{ fila_importacion
+fila_importacion }o--|| identidad_externa
+@enduml

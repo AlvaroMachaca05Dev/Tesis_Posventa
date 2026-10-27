@@ -1,0 +1,37 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam wrapWidth 190
+skinparam MaxMessageSize 190
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Corrección de una ODS cerrada y seguimiento de posventa
+start
+:Jefe de taller: Solicitar corrección de la ODS cerrada;
+:Administración: Autorizar la corrección;
+:Sistema: Guardar el antes y el después;
+:Sistema: Conservar la salida y las tareas existentes;
+if (¿Reabrir?) then (sí)
+  :Sistema: Pasar a En proceso;
+  :Sistema: Al recerrar, mantener o fijar nueva salida;
+else (no)
+  :Sistema: Mantener cerrada;
+endif
+:Sistema: Registrar en la bitácora;
+:Sistema: Programar contacto a los cinco días hábiles del cierre;
+:Cajera: Llamar o abrir WhatsApp;
+if (¿Atendió?) then (sí)
+  :Cajera: Registrar el resultado y enviar el enlace de encuesta;
+else (no)
+  :Cajera: Reintentar una vez;
+  :Cajera: Si no responde, concluir sin cita;
+endif
+stop
+@enduml

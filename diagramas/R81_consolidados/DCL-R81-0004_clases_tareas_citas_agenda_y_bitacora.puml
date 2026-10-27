@@ -1,0 +1,58 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+hide empty members
+skinparam classAttributeIconSize 0
+
+title Clases de tareas, citas, agenda técnica y bitácora
+left to right direction
+class Tarea {
+  tipo\nestado (Pendiente | En proceso | Completada)\nresponsable\nfecha\nduracionEstimada\nduracionReal
+}
+class BloqueTiempo {
+  inicio\nfin\nmotivoExtension\ndividir()\ncontinuar()
+}
+class Cita {
+  fecha\nestado\nservicios\nllegar()
+}
+class AgendaTecnico {
+  jornada\nalmuerzo\nvalidarCapacidad()
+}
+class Usuario
+class OrdenServicio
+class ServicioODS
+class Bitacora {
+  texto\nfecha\nactor
+}
+class Mencion {
+  usuario
+}
+class Evidencia {
+  archivo
+}
+class Auditoria {
+  antes\ndespues\nmotivo
+}
+Cita "1" --> "0..1" OrdenServicio : la llegada crea
+Cita "1" *-- "*" BloqueTiempo
+Tarea "1" *-- "*" BloqueTiempo
+Tarea "*" --> "0..1" OrdenServicio
+Tarea "*" --> "0..1" ServicioODS
+Tarea "*" --> "1" Usuario : responsable
+AgendaTecnico "1" o-- "*" BloqueTiempo
+AgendaTecnico "*" --> "1" Usuario
+OrdenServicio "1" o-- "*" Bitacora
+Tarea "1" o-- "*" Bitacora
+Bitacora "1" o-- "*" Mencion
+Bitacora "1" o-- "*" Evidencia
+Bitacora ..> Auditoria : eventos automáticos
+note bottom of AgendaTecnico : Máximo dos bloques activos\nsimultáneos por técnico.
+@enduml

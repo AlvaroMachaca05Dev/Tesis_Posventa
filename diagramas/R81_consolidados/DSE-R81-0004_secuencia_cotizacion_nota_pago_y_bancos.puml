@@ -1,0 +1,38 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+autonumber
+skinparam sequenceMessageAlign left
+skinparam ParticipantPadding 18
+
+title Cotización, nota de venta, pago y movimientos de bancos
+actor Cajera
+actor Finanzas
+participant "API" as A
+database "PostgreSQL" as DB
+Cajera -> A : crear cotización (cliente, vehículo, local, km)
+A -> DB : guarda cotización; el km actualiza vehículo y ODS vinculada
+Cajera -> A : agregar ítems (precio, descuento, impuesto por ítem)
+Cajera -> A : emitir cotización (PDF o ticket)
+A -> DB : observación a la bitácora
+Cajera -> A : emitir nota de venta desde la ODS
+A -> DB : serie del local y consecutivo
+alt condición crédito
+  A -> DB : pasa a cuentas por cobrar
+end
+Cajera -> A : registrar pago (cuenta, método, fecha, importe)
+A -> DB : pago y saldo de la nota; suma al saldo de la cuenta
+== Bancos y proveedores ==
+Finanzas -> A : egreso a proveedor (pago de factura de compra)
+A -> DB : pago de la factura y movimiento de cuenta
+Finanzas -> A : traslado entre cuentas
+A -> DB : movimiento de salida y de ingreso
+@enduml

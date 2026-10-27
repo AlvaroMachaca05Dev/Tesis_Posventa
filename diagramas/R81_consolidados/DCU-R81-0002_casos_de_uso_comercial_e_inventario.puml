@@ -1,0 +1,52 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Casos de uso comerciales, de inventario y de finanzas
+left to right direction
+actor "Cajera" as CA
+actor "Logístico" as LO
+actor "Finanzas" as FI
+actor "Técnico" as TE
+actor "Superusuario" as SU
+rectangle "Sistema de posventa" {
+  usecase "Emitir cotización\n(desde ODS o rápida)" as U1
+  usecase "Emitir nota de venta\n(PDF o ticket)" as U2
+  usecase "Registrar pago o abono" as U3
+  usecase "Ver cuentas por cobrar" as U4
+  usecase "Registrar compra y ver\ncuentas por pagar" as U5
+  usecase "Registrar movimientos de bancos" as U6
+  usecase "Solicitar productos para una ODS" as U7
+  usecase "Cotizar, comprar y entregar\nproductos" as U8
+  usecase "Dar conformidad de productos" as U9
+  usecase "Solicitar y aprobar\nrequerimiento de inventario" as U10
+  usecase "Consultar kárdex y stock por local" as U11
+  usecase "Configurar empresa, logos,\nseries y cuentas" as U12
+}
+CA --> U1
+CA --> U2
+CA --> U3
+CA --> U4
+CA --> U7
+CA --> U10
+LO --> U8
+LO --> U5
+LO --> U10
+LO --> U11
+FI --> U4
+FI --> U5
+FI --> U6
+FI --> U3
+TE --> U7
+TE --> U9
+SU --> U12
+U2 ..> U3 : <<extend>>
+@enduml

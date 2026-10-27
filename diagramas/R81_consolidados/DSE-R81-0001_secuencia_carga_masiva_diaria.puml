@@ -1,0 +1,40 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+autonumber
+skinparam sequenceMessageAlign left
+skinparam ParticipantPadding 18
+
+title Carga masiva diaria de órdenes de servicio
+actor Cajera
+participant "Web" as W
+participant "API" as A
+participant "Importador" as I
+database "PostgreSQL" as DB
+Cajera -> W : elige el archivo (Excel o CSV) y el modo
+W -> A : POST lote
+A -> I : validarLote(perfil, filas)
+I -> DB : busca identidades externas
+I --> A : resumen (válidas, advertencias, errores)
+A --> W : vista previa sin tabla de diferencias
+Cajera -> W : confirma
+W -> A : aplicarLote
+A -> DB : transacción única
+alt todas las filas válidas
+  I -> DB : crea o actualiza cliente, vehículo, ODS e ítems
+  I -> DB : guarda fila original, fuente y usuario
+  A -> DB : crea tareas y automatizaciones
+  A --> W : lote aplicado
+else alguna fila inválida o ambigua
+  A -> DB : rollback (cero cambios de negocio)
+  A --> W : lote rechazado y registrado para auditoría
+end
+@enduml

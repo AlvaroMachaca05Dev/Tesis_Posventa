@@ -1,0 +1,53 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+hide empty members
+skinparam classAttributeIconSize 0
+
+title Clases de la carga masiva diaria y contratos de cierre
+left to right direction
+class Importador {
+  perfil\nvalidarLote()\naplicarLote()\nexportarResultado()
+}
+class Lote {
+  archivo\nmodo (solo crear | actualizar)\nestado\nusuario
+}
+class FilaOriginal {
+  hoja\nnumeroFila\nvaloresOriginales\nresultado
+}
+class IdentidadExterna {
+  sistemaOrigen\nentidad\nidExterno\nidInterno
+}
+class Cliente
+class Vehiculo
+class OrdenServicio
+class DetalleODS
+class ContratoCierre {
+  cerrar(ods)\ncorregir(ods, motivo)\nreabrir(ods)
+}
+class Auditoria {
+  actor\nfecha\nantes\ndespues\nmotivo
+}
+class Reajuste {
+  reajustarFuturo(ods)\nidempotente
+}
+Importador --> Lote : crea
+Lote "1" *-- "*" FilaOriginal
+FilaOriginal "*" --> "1" IdentidadExterna : resuelve
+Importador ..> Cliente : crea o actualiza
+Importador ..> Vehiculo : crea o actualiza
+Importador ..> OrdenServicio : crea o actualiza
+OrdenServicio "1" *-- "*" DetalleODS
+ContratoCierre ..> OrdenServicio
+ContratoCierre --> Auditoria : registra
+ContratoCierre ..> Reajuste : dispara con servicio confirmado
+note bottom of Lote : Si una fila es inválida,\nel lote no cambia nada.
+@enduml
