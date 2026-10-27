@@ -104,3 +104,10 @@ El código de aplicación solo se escribe con el **ADR-001 aceptado** por el inv
 
 ## 13. Desarrollo por funcionalidad (vigente desde el 27/10/2026)
 El núcleo son 50 requisitos organizados en 11 slices (`docs/plan/SLICES_NUCLEO.md`). Cada slice se desarrolla de punta a punta con la skill `pareja-vertical`, consultando el prototipo con `consultar-prototipo-html` y cerrando la sesión con `resumen-de-sesion`. La skill `ejecutar-sprint` queda como guía general; si chocan, manda `pareja-vertical`.
+
+## 14. Dónde vive cada cosa (desde el 27/10/2026)
+- **Código y este repositorio:** `F:\Tesis\Tesis_Posventa` (copia de trabajo vinculada a GitHub: `https://github.com/AlvaroMachaca0503/Tesis_Posventa.git`). **No se trabaja el código dentro de Drive**: Drive mezcla archivos propios (`desktop.ini`) con `.git` y sincroniza `node_modules`.
+- **Tesis (LaTeX):** `J:\Mi unidad\Trabajo RSA\Tesis sistema posventa\2_documento-tesis-overleaf\main.tex` (Drive). La herramienta `analizar_impacto.py` la busca ahí, o en la variable `LATEX_MAIN`.
+- **Contexto y registro de cambios:** `J:\Mi unidad\Trabajo RSA\Tesis sistema posventa\3_contexto-drive\` (incluye `REGISTRO_CAMBIOS.md`).
+- **Datos de la base de desarrollo:** `F:\Tesis\datos-pg` (fuera del repositorio).
+- **Herramientas locales:** Node portable en `F:\Tesis\reverse-lab\node` y pnpm en `F:\Tesis\dev-tools`.

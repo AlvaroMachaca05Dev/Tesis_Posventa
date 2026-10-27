@@ -7,8 +7,8 @@ Uso:
     python herramientas/analizar_impacto.py "Cotizacion"
 
 No modifica nada: solo lista dónde aparece el término y qué más se vería afectado.
-El documento de la tesis se busca en la variable LATEX_MAIN o, por defecto, en
-../2_documento-tesis-overleaf/main.tex (hermano de la carpeta del repositorio).
+El documento de la tesis se busca en la variable LATEX_MAIN, luego en
+../2_documento-tesis-overleaf/main.tex y, si no existe, en la carpeta de Drive de la tesis.
 """
 import io
 import os
@@ -16,7 +16,8 @@ import re
 import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MAIN = os.environ.get('LATEX_MAIN') or os.path.join(os.path.dirname(RAIZ), '2_documento-tesis-overleaf', 'main.tex')
+DRIVE_TESIS = 'J:/Mi unidad/Trabajo RSA/Tesis sistema posventa'
+MAIN = os.environ.get('LATEX_MAIN') or next((c for c in (os.path.join(os.path.dirname(RAIZ), '2_documento-tesis-overleaf', 'main.tex'), DRIVE_TESIS + '/2_documento-tesis-overleaf/main.tex') if os.path.exists(c)), DRIVE_TESIS + '/2_documento-tesis-overleaf/main.tex')
 CARPETAS = [('specs', ('.md',)), ('docs', ('.md', '.csv')), ('diagramas', ('.puml',)), ('prototipo/pruebas', ('.mjs',)), ('database', ('.prisma', '.sql')), ('apps', ('.ts', '.tsx')), ('packages', ('.ts',))]
 CODIGO = re.compile(r'^(RF|RC|CU|DAS|DAF|DCM|DCU|DCL|DMD|DSE|DES|DAC|DAM)-[A-Z0-9-]+$')
 
