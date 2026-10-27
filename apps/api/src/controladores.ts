@@ -68,15 +68,6 @@ export class SesionController {
     return { ok: true };
   }
 
-  /** Roles visibles. El rol Desarrollador es exclusivo de la plataforma: las empresas nunca lo ven. */
-  @Get('roles')
-  @Requiere('usuarios', 'V')
-  async roles(@SesionActual() s: Sesion, @SesionReal() real: Sesion) {
-    const where = real.esPlataforma && s.id === real.id ? {} : { ambito: 'empresa', organizacionId: s.organizacionId };
-    const roles = await this.prisma.rol.findMany({ where, orderBy: [{ nivel: 'desc' }, { nombre: 'asc' }] });
-    return roles.map((r) => ({ id: r.id, nombre: r.nombre, ambito: r.ambito, nivel: r.nivel, esBase: r.esBase }));
-  }
-
   /** Usuarios visibles. Una empresa ve solo los suyos y nunca a quien tenga el rol Desarrollador. */
   @Get('usuarios')
   @Requiere('usuarios', 'V')
@@ -87,6 +78,6 @@ export class SesionController {
       include: { roles: { include: { rol: true } } },
       orderBy: { nombre: 'asc' },
     });
-    return lista.map((u) => ({ id: u.id, nombre: u.nombre, correo: u.correo, activo: u.activo, roles: u.roles.map((r) => r.rol.nombre) }));
+    return lista.map((u) => ({ id: u.id, nombre: u.nombre, correo: u.correo, activo: u.activo, localId: u.localId, roles: u.roles.map((r) => r.rol.nombre) }));
   }
 }

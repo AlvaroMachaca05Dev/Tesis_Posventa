@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext, SetMetadata } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 export type Nivel = 'A' | 'E' | 'V';
 // V solo ver · E ver y editar · A ver, editar y acciones sensibles
@@ -10,6 +10,7 @@ export interface Sesion {
   nombre: string;
   correo: string;
   organizacionId: string | null;
+  localId: string | null;
   roles: string[];
   nivelMax: number;
   esPlataforma: boolean;
@@ -40,6 +41,7 @@ export async function cargarSesion(prisma: PrismaClient, id: string): Promise<Se
     nombre: u.nombre,
     correo: u.correo,
     organizacionId: u.organizacionId,
+    localId: u.localId,
     roles: u.roles.map((r) => r.rol.nombre),
     nivelMax: Math.max(0, ...u.roles.map((r) => r.rol.nivel)),
     esPlataforma: u.roles.some((r) => r.rol.ambito === 'plataforma'),
@@ -52,3 +54,23 @@ export const Publico = () => SetMetadata('publico', true);
 export const Requiere = (modulo: string, minimo: Nivel) => SetMetadata('requiere', { modulo, minimo });
 export const SesionActual = createParamDecorator((_: unknown, ctx: ExecutionContext) => ctx.switchToHttp().getRequest().sesion as Sesion);
 export const SesionReal = createParamDecorator((_: unknown, ctx: ExecutionContext) => ctx.switchToHttp().getRequest().real as Sesion);
+
+/** ¿Quien actúa es el Desarrollador como él mismo (no «viendo como» otra persona)? Solo él puede cruzar empresas. */
+export const esPlataformaPropia = (s: Sesion, real: Sesion) => real.esPlataforma && s.id === real.id;
+
+/** Guarda quién hizo el cambio y, si actuaba «como» otra persona, también eso. */
+export async function auditar(
+  prisma: PrismaClient,
+  real: Sesion,
+  s: Sesion,
+  tabla: string,
+  registroId: string,
+  antes: unknown,
+  despues: unknown,
+  motivo?: string,
+) {
+  const json = (v: unknown) => (v == null ? undefined : (v as Prisma.InputJsonValue));
+  await prisma.auditoria.create({
+    data: { organizacionId: s.organizacionId, tabla, registroId, actor: real.id, actuandoComo: real.id !== s.id ? s.id : null, antes: json(antes), despues: json(despues), motivo },
+  });
+}

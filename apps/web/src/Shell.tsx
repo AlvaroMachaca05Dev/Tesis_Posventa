@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api, ItemMenu, Me, sesion, UsuarioLista } from './api';
+import Usuarios from './Usuarios';
 
 const NIVEL: Record<string, string> = { A: 'Ver, editar y acciones sensibles', E: 'Ver y editar', V: 'Solo ver' };
 const CONSULTA_MOVIL = '(max-width: 900px)';
@@ -189,7 +190,8 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
               {inicio && <a className="boton" href={`#/${inicio.id}`}>Ir al inicio</a>}
             </div>
           )}
-          {mostrado && (
+          {mostrado?.id === 'usuarios' && <Usuarios me={me} nivel={mostrado.nivel} />}
+          {mostrado && mostrado.id !== 'usuarios' && (
             <div className="panel">
               <h1>{mostrado.label}</h1>
               <p className="sub">Nivel de tu rol: {NIVEL[mostrado.nivel]}.</p>

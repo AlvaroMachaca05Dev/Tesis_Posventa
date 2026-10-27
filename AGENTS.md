@@ -123,3 +123,8 @@ Un usuario puede tener **varios roles** (suma de permisos, gana el nivel más al
 
 ## 16. Todo cambio se puede ver en localhost (regla fija desde el 27/10/2026)
 Cada cambio que se desarrolle debe poder **ejecutarse en la terminal y verse en una página en localhost**, para que el investigador vea qué se hizo y qué cambió. Un solo comando levanta todo (base de datos, API y pantalla): `pnpm dev` (o doble clic en `herramientas/iniciar-local.bat`) y se abre `http://localhost:5173`. Al cerrar cada paso o slice: dejar el sistema corriendo o indicar el comando, decir la dirección y listar **qué probar y qué debería verse**. Si algo no se puede ver aún, decirlo.
+
+## 17. Tesis al día, prototipo como guía y datos precargados (27/10/2026)
+- **Tesis al día:** cada vez que el desarrollo cambia o completa algo, se actualizan en el mismo cambio los **requisitos, la trazabilidad y los diagramas** de la tesis (y sus copias del repositorio). El avance de cada RF vive en `docs/requisitos/ESTADO_IMPLEMENTACION.csv` y `python herramientas/actualizar_trazabilidad.py` lo lleva a la matriz de la tesis. Siempre pasa por la skill `guardian-coherencia-tesis` (informe y aprobación).
+- **El prototipo HTML es solo una guía.** Ya casi no cambia: las decisiones fuertes se toman ahora en el desarrollo. Si el sistema real necesita algo que el prototipo no contemplaba, se agrega y se documenta; si el sistema real se aparta del prototipo, manda el sistema real.
+- **Datos precargados:** el sistema arranca con sus datos (ver `docs/plan/PRECARGA_DE_DATOS.md`). Cada slice entrega sus tablas **ya cargadas y probadas**.

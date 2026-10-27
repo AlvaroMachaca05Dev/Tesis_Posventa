@@ -1,0 +1,4 @@
+RF,Estado,BD,Backend,Front,Prueba
+RF-001,Implementado,"usuario (correo, contraseña cifrada); semillas de demostración","AuthController (login); AutenticacionGuard (sesión por token)","Login (con modo demostración); App","auth.spec (CA-S1-01); App.test"
+RF-002,Implementado,"rol, permiso, rol_permiso, usuario_rol, modulo_habilitado; permisos_matriz.json","cargarSesion (suma de permisos de varios roles); PermisosGuard; GET /me (menú)","Shell (menú por rol, Sin acceso, Ver como); acordeón, menú ocultable y vista de celular","auth.spec (CA-S1-03, 04, 12, 15); App.test"
+RF-003,Implementado,"usuario, rol, usuario_rol, auditoria","UsuariosController (usuarios, roles propios, locales, nivel jerárquico, Desarrollador oculto)","Usuarios (lista, alta, edición, desactivar, roles propios)","usuarios.spec (CA-S1-05, 13, 14, 16, 18); Usuarios.test"
