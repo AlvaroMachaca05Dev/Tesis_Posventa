@@ -47,3 +47,10 @@ Más mensajes listos, por etapa, en `docs/plan/FLUJO_DE_TRABAJO.md`.
 
 ## Reglas que no se negocian
 Solo datos sintéticos · no tocar `../RMotriz_tesis_contexto/` · revisar cambios antes de trabajar y registrar al terminar · no programar hasta aceptar el ADR-001 · no resolver en silencio las decisiones abiertas · no afirmar nada que no se haya probado. Detalle en `AGENTS.md`.
+
+## Cómo verlo funcionando en tu computadora
+1. Copia `.env.example` a `.env` (y escribe en `VITE_DEMO_PASSWORD` la contraseña de demostración que definas en `SEED_PASSWORD`).
+2. Instala Node 22 y pnpm, y ejecuta `pnpm install`.
+3. La primera vez prepara la base: `pnpm db:dev` (déjala abierta), y en otra terminal `pnpm db:migrate` y `pnpm db:seed`. Luego basta con `pnpm dev`.
+4. Abre `http://localhost:5173`. En modo demostración la pantalla de ingreso trae la cuenta del Desarrollador y botones para entrar como cada rol.
+5. Pruebas: `pnpm test` (API y pantalla).

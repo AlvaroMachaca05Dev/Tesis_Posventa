@@ -120,3 +120,6 @@ Siete roles con jerarquía, guardados como **datos** (el código nunca pregunta 
 4. **Jefe de taller** (nivel 2): puede todo lo del Técnico y nada de Cajera ni de Logístico. Sale en la agenda.
 5. **Cajera, Técnico y Logístico** (nivel 1, mismo nivel). El Técnico sale en la agenda.
 Un usuario puede tener **varios roles** (suma de permisos, gana el nivel más alto) y solo gestiona roles de nivel inferior al suyo. **No existen los roles Finanzas ni Externo.** El prototipo HTML conserva siete roles distintos solo como referencia visual; en la diferencia manda esta decisión. Los permisos base salen de `database/seeds/permisos_matriz.json`. Multiempresa preparado con una empresa activa; las pantallas de alta de empresas y de edición de permisos son segunda ola.
+
+## 16. Todo cambio se puede ver en localhost (regla fija desde el 27/10/2026)
+Cada cambio que se desarrolle debe poder **ejecutarse en la terminal y verse en una página en localhost**, para que el investigador vea qué se hizo y qué cambió. Un solo comando levanta todo (base de datos, API y pantalla): `pnpm dev` (o doble clic en `herramientas/iniciar-local.bat`) y se abre `http://localhost:5173`. Al cerrar cada paso o slice: dejar el sistema corriendo o indicar el comando, decir la dirección y listar **qué probar y qué debería verse**. Si algo no se puede ver aún, decirlo.

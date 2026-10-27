@@ -85,6 +85,7 @@ describe('CA-S1-12 «Ver como…» solo del Desarrollador, auditado', () => {
     expect(r.status).toBe(201);
     const me = await request(app.getHttpServer()).get('/me').set('Authorization', `Bearer ${t}`).set('X-Ver-Como', tec.id);
     expect(me.body.actuandoComo).toBe(true);
+    expect(me.body.esPlataforma).toBe(true); // sigue siendo el Desarrollador, para poder salir de «Ver como»
     expect(me.body.usuario.correo).toBe('tecnico@demo.local');
     expect(me.body.permisos.bancos).toBeUndefined();
     const aud = await prisma.auditoria.findFirst({ where: { tabla: 'ver_como', actuandoComo: tec.id }, orderBy: { fecha: 'desc' } });
@@ -111,5 +112,39 @@ describe('CA-S1-18 el rol Desarrollador es exclusivo de la plataforma', () => {
   it('el Desarrollador sí lo ve', async () => {
     const nombres = (await get('/roles', 'superusuario@rmotriz.com')).body.map((x: { nombre: string }) => x.nombre);
     expect(nombres).toContain('Desarrollador');
+  });
+});
+
+describe('menú por rol (RF-002)', () => {
+  it('el Técnico recibe solo sus módulos, con etiqueta y grupo', async () => {
+    const r = await get('/me', 'tecnico@demo.local');
+    const ids = r.body.menu.map((m: { id: string }) => m.id);
+    expect(ids).toContain('ods');
+    expect(ids).not.toContain('bancos');
+    const ods = r.body.menu.find((m: { id: string }) => m.id === 'ods');
+    expect(ods).toMatchObject({ label: 'Órdenes de servicio', nivel: expect.stringMatching(/[AEV]/) });
+  });
+  it('los módulos beta vienen en el grupo Beta', async () => {
+    const r = await get('/me', 'ti@demo.local');
+    const beta = r.body.menu.filter((m: { grupo: string }) => m.grupo === 'Beta').map((m: { id: string }) => m.id);
+    expect(beta).toEqual(expect.arrayContaining(['paquetes', 'cajasm', 'flujo', 'integraciones']));
+  });
+});
+
+describe('lista de usuarios (RF-003, CA-S1-18)', () => {
+  it('el Técnico no puede listar usuarios (403)', async () => {
+    expect((await get('/usuarios', 'tecnico@demo.local')).status).toBe(403);
+  });
+  it('el Superadministrador no ve al Desarrollador en la lista', async () => {
+    const r = await get('/usuarios', 'ti@demo.local');
+    expect(r.status).toBe(200);
+    const correos = r.body.map((u: { correo: string }) => u.correo);
+    expect(correos).not.toContain('superusuario@rmotriz.com');
+    expect(correos).toContain('admin@demo.local');
+  });
+  it('el Desarrollador ve a todos', async () => {
+    const correos = (await get('/usuarios', 'superusuario@rmotriz.com')).body.map((u: { correo: string }) => u.correo);
+    expect(correos).toContain('superusuario@rmotriz.com');
+    expect(correos).toContain('admin@demo.local');
   });
 });

@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, UnauthorizedException, BadRequestException
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import { Publico, Requiere, Sesion, SesionActual, SesionReal } from './acceso';
+import { CATALOGO_MODULOS } from './catalogo-modulos';
 import { PrismaService } from './prisma.service';
 
 @Controller('auth')
@@ -31,8 +32,10 @@ export class SesionController {
       usuario: { id: s.id, nombre: s.nombre, correo: s.correo, organizacionId: s.organizacionId },
       roles: s.roles,
       permisos: s.permisos,
-      menu: Object.keys(s.permisos),
+      // Menú: solo los módulos permitidos, en el orden del prototipo, con etiqueta, grupo y nivel.
+      menu: CATALOGO_MODULOS.filter((m) => s.permisos[m.id]).map((m) => ({ ...m, nivel: s.permisos[m.id] })),
       actuandoComo: req.actuandoComo,
+      esPlataforma: real.esPlataforma,
       real: { id: real.id, nombre: real.nombre },
     };
   }
@@ -72,5 +75,18 @@ export class SesionController {
     const where = real.esPlataforma && s.id === real.id ? {} : { ambito: 'empresa', organizacionId: s.organizacionId };
     const roles = await this.prisma.rol.findMany({ where, orderBy: [{ nivel: 'desc' }, { nombre: 'asc' }] });
     return roles.map((r) => ({ id: r.id, nombre: r.nombre, ambito: r.ambito, nivel: r.nivel, esBase: r.esBase }));
+  }
+
+  /** Usuarios visibles. Una empresa ve solo los suyos y nunca a quien tenga el rol Desarrollador. */
+  @Get('usuarios')
+  @Requiere('usuarios', 'V')
+  async usuarios(@SesionActual() s: Sesion, @SesionReal() real: Sesion) {
+    const todos = real.esPlataforma && s.id === real.id;
+    const lista = await this.prisma.usuario.findMany({
+      where: todos ? {} : { organizacionId: s.organizacionId, roles: { none: { rol: { ambito: 'plataforma' } } } },
+      include: { roles: { include: { rol: true } } },
+      orderBy: { nombre: 'asc' },
+    });
+    return lista.map((u) => ({ id: u.id, nombre: u.nombre, correo: u.correo, activo: u.activo, roles: u.roles.map((r) => r.rol.nombre) }));
   }
 }

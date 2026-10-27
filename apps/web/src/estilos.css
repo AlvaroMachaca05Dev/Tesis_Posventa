@@ -1,0 +1,92 @@
+:root { --fondo:#0b1220; --panel:#121b2e; --borde:#243349; --texto:#e6edf7; --suave:#9fb3cc; --acento:#c8ee6b; --violeta:#8b7cf6; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--fondo); color:var(--texto); font:14px/1.4 system-ui, 'Segoe UI', sans-serif; }
+a { color:inherit; text-decoration:none; }
+button, select, input { font:inherit; }
+.centro { display:grid; place-items:center; min-height:100vh; color:var(--suave); }
+.sub { color:var(--suave); margin:0 0 8px; }
+
+/* ingreso */
+.login { min-height:100vh; display:grid; place-items:center; padding:24px; background:radial-gradient(circle at 20% 10%, #1b2a47, var(--fondo) 60%); }
+.tarjeta { width:min(440px,100%); background:var(--panel); border:1px solid var(--borde); border-radius:16px; padding:28px; display:flex; flex-direction:column; gap:8px; }
+.logo { font-size:26px; font-weight:800; } .logo b { color:var(--violeta); }
+.tarjeta h1 { margin:6px 0 4px; font-size:22px; }
+.tarjeta label { color:var(--suave); font-size:12px; margin-top:6px; }
+.tarjeta input { background:#18233a; border:1px solid var(--borde); color:var(--texto); border-radius:10px; padding:11px 12px; }
+.primario { margin-top:10px; background:var(--acento); color:#10200a; border:0; border-radius:10px; padding:12px; font-weight:700; cursor:pointer; }
+.primario:disabled { opacity:.6; }
+.error { color:#ff8a8a; margin:4px 0 0; }
+.demo { color:#f5b84b; background:#2a2312; border:1px dashed #6b5320; border-radius:10px; padding:8px 10px; margin:0; font-size:12px; }
+.cuentas { margin-top:12px; border:1px dashed #6b5320; border-radius:10px; padding:10px; }
+.cuentas div { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.cuentas button { background:#18233a; color:var(--texto); border:1px solid var(--borde); border-radius:8px; padding:5px 9px; cursor:pointer; }
+.cuentas button:hover { border-color:var(--acento); }
+
+/* aplicación */
+.app { display:grid; grid-template-columns:230px 1fr; min-height:100vh; }
+aside { background:#0e1729; border-right:1px solid var(--borde); padding:14px 10px; display:flex; flex-direction:column; gap:10px; position:sticky; top:0; height:100vh; overflow:auto; }
+.marca { font-size:20px; font-weight:800; padding:2px 8px; } .marca b { color:var(--violeta); }
+nav .grupo { margin-bottom:8px; }
+nav a { display:block; padding:6px 10px; border-radius:8px; font-size:13.5px; color:#cfdcf0; }
+nav a:hover { background:#16233b; } nav a.activo { background:#1d2d4b; color:#fff; box-shadow:inset 3px 0 var(--acento); }
+.pie { margin-top:auto; color:var(--suave); font-size:11px; padding:6px 8px; }
+main { min-width:0; }
+header { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 14px; border-bottom:1px solid var(--borde); background:#0e1729; position:sticky; top:0; z-index:10; }
+.quien { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.nombre { font-weight:700; }
+.etiqueta { display:inline-block; background:#22335a; color:#c9d8ff; border-radius:999px; padding:2px 10px; font-size:12px; margin-right:4px; }
+.acciones { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.acciones label { color:var(--suave); font-size:12px; display:flex; align-items:center; gap:6px; }
+.acciones select, .acciones button { background:#18233a; color:var(--texto); border:1px solid var(--borde); border-radius:8px; padding:6px 10px; cursor:pointer; }
+.como { background:#2a2312; border-bottom:1px solid #6b5320; color:#f5d98b; padding:8px 18px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.como button { background:#3a2f10; color:#f5d98b; border:1px solid #6b5320; border-radius:8px; padding:4px 10px; cursor:pointer; }
+.contenido { padding:18px; }
+.panel { background:var(--panel); border:1px solid var(--borde); border-radius:14px; padding:18px; max-width:860px; margin-bottom:14px; }
+.panel h1 { margin:0 0 6px; font-size:22px; }
+.boton { display:inline-block; margin-top:8px; background:var(--acento); color:#10200a; padding:8px 14px; border-radius:10px; font-weight:700; }
+
+/* ---- barras de desplazamiento sutiles, del color del sistema ---- */
+:root { color-scheme: dark; }
+* { scrollbar-width: thin; scrollbar-color: #1f2d45 transparent; }
+*::-webkit-scrollbar { width: 7px; height: 7px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: #1f2d45; border-radius: 8px; }
+*::-webkit-scrollbar-thumb:hover { background: #2c3f5f; }
+/* el menú lateral se desplaza sin mostrar barra */
+aside { scrollbar-width: none; -ms-overflow-style: none; }
+aside::-webkit-scrollbar { display: none; }
+
+/* ---- menú tipo acordeón (como el prototipo) ---- */
+.sh { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; background:transparent; border:0; color:#cfdcf0; padding:7px 10px; border-radius:8px; font-size:13.5px; cursor:pointer; text-align:left; }
+.sh:hover { background:#ffffff10; }
+.sh.tiene { color:var(--acento); }
+.sh i { font-style:normal; transition:transform .25s ease; opacity:.7; }
+.seccion.abierta .sh i { transform:rotate(180deg); }
+.items { padding-left:6px; margin:2px 0 6px 6px; border-left:1px solid var(--borde); }
+
+/* ---- encabezado, ocultar menú y pantalla completa ---- */
+.izquierda { display:flex; align-items:center; gap:10px; min-width:0; }
+.icono { background:#18233a; color:var(--texto); border:1px solid var(--borde); border-radius:8px; width:36px; height:34px; cursor:pointer; font-size:16px; line-height:1; }
+.icono:hover { border-color:var(--acento); }
+.app.oculto { grid-template-columns:1fr; }
+.app.oculto aside { display:none; }
+
+/* ---- tableta y celular ---- */
+@media (max-width:1100px) { .app { grid-template-columns:200px 1fr; } .contenido { padding:14px; } }
+.app.movil { grid-template-columns:1fr; }
+.app.movil aside { position:fixed; left:0; top:0; bottom:0; width:270px; height:100%; z-index:30; transform:translateX(-102%); transition:transform .25s ease; box-shadow:0 0 30px #000a; }
+.app.movil.cajon-abierto aside { transform:none; }
+.velo { position:fixed; inset:0; background:#0009; z-index:20; }
+@media (max-width:900px) {
+  .solo-escritorio { display:none; }
+  .nombre { max-width:46vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  header { padding:6px 10px; gap:6px; }
+  .acciones { width:100%; justify-content:flex-end; gap:6px; }
+  .acciones select { max-width:36vw; }
+  .acciones button, .acciones select { padding:5px 8px; font-size:12px; }
+  .acciones .icono { width:32px; height:30px; padding:0; }
+  .como { font-size:12px; padding:6px 10px; }
+  .contenido { padding:12px; }
+  .como { flex-direction:column; align-items:flex-start; }
+}
+@media (max-width:480px) { .tarjeta { padding:20px; } .panel { padding:14px; } .acciones label.beta { font-size:11px; } }

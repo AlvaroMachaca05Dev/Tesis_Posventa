@@ -33,6 +33,7 @@ Si algo exige cambiar un requisito, un diagrama, el modelo de datos del esquema 
 Cuando el criterio incluya una pantalla, compárala con la del prototipo: mismos campos, mismo orden, mismos mensajes. Anota las diferencias.
 
 ### 4. Cierre del slice
+- **Dejarlo visible:** levantar el sistema con `pnpm dev`, dar la dirección (`http://localhost:5173`) y listar qué probar y qué debería verse (regla fija, AGENTS sección 16).
 - Todas las pruebas del slice en verde y las anteriores sin romperse.
 - Lista corta: qué funciona, qué no se hizo, qué diferencias hay con el HTML.
 - Llama a `resumen-de-sesion` si termina la sesión.
