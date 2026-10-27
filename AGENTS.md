@@ -114,7 +114,7 @@ El núcleo son 50 requisitos organizados en 11 slices (`docs/plan/SLICES_NUCLEO.
 
 ## 15. Roles del sistema real (DEC-59 y DEC-60, 27/10/2026)
 Siete roles con jerarquía, guardados como **datos** (el código nunca pregunta «¿es Cajera?», pregunta si el usuario tiene permiso sobre un módulo):
-1. **Desarrollador** (nivel 5, plataforma): dueño del software. Da de alta empresas, habilita sus módulos, usa «Ver como…», gestiona vistas y actualizaciones.
+1. **Desarrollador** (nivel 5, plataforma): dueño del software; **exclusivo de él**: ningún usuario de una empresa, ni el Superadministrador, lo ve ni lo asigna. Da de alta empresas, habilita sus módulos, usa «Ver como…», gestiona vistas y actualizaciones.
 2. **Superadministrador** (nivel 4): TI de cada empresa. Crea usuarios y roles propios, define permisos por rol y los nombres visibles de estados y cajas. **No renombra módulos.**
 3. **Administrador** (nivel 3): opera todo el negocio, incluidas las funciones de finanzas. No recibe servicios ni sale en la agenda.
 4. **Jefe de taller** (nivel 2): puede todo lo del Técnico y nada de Cajera ni de Logístico. Sale en la agenda.

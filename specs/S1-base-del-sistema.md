@@ -23,6 +23,7 @@ Diagramas: DAS-R81-0001, DCL-R81-0001, DMD-R81-0001, DCU-R81-0001, DSE-R81-0001 
 | CA-S1-15 | RF-002 | **Dado** un Jefe de taller, **cuando** accede a cualquier módulo que permite el Técnico, **entonces** lo hace con el mismo nivel o mayor; y **cuando** pide un módulo de Cajera o de Logística, **entonces** recibe 403. |
 | CA-S1-16 | RF-003 | **Dado** un usuario, **cuando** crea o asigna un rol, **entonces** solo puede hacerlo con roles de nivel inferior al suyo. |
 | CA-S1-17 | RF-055 | **Dado** la agenda, **cuando** se listan personas asignables a servicios, **entonces** aparecen solo técnicos y jefes de taller; el Administrador nunca. *(se comprueba al construir la agenda; en el Sprint 1 solo queda el dato `asignableAServicios`)* |
+| CA-S1-18 | RF-003 | **Dado** un Superadministrador o cualquier usuario de una empresa, **cuando** lista roles o usuarios o intenta asignar un rol, **entonces** el rol Desarrollador y los usuarios que lo tienen no aparecen ni se pueden asignar, ni forzando la petición: es exclusivo del dueño de la plataforma. |
 | CA-S1-11 | Plataforma | **Dado** un equipo limpio, **cuando** se ejecuta el arranque documentado, **entonces** la base, la API y la web levantan y la CI compila. |
 
 ## Casos negativos obligatorios

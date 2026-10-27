@@ -19,6 +19,8 @@ jobs:
           --health-interval 5s --health-timeout 3s --health-retries 10
     env:
       DATABASE_URL: postgresql://posventa:posventa_dev@localhost:5432/posventa?schema=public
+      JWT_SECRET: secreto-de-ci
+      SEED_PASSWORD: clave-de-ci
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -30,8 +32,12 @@ jobs:
           cache: pnpm
       - name: Instalar
         run: pnpm install
-      - name: Migraciones
-        run: pnpm --if-present db:migrate
+      - name: Preparar entorno
+        run: cp .env.example .env
+      - name: Migraciones y semillas
+        run: |
+          pnpm db:deploy
+          pnpm db:seed
       - name: Revisión de estilo
         run: pnpm -r --if-present lint
       - name: Compilar
