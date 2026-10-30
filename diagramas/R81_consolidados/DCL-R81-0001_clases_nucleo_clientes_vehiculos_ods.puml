@@ -42,14 +42,31 @@ class Permiso {
   nivel (A | E | V)
 }
 class Cliente {
+  tipoDocumento : DNI, CE o RUC
+  documento : único por empresa
   nombre
-  documento
+  nombreComercial
+  pais
+  movil
+  direccionFiscal
+  email
+  ubigeo
+  comentario
+  esGenerico
+  activo
+  fechaRegistro
 }
 class Vehiculo {
-  placa
+  placa : única sin guiones
   marca
   modelo
   anio
+  color
+  nroSerie
+  nroVin
+  nroMotor
+  comentario
+  fechaRegistro
 }
 class Proveedor {
   nombre
@@ -59,18 +76,38 @@ class Kilometraje {
   km
   fecha
   fuente
+  observacion
 }
 class OrdenServicio {
-  codigo
+  codigo : AAAAMMDD + correlativo
   estado
-  fechaLlegada
+  decisionCliente
+  tipoAtencion
+  fechaInicio : llegada
+  fechaCierre : solo al pasar a Cerrada
   km
-  cerrar()
+  observaciones
+  recomendaciones
+  cerrar() : sin nota, solo si No aprobada
   reabrir()
 }
 class DetalleODS {
+  tipo : servicio o producto
   descripcion
-  observacion
+  referencia
+  cantidad : H-H en servicios
+  costo
+  rentabilidadPct
+  precio : final, con impuesto
+  descuentoPct
+  impuesto : IGV o ninguno
+  total
+}
+class Abono {
+  fecha
+  metodo
+  concepto
+  valor
 }
 class ServicioODS {
   duracionPlanificada
@@ -94,6 +131,8 @@ Vehiculo "1" o-- "*" Kilometraje
 Vehiculo "1" <-- "*" OrdenServicio
 Local "1" <-- "*" OrdenServicio
 OrdenServicio "1" *-- "*" DetalleODS
+OrdenServicio "1" *-- "*" Abono
+OrdenServicio "*" --> "0..1" Usuario : técnico y jefe de taller
 DetalleODS "1" *-- "*" ServicioODS
 OrdenServicio "1" o-- "*" Evidencia
 ServicioODS "*" --> "1" Usuario : responsable

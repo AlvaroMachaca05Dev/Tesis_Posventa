@@ -16,12 +16,14 @@ model Organizacion {
   nombre      String
   ruc         String?
   activa      Boolean            @default(true)
+  paisPredeterminado String      @default("PE")
   locales     Local[]
   roles       Rol[]
   usuarios    Usuario[]
   modulos     ModuloHabilitado[]
   clientes    Cliente[]
   vehiculos   Vehiculo[]
+  marcasVehiculo MarcaVehiculo[]
   ordenes     OrdenServicio[]
 }
 
@@ -97,6 +99,11 @@ model Usuario {
   roles          UsuarioRol[]
   detalles       DetalleODS[]
   bitacora       Bitacora[]
+  odsTecnico     OrdenServicio[] @relation("OdsTecnico")
+  odsJefe        OrdenServicio[] @relation("OdsJefe")
+  odsCreadas     OrdenServicio[] @relation("OdsCreador")
+  abonos         Abono[]
+  evidencias     EvidenciaIngreso[]
 }
 
 // Un usuario puede tener uno o más roles; sus permisos son la suma de los de cada rol.
@@ -110,14 +117,32 @@ model UsuarioRol {
 }
 
 model Cliente {
-  id             String       @id @default(uuid())
-  organizacionId String
-  nombre         String
-  documento      String
-  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
-  vehiculos      Vehiculo[]
+  id              String        @id @default(uuid())
+  organizacionId  String
+  tipoDocumento   TipoDocumento @default(DNI)
+  documento       String
+  nombre          String
+  nombreComercial String?
+  pais            String        @default("PE")
+  movil           String?
+  direccionFiscal String?
+  email           String?
+  ubigeo          String?
+  comentario      String?
+  esGenerico      Boolean       @default(false)
+  activo          Boolean       @default(true)
+  creadoEn        DateTime      @default(now())
+  organizacion    Organizacion  @relation(fields: [organizacionId], references: [id])
+  vehiculos       Vehiculo[]
+  ordenes         OrdenServicio[]
 
   @@unique([organizacionId, documento])
+}
+
+enum TipoDocumento {
+  DNI
+  CARNET_EXTRANJERIA
+  RUC
 }
 
 model Vehiculo {
@@ -125,16 +150,35 @@ model Vehiculo {
   organizacionId String
   clienteId      String
   placa          String
+  // La placa sin guiones, espacios ni minúsculas: sirve para comparar y buscar (única por empresa).
+  placaNorm      String
   marca          String?
   modelo         String?
   anio           Int?
+  color          String?
+  nroSerie       String?
+  nroVin         String?
+  nroMotor       String?
+  comentario     String?
   grupo          String?
+  creadoEn       DateTime        @default(now())
   organizacion   Organizacion    @relation(fields: [organizacionId], references: [id])
   cliente        Cliente         @relation(fields: [clienteId], references: [id])
   lecturas       LecturaKm[]
   ordenes        OrdenServicio[]
 
-  @@unique([organizacionId, placa])
+  @@unique([organizacionId, placaNorm])
+}
+
+// Marcas y modelos de vehículo de la empresa (catálogo del prototipo).
+model MarcaVehiculo {
+  id             String       @id @default(uuid())
+  organizacionId String
+  nombre         String
+  modelos        String[]
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+
+  @@unique([organizacionId, nombre])
 }
 
 model LecturaKm {
@@ -143,36 +187,102 @@ model LecturaKm {
   km         Int
   fecha      DateTime
   fuente     String
+  observacion String?
   vehiculo   Vehiculo @relation(fields: [vehiculoId], references: [id])
 }
 
 model OrdenServicio {
-  id             String       @id @default(uuid())
-  organizacionId String
-  vehiculoId     String
-  localId        String
-  codigo         String
-  estado         String       @default("Recepcion")
-  fechaLlegada   DateTime
-  km             Int?
-  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
-  vehiculo       Vehiculo     @relation(fields: [vehiculoId], references: [id])
-  local          Local        @relation(fields: [localId], references: [id])
-  detalles       DetalleODS[]
-  bitacora       Bitacora[]
+  id              String       @id @default(uuid())
+  organizacionId  String
+  vehiculoId      String
+  clienteId       String
+  localId         String
+  // AAAAMMDD + correlativo de la empresa (DEC-67); las externas llevan «E» delante y no usan correlativo
+  codigo          String
+  correlativo     Int?
+  externa         Boolean      @default(false)
+  estado          String       @default("Recepcion")
+  decision        String       @default("Pendiente de aprobación")
+  tipoAtencion    String
+  fechaInicio     DateTime     @default(now())
+  fechaCierre     DateTime?
+  km              Int?
+  tecnicoId       String?
+  jefeTallerId    String?
+  creadoPorId     String
+  observaciones   String?
+  recomendaciones String?
+  // Estado del vehículo al ingresar (combustible, fluidos, inventario, documentos, daños): lista de chequeo (RF-015)
+  estadoVehiculo  Json?
+  eliminada       Boolean      @default(false)
+  motivoEliminacion String?
+  creadoEn        DateTime     @default(now())
+  organizacion    Organizacion @relation(fields: [organizacionId], references: [id])
+  vehiculo        Vehiculo     @relation(fields: [vehiculoId], references: [id])
+  cliente         Cliente      @relation(fields: [clienteId], references: [id])
+  local           Local        @relation(fields: [localId], references: [id])
+  tecnico         Usuario?     @relation("OdsTecnico", fields: [tecnicoId], references: [id])
+  jefeTaller      Usuario?     @relation("OdsJefe", fields: [jefeTallerId], references: [id])
+  creadoPor       Usuario      @relation("OdsCreador", fields: [creadoPorId], references: [id])
+  detalles        DetalleODS[]
+  abonos          Abono[]
+  bitacora        Bitacora[]
+  evidencias      EvidenciaIngreso[]
 
   @@unique([organizacionId, codigo])
+}
+
+// Último correlativo de ODS por empresa: un número usado nunca se reutiliza.
+model CorrelativoODS {
+  organizacionId String @id
+  ultimo         Int    @default(0)
 }
 
 model DetalleODS {
   id              String        @id @default(uuid())
   ordenId         String
+  posicion        Int           @default(0)
+  tipo            String        @default("servicio")
   descripcion     String
-  cantidadHH      Decimal?      @db.Decimal(6, 2)
+  referencia      String?
+  cantidad        Decimal       @default(1) @db.Decimal(12, 3)
+  costo           Decimal?      @db.Decimal(12, 3)
+  rentabilidadPct Decimal?      @db.Decimal(8, 3)
+  // precio de venta final por unidad, con el impuesto incluido (DEC-73)
+  precio          Decimal       @default(0) @db.Decimal(12, 3)
+  descuentoPct    Decimal       @default(0) @db.Decimal(6, 3)
+  impuesto        String        @default("IGV")
+  total           Decimal       @default(0) @db.Decimal(12, 2)
   tecnicoId       String?
-  duracionMinutos Int?
   orden           OrdenServicio @relation(fields: [ordenId], references: [id])
   tecnico         Usuario?      @relation(fields: [tecnicoId], references: [id])
+}
+
+// Abono o pago antes del comprobante (DEC-28): reduce el saldo, no el total.
+model Abono {
+  id               String        @id @default(uuid())
+  ordenId          String
+  fecha            DateTime      @default(now())
+  metodo           String
+  concepto         String?
+  valor            Decimal       @db.Decimal(12, 2)
+  registradoPorId  String
+  orden            OrdenServicio @relation(fields: [ordenId], references: [id])
+  registradoPor    Usuario       @relation(fields: [registradoPorId], references: [id])
+}
+
+// Fotos y videos del vehículo al ingresar (RF-015). El archivo se guarda en la base para no depender de un disco aparte.
+model EvidenciaIngreso {
+  id          String        @id @default(uuid())
+  ordenId     String
+  nombre      String
+  tipo        String
+  tamano      Int
+  datos       Bytes
+  subidoPorId String
+  creadoEn    DateTime      @default(now())
+  orden       OrdenServicio @relation(fields: [ordenId], references: [id])
+  subidoPor   Usuario       @relation(fields: [subidoPorId], references: [id])
 }
 
 model Bitacora {

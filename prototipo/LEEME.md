@@ -23,3 +23,10 @@ Las pruebas se ejecutan con Node y Playwright (`pruebas/e2e77.mjs` y las demás)
 
 ## Qué incluye (primera versión)
 Clientes, vehículos, grupos y planes preventivos; órdenes de servicio con carga masiva diaria; línea temporal, tareas, citas, agenda y bitácora; cotizaciones, notas de venta, cuentas por cobrar y por pagar; bancos por local; productos, almacenes, requerimientos y kárdex; reportes con filtro por local; automatizaciones, usuarios, empresa y carga masiva.
+
+## R7.8 (28/10/2026)
+`R_Motriz_R7.8.html` es la R7.7 más la capa `capas/r78`: clientes y vehículos según las decisiones DEC-69 y DEC-70 (documento único, «Clientes varios», país con prefijo, ubigeo, fecha de registro, placa comparada sin guiones con aviso del titular, comentarios y búsqueda del cliente por documento o nombre) y los nombres «fecha de inicio» y «fecha de cierre» de la ODS. No cambian los demás módulos: lo decidido para ODS, tareas, bitácora, inventario y detracciones (DEC-61 a DEC-80) se refleja en el prototipo a medida que se desarrolla cada slice.
+```bash
+python capas/aplicar_r78.py R_Motriz_R7.7.html R_Motriz_R7.8.html
+node pruebas/e2e78.mjs R_Motriz_R7.8.html   # 17 comprobaciones; necesita el paquete playwright
+```

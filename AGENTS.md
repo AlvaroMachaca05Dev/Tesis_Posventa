@@ -128,3 +128,10 @@ Cada cambio que se desarrolle debe poder **ejecutarse en la terminal y verse en 
 - **Tesis al día:** cada vez que el desarrollo cambia o completa algo, se actualizan en el mismo cambio los **requisitos, la trazabilidad y los diagramas** de la tesis (y sus copias del repositorio). El avance de cada RF vive en `docs/requisitos/ESTADO_IMPLEMENTACION.csv` y `python herramientas/actualizar_trazabilidad.py` lo lleva a la matriz de la tesis. Siempre pasa por la skill `guardian-coherencia-tesis` (informe y aprobación).
 - **El prototipo HTML es solo una guía.** Ya casi no cambia: las decisiones fuertes se toman ahora en el desarrollo. Si el sistema real necesita algo que el prototipo no contemplaba, se agrega y se documenta; si el sistema real se aparta del prototipo, manda el sistema real.
 - **Datos precargados:** el sistema arranca con sus datos (ver `docs/plan/PRECARGA_DE_DATOS.md`). Cada slice entrega sus tablas **ya cargadas y probadas**.
+
+## 18. Módulos de tipo tabla: modal y filtros por columna (regla fija desde el 28/10/2026)
+Toda pantalla con tabla sigue el patrón de Clientes y Vehículos:
+- Crear y editar se hacen en un modal centrado de dos columnas.
+- Cada columna, menos Acciones, tiene su filtro (`FiltrosColumna.tsx`, igual al del prototipo) y no hay buscador general.
+- No se agregan textos explicativos en la interfaz.
+Detalle en la skill `modulo-tabla`. Es obligatoria al crear o cambiar cualquier módulo.

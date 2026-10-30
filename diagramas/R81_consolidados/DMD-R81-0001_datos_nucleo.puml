@@ -63,17 +63,41 @@ entity usuario_rol {
 entity cliente {
   *id
   #organizacion_id
-  nombre
+  tipo_documento
   documento
+  nombre
+  nombre_comercial
+  pais
+  movil
+  direccion_fiscal
+  email
+  ubigeo
+  comentario
+  es_generico
+  activo
+  creado_en
 }
 entity vehiculo {
   *id
   #organizacion_id
   #cliente_id
   placa
+  placa_norm
   marca
   modelo
   anio
+  color
+  nro_serie
+  nro_vin
+  nro_motor
+  comentario
+  creado_en
+}
+entity marca_vehiculo {
+  *id
+  #organizacion_id
+  nombre
+  modelos
 }
 entity lectura_km {
   *id
@@ -81,24 +105,59 @@ entity lectura_km {
   km
   fecha
   fuente
+  observacion
 }
 entity orden_servicio {
   *id
   #organizacion_id
   #vehiculo_id
+  #cliente_id
   #local_id
+  #tecnico_id
+  #jefe_taller_id
+  #creado_por_id
   codigo
+  correlativo
+  externa
   estado
-  fecha_llegada
+  decision
+  tipo_atencion
+  fecha_inicio
+  fecha_cierre
   km
+  observaciones
+  recomendaciones
+  eliminada
+  motivo_eliminacion
+}
+entity correlativo_ods {
+  *organizacion_id
+  ultimo
+}
+entity abono {
+  *id
+  #orden_id
+  #registrado_por_id
+  fecha
+  metodo
+  concepto
+  valor
 }
 entity detalle_ods {
   *id
   #orden_id
-  descripcion
-  cantidad_hh
   #tecnico_id
-  duracion_minutos
+  posicion
+  tipo
+  descripcion
+  referencia
+  cantidad
+  costo
+  rentabilidad_pct
+  precio
+  descuento_pct
+  impuesto
+  total
 }
 entity bitacora {
   *id
@@ -134,9 +193,12 @@ usuario ||--o{ usuario_rol
 rol ||--o{ rol_permiso
 permiso ||--o{ rol_permiso
 organizacion ||--o{ cliente
+organizacion ||--o{ marca_vehiculo
 cliente ||--o{ vehiculo
 vehiculo ||--o{ lectura_km
 vehiculo ||--o{ orden_servicio
+orden_servicio ||--o{ abono
+organizacion ||--|| correlativo_ods
 local ||--o{ orden_servicio
 orden_servicio ||--o{ detalle_ods
 orden_servicio ||--o{ bitacora

@@ -18,15 +18,22 @@ state "ODS" as O {
   [*] --> Recepción
   Recepción --> OP : iniciar
   OP --> Entrega : terminar servicios
+  Recepción --> Cerrada : cerrar directamente
   Entrega --> Cerrada : cerrar
   Cerrada --> OP : reabrir (auditado)
 }
+note right of O : Los estados se mueven libremente, adelante o atrás.\nLa fecha de cierre se asigna solo al pasar a Cerrada\ny se borra al volver a otro estado, con confirmación.
 state "Tarea" as T {
   state "En proceso" as TP
   [*] --> Pendiente
   Pendiente --> TP : iniciar
   TP --> Completada : completar
   TP --> TP : dividir o continuar
+  Pendiente --> Archivada : archivar
+  TP --> Archivada : archivar sin completar
+  Completada --> Archivada : archivar
+  Archivada --> Pendiente : reabrir
 }
+note right of T : La fecha de cierre se asigna al pasar a Completada o Archivada\ny se borra solo al volver a Pendiente o En proceso.\nLa columna Archivada se muestra u oculta en el tablero.
 O -[hidden]-> T
 @enduml

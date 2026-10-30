@@ -1,6 +1,6 @@
 import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
-import { auditar, esPlataformaPropia, ORDEN, Requiere, Sesion, SesionActual, SesionReal } from './acceso';
+import { auditar, esPlataformaPropia, ORDEN, puedeGestionarNivel, Requiere, Sesion, SesionActual, SesionReal } from './acceso';
 import { CATALOGO_MODULOS } from './catalogo-modulos';
 import { PrismaService } from './prisma.service';
 
@@ -11,10 +11,10 @@ const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export class UsuariosController {
   constructor(private prisma: PrismaService) {}
 
-  /** Un usuario solo gestiona roles de nivel inferior al suyo; el rol Desarrollador es exclusivo de la plataforma. */
+  /** Un usuario solo gestiona roles de nivel inferior al suyo (el Superadministrador, también del suyo); el rol Desarrollador es exclusivo de la plataforma. */
   private asignable(r: RolFila, s: Sesion, real: Sesion) {
     if (esPlataformaPropia(s, real)) return true;
-    return r.ambito === 'empresa' && r.organizacionId === s.organizacionId && r.nivel < s.nivelMax;
+    return r.ambito === 'empresa' && r.organizacionId === s.organizacionId && puedeGestionarNivel(r.nivel, s);
   }
 
   private async validarRoles(rolIds: unknown, s: Sesion, real: Sesion) {
@@ -103,7 +103,7 @@ export class UsuariosController {
     // Lo que está fuera de tu empresa, o es de la plataforma, no existe para ti.
     if (!t || (!propia && (t.organizacionId !== s.organizacionId || t.roles.some((r) => r.rol.ambito === 'plataforma')))) throw new NotFoundException('Usuario no encontrado.');
     const nivelT = Math.max(0, ...t.roles.map((r) => r.rol.nivel));
-    if (!propia && nivelT >= s.nivelMax) throw new ForbiddenException('No puedes modificar a un usuario de tu nivel o superior.');
+    if (!propia && !puedeGestionarNivel(nivelT, s)) throw new ForbiddenException('No puedes modificar a un usuario de tu nivel o superior.');
     if (b?.activo === false && t.id === s.id) throw new BadRequestException('No puedes desactivarte a ti mismo.');
     const antes = this.resumen(t);
     const datos: Record<string, unknown> = {};

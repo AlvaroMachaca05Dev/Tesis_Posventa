@@ -22,6 +22,9 @@ const simular = (m: unknown) =>
       if (url.endsWith('/auth/login')) return resp({ token: 't' }, 201);
       if (url.endsWith('/me')) return resp(m);
       if (url.endsWith('/usuarios')) return resp([{ id: '9', nombre: 'Cajera Demo', correo: 'cajera@demo.local', activo: true, roles: ['Cajera'] }]);
+      // Clientes y Vehículos ya son pantallas reales (S2): sus listas llegan vacías.
+      if (/\/(clientes|vehiculos|marcas-vehiculo|ordenes)(\?.*)?$/.test(url)) return resp([]);
+      if (url.endsWith('/maestros/config')) return resp({ paisPredeterminado: 'PE', paises: [{ codigo: 'PE', nombre: 'Perú', prefijo: '+51' }] });
       return resp({});
     }),
   );

@@ -1,0 +1,81 @@
+{
+  "fuente": "prototipo/R_Motriz_R7.7.html",
+  "clientes": [
+    {
+      "id": "c1",
+      "nombre": "Titular de DEM-679 · nombre no informado",
+      "documento": "",
+      "tipoDocumento": "DNI",
+      "movil": "",
+      "correo": ""
+    }
+  ],
+  "vehiculos": [
+    {
+      "id": "v1",
+      "cliente": "c1",
+      "placa": "DEM-679",
+      "marca": "Kia",
+      "modelo": "Picanto",
+      "anio": 2017,
+      "vin": "",
+      "motor": "G3LA",
+      "serie": "",
+      "km": 290200,
+      "grupo": "G2"
+    }
+  ],
+  "marcas": [
+    {
+      "nombre": "KIA",
+      "modelos": [
+        "PICANTO",
+        "RIO",
+        "SOLUTO",
+        "SPORTAGE"
+      ]
+    },
+    {
+      "nombre": "HYUNDAI",
+      "modelos": [
+        "I10",
+        "ACCENT",
+        "GRAND I10",
+        "TUCSON"
+      ]
+    },
+    {
+      "nombre": "TOYOTA",
+      "modelos": [
+        "YARIS",
+        "COROLLA",
+        "HILUX",
+        "RAV4"
+      ]
+    },
+    {
+      "nombre": "CHEVROLET",
+      "modelos": [
+        "SPARK",
+        "SAIL",
+        "ONIX"
+      ]
+    },
+    {
+      "nombre": "NISSAN",
+      "modelos": [
+        "VERSA",
+        "SENTRA",
+        "MARCH"
+      ]
+    },
+    {
+      "nombre": "SUZUKI",
+      "modelos": [
+        "SWIFT",
+        "ALTO",
+        "CELERIO"
+      ]
+    }
+  ]
+}

@@ -163,3 +163,13 @@ describe('locales de la empresa', () => {
     expect(r.body.map((l: { nombre: string }) => l.nombre)).toEqual(expect.arrayContaining(['Local Prohogar', 'Local Unión']));
   });
 });
+
+describe('el Superadministrador asigna hasta su mismo nivel (DEC-79)', () => {
+  it('crea y modifica a otro Superadministrador; el Administrador sigue sin poder', async () => {
+    const r = await como('ti@demo.local', 'post', '/usuarios', { nombre: 'Prueba Super', correo: correo(), password: NUEVA, rolIds: [await rolId('Superadministrador')] });
+    expect(r.status).toBe(201);
+    expect(r.body.roles).toEqual(['Superadministrador']);
+    expect((await como('ti@demo.local', 'patch', `/usuarios/${r.body.id}`, { nombre: 'Prueba Super 2' })).status).toBe(200);
+    expect((await como('admin@demo.local', 'patch', `/usuarios/${r.body.id}`, { nombre: 'X' })).status).toBe(403);
+  });
+});

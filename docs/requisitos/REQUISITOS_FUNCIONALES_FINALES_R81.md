@@ -5,9 +5,9 @@
 - **RF-001** El sistema permite autenticar al usuario antes de acceder a información operativa.
 - **RF-002** El sistema permite aplicar permisos por rol, módulo y local, sumando los permisos cuando un usuario tiene varios roles.
 - **RF-003** El sistema permite administrar usuarios con uno o más roles, crear roles propios con sus permisos por módulo y registrar cada cambio, gestionando solo roles de nivel inferior al propio.
-- **RF-004** El sistema permite registrar y editar clientes conservando su historial operativo.
-- **RF-005** El sistema permite registrar y editar vehículos vinculados a su propietario e historial.
-- **RF-006** El sistema permite buscar clientes y vehículos por placa, documento, VIN o nombre.
+- **RF-004** El sistema permite registrar y editar clientes con documento único por empresa, conservando su historial operativo aunque se corrija el documento.
+- **RF-005** El sistema permite registrar y editar vehículos vinculados a su titular, sin perder el historial al corregir la placa o traspasar el vehículo.
+- **RF-006** El sistema permite buscar clientes y vehículos por placa (con o sin guiones), documento, VIN o nombre.
 - **RF-007** El sistema permite conservar kilometraje, fuente, fecha y observación de cada lectura.
 - **RF-008** El sistema permite administrar proveedores mínimos para cotizar productos solicitados.
 - **RF-009** El sistema permite mantener catálogo de servicios con horas estándar y categoría técnica.

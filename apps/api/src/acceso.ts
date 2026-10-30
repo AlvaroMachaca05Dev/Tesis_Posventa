@@ -55,6 +55,12 @@ export const Requiere = (modulo: string, minimo: Nivel) => SetMetadata('requiere
 export const SesionActual = createParamDecorator((_: unknown, ctx: ExecutionContext) => ctx.switchToHttp().getRequest().sesion as Sesion);
 export const SesionReal = createParamDecorator((_: unknown, ctx: ExecutionContext) => ctx.switchToHttp().getRequest().real as Sesion);
 
+/** Nivel del Superadministrador (TI de la empresa): el más alto de una empresa. Puede gestionar roles de su mismo nivel (DEC-79). */
+export const NIVEL_SUPERADMINISTRADOR = 4;
+
+/** ¿Puede esta persona gestionar un rol (o a quien lo tiene) de ese nivel? Todos, solo de nivel inferior; el Superadministrador, también del suyo. */
+export const puedeGestionarNivel = (nivelRol: number, s: Sesion) => nivelRol < s.nivelMax || (s.nivelMax >= NIVEL_SUPERADMINISTRADOR && nivelRol <= s.nivelMax);
+
 /** ¿Quien actúa es el Desarrollador como él mismo (no «viendo como» otra persona)? Solo él puede cruzar empresas. */
 export const esPlataformaPropia = (s: Sesion, real: Sesion) => real.esPlataforma && s.id === real.id;
 

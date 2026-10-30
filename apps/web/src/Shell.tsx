@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api, ItemMenu, Me, sesion, UsuarioLista } from './api';
 import Usuarios from './Usuarios';
+import Clientes from './Clientes';
+import Vehiculos from './Vehiculos';
+import Ordenes from './Ordenes';
 
 const NIVEL: Record<string, string> = { A: 'Ver, editar y acciones sensibles', E: 'Ver y editar', V: 'Solo ver' };
 const CONSULTA_MOVIL = '(max-width: 900px)';
@@ -176,9 +179,6 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
         </header>
         {me.actuandoComo && (
           <div className="como" role="status">
-            <span>
-              Estás viendo el sistema como <b>{me.usuario.nombre}</b> ({me.roles.join(' + ')}). Tus acciones quedan auditadas a nombre de <b>{me.real.nombre}</b>.
-            </span>
             <button type="button" onClick={() => void verComo('')}>Salir de «Ver como»</button>
           </div>
         )}
@@ -191,7 +191,10 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
             </div>
           )}
           {mostrado?.id === 'usuarios' && <Usuarios me={me} nivel={mostrado.nivel} />}
-          {mostrado && mostrado.id !== 'usuarios' && (
+          {mostrado?.id === 'clientes' && <Clientes nivel={mostrado.nivel} />}
+          {mostrado?.id === 'vehiculos' && <Vehiculos nivel={mostrado.nivel} />}
+          {mostrado?.id === 'ods' && <Ordenes nivel={mostrado.nivel} superadmin={me.roles.includes('Superadministrador')} />}
+          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods'].includes(mostrado.id) && (
             <div className="panel">
               <h1>{mostrado.label}</h1>
               <p className="sub">Nivel de tu rol: {NIVEL[mostrado.nivel]}.</p>

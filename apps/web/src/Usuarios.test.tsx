@@ -135,7 +135,9 @@ it('Roles: el Superadministrador crea un rol propio eligiendo módulos y niveles
   simular('A');
   render(<App />);
   await userEvent.click(await screen.findByRole('button', { name: 'Roles' }));
-  await userEvent.type(await screen.findByLabelText('Nombre del rol'), 'Recepcionista');
+  await userEvent.click(await screen.findByRole('button', { name: '+ Rol' }));
+  expect(screen.getByRole('dialog', { name: 'Nuevo rol propio' })).toBeInTheDocument();
+  await userEvent.type(screen.getByLabelText('Nombre del rol'), 'Recepcionista');
   await userEvent.click(screen.getByRole('checkbox', { name: 'Clientes' }));
   await userEvent.selectOptions(screen.getByLabelText('Nivel de Clientes'), 'E');
   await userEvent.click(screen.getByRole('checkbox', { name: 'Citas' }));
@@ -151,6 +153,6 @@ it('Roles: sin nivel «todo» sobre Usuarios no se puede crear roles', async () 
   simular('E');
   render(<App />);
   await userEvent.click(await screen.findByRole('button', { name: 'Roles' }));
-  expect(screen.queryByLabelText('Nombre del rol')).toBeNull();
+  expect(screen.queryByRole('button', { name: '+ Rol' })).toBeNull();
   expect(await screen.findByText('Cajera')).toBeInTheDocument();
 });

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Reconstruye R_Motriz_R7.7.html desde la base R7.1 aplicando las capas R7.2 a R7.7.
+# Reconstruye R_Motriz_R7.7.html desde la base R7.1 aplicando las capas R7.2 a R7.8.
 set -e; cd "$(dirname "$0")"; mkdir -p build
 cp capas/base_R7.1.html build/r71.html
 python3 capas/aplicar_r72.py build/r71.html build/r72.html
