@@ -132,17 +132,18 @@ Toda pantalla con tabla sigue el patrón de Clientes y Vehículos:
 Detalle en la skill `modulo-tabla`. Es obligatoria al crear o cambiar cualquier módulo.
 
 ## 19. Carpetas por módulo (regla fija desde el 31/10/2026)
-El código se ordena por área y módulo del negocio, igual en la API y en la web, como el sistema real de Robert Service (`app/cotizar/ordenServicio/…`):
+El código es una **lista plana de módulos**, una carpeta por módulo, igual en la API y en la web, con nombres como los del sistema real de Robert Service (`ordenServicio`, `cliente`…). **No hay carpetas de grupo** (Maestros, Finanzas, Beta): el grupo es solo cómo se muestra el menú (`comun/catalogo-modulos.ts`) y puede cambiar sin mover código.
 
 | Carpeta (en `apps/api/src` y `apps/web/src`) | Qué va |
 |---|---|
-| `comun/` | Lo compartido: acceso y guardias, Prisma y validaciones (API); `api.ts` y `FiltrosColumna.tsx` (web) |
-| `sistema/` | Sesión, menú, usuarios y roles; catálogo de módulos |
-| `maestros/cliente/`, `maestros/vehiculo/` | Maestros, uno por carpeta |
-| `posventa/ordenServicio/` | ODS: controlador, reglas y pruebas (API); lista, editor, abonos, fechas, ingreso y estado del vehículo (web) |
+| `comun/` | Lo compartido: acceso, guardias, Prisma, validaciones y catálogo de módulos (API); `api.ts` y `FiltrosColumna.tsx` (web) |
+| `sesion/` | Inicio de sesión, «Ver como» y menú por rol (en la web, `Login` y `Shell`) |
+| `usuario/` | Usuarios y roles |
+| `cliente/`, `vehiculo/` | Maestros de clientes y vehículos |
+| `ordenServicio/` | ODS: controlador y pruebas (API); lista, editor, abonos, fechas, ingreso y estado del vehículo (web) |
 | `facturacion/` | Reservada para la facturación electrónica |
 
-- Cada módulo nuevo nace en su carpeta con su `*.controller.ts` y su `*.spec.ts` (API) y sus pantallas y su `*.test.tsx` (web).
-- Las pruebas que cruzan módulos (`base.spec.ts`, `precarga.spec.ts`) siguen en `apps/api/test/`.
+- Cada módulo nuevo nace en su propia carpeta con su `*.controller.ts` y su `*.spec.ts` (API) y sus pantallas y su `*.test.tsx` (web).
+- Las pruebas que cruzan módulos van en `apps/api/test/` (`base`, `precarga`, `maestros`) y `apps/web/src/test/` (`Maestros.test.tsx`).
 - La base de datos es una sola: `database/prisma/schema.prisma` y sus migraciones.
 - La lógica de negocio va en la API, no en triggers ni procedimientos almacenados.

@@ -3,7 +3,7 @@ name: verificar-ods-rmotriz
 description: Verificar las reglas de órdenes de servicio de INC-01 contra los criterios de la spec, distinguiendo pruebas automáticas, de servidor y recorrido visual. Funciona sobre la implementación real o, mientras no exista, sobre el prototipo.
 ---
 
-**Entrada:** `specs/INC-01-base-operativa.md` (criterios `CA-01-xx`), `AGENTS.md` y la implementación en `apps/api/src/posventa/ordenServicio/` y `apps/web/src/posventa/ordenServicio/`. **Si una parte todavía no está implementada**, verifícala solo contra el **prototipo** con la skill `probar-prototipo-playwright` y di claramente que eso es **referencia de comportamiento**, no verificación de la implementación.
+**Entrada:** `specs/INC-01-base-operativa.md` (criterios `CA-01-xx`), `AGENTS.md` y la implementación en `apps/api/src/ordenServicio/` y `apps/web/src/ordenServicio/`. **Si una parte todavía no está implementada**, verifícala solo contra el **prototipo** con la skill `probar-prototipo-playwright` y di claramente que eso es **referencia de comportamiento**, no verificación de la implementación.
 
 **Qué verificar (con datos sintéticos y bases temporales)**
 - Cliente y vehículo coherentes, códigos únicos, dos tipos de línea, subtotal y descuento correctos, y que las H-H **no** multiplican el precio de un servicio.

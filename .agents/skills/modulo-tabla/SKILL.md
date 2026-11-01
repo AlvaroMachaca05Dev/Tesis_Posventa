@@ -3,7 +3,7 @@ name: modulo-tabla
 description: Regla obligatoria para todo módulo de tipo tabla del sistema (localhost y prototipo): crear y editar en un modal centrado de dos columnas, filtros por columna en vez de buscador y sin textos explicativos. Usar SIEMPRE al crear o cambiar una pantalla con tabla (maestros, usuarios, roles, inventario, compras, etc.).
 ---
 
-**Es de ley (investigador, 28/10/2026).** Toda pantalla cuyo contenido principal sea una tabla sigue el patrón de **Clientes** (`apps/web/src/maestros/cliente/Clientes.tsx`) y **Vehículos** (`apps/web/src/maestros/vehiculo/Vehiculos.tsx`). No se entrega un módulo de tabla que no lo cumpla.
+**Es de ley (investigador, 28/10/2026).** Toda pantalla cuyo contenido principal sea una tabla sigue el patrón de **Clientes** (`apps/web/src/cliente/Clientes.tsx`) y **Vehículos** (`apps/web/src/vehiculo/Vehiculos.tsx`). No se entrega un módulo de tabla que no lo cumpla.
 
 **1. Crear y editar en un modal**
 - El botón «+ Nombre» (arriba a la derecha) y «Editar» de cada fila abren un modal centrado: `<div className="fondo-modal"><form className="modal-form" role="dialog" aria-modal="true" aria-label="…">`.

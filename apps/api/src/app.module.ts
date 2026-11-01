@@ -3,11 +3,11 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { AutenticacionGuard, PermisosGuard } from './comun/guardias';
 import { PrismaService } from './comun/prisma.service';
-import { AuthController, SesionController } from './sistema/sesion/sesion.controller';
-import { UsuariosController } from './sistema/usuario/usuario.controller';
-import { ClienteController } from './maestros/cliente/cliente.controller';
-import { VehiculoController } from './maestros/vehiculo/vehiculo.controller';
-import { OrdenesController } from './posventa/ordenServicio/ordenServicio.controller';
+import { AuthController, SesionController } from './sesion/sesion.controller';
+import { UsuariosController } from './usuario/usuario.controller';
+import { ClienteController } from './cliente/cliente.controller';
+import { VehiculoController } from './vehiculo/vehiculo.controller';
+import { OrdenesController } from './ordenServicio/ordenServicio.controller';
 
 @Module({
   imports: [
