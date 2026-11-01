@@ -1,5 +1,7 @@
 # Especificaciones (SDD)
 
+> **31/10/2026:** el desarrollo se hace por slices (`S1-base-del-sistema.md` y `docs/plan/SLICES_NUCLEO.md`). Las specs INC quedan como referencia por incremento; la equivalencia está en `docs/ESTADO_ACTUAL.md`.
+
 Una especificación por incremento, escrita para que un agente (Claude Code o Codex) o una persona pueda implementar y probar **sin tener que adivinar**. Derivadas el 17/10/2026 de `docs/contexto/` y `docs/requisitos/`.
 
 **Estado de todas las specs: BORRADOR.** Son una propuesta del asistente construida con las fuentes del proyecto; **nadie las ha aprobado**. Cada una indica qué viene de una fuente y qué es deducción propia. Hasta que se cierren las decisiones que cada spec lista, **no se implementa lo que dependa de ellas**.

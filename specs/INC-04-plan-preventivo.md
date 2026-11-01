@@ -1,5 +1,8 @@
 # INC-04 — Plan preventivo, aplicabilidad y línea temporal
 
+> **Referencia por incremento (31/10/2026).** Se desarrolla por slices (S5 y S6). El estado vigente está en `../docs/ESTADO_ACTUAL.md`.
+
+
 **Estado:** BORRADOR · **Versión:** 0.1 · **Fecha:** 17/10/2026 · **Autor:** asistente (Claude), derivado de las fuentes · **Aprobada por:** nadie todavía
 **Bloqueada por:** OPEN-08 (quién valida los planes), OPEN-20 (aceite no especificado), OPEN-33 (mapeo R/A), OPEN-38 (grupos G1–G8 y tasa km/mes), OPEN-04 (alcance de IA). **Depende de:** INC-01 (y de INC-02 para historial real).
 

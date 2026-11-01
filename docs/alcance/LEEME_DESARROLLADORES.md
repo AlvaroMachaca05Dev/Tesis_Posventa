@@ -1,5 +1,8 @@
 # Paquete para los desarrolladores (R7.7, 19/10/2026)
 
+> **Histórico (31/10/2026).** Escrito antes de que existiera el sistema. El estado vigente está en `../ESTADO_ACTUAL.md`.
+
+
 Esta carpeta es el paquete. Lo que el investigador **delimitó** está en `DELIMITACION_PRIMERA_VERSION_R77.md`; lo que **decidan juntos** distinto debe quedar en `docs/decisiones/DECISIONES_CERRADAS.md`. Nada de esto es el sistema: es un prototipo HTML local, documentos y diagramas **propuestos**. No hay servidor, base de datos operativa ni autenticación real.
 
 ## Orden de lectura

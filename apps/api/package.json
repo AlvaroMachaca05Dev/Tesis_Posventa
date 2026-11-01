@@ -11,7 +11,7 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "rootDir": ".",
-    "testRegex": "test/.*\\.spec\\.ts$",
+    "testRegex": "(src|test)/.*\\.spec\\.ts$",
     "testTimeout": 30000
   },
   "dependencies": {

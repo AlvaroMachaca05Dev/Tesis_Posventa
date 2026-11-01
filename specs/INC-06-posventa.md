@@ -1,5 +1,8 @@
 # INC-06 — Posventa: seguimiento, contacto, citas, llegada y retorno
 
+> **Referencia por incremento (31/10/2026).** Se desarrolla por slices (S8, S10 y S11). El estado vigente está en `../docs/ESTADO_ACTUAL.md`.
+
+
 **Estado:** BORRADOR · **Versión:** 0.1 · **Fecha:** 17/10/2026 · **Autor:** asistente (Claude), derivado de las fuentes · **Aprobada por:** nadie todavía
 **Bloqueada por:** OPEN-22 (vocabulario de estados de cita), OPEN-26 (definición de «cita convertida»), OPEN-01. **Depende de:** INC-01, INC-03 (agenda) e INC-04 (tareas de kilometraje).
 

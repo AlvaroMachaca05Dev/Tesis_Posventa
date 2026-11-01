@@ -1,5 +1,8 @@
 # INC-01 — Base operativa: usuarios, clientes, vehículos y ODS
 
+> **Referencia por incremento (31/10/2026).** Se desarrolla por slices (S1 a S3 cubren este incremento). El estado vigente está en `../docs/ESTADO_ACTUAL.md`.
+
+
 **Estado:** BORRADOR · **Versión:** 0.1 · **Fecha:** 17/10/2026 · **Autor:** asistente (Claude), derivado de las fuentes del proyecto · **Aprobada por:** nadie todavía
 **Bloqueada por:** OPEN-01 (pila), OPEN-02 (sede piloto), OPEN-03 (dónde vive el código), OPEN-23 (roles). Ver §9.
 

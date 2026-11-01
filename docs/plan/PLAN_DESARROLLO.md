@@ -1,5 +1,8 @@
 # Plan de desarrollo
 
+> **Histórico (31/10/2026).** Plan por incrementos INC; el desarrollo se hace por slices (`docs/plan/SLICES_NUCLEO.md`). El estado vigente está en `../ESTADO_ACTUAL.md`.
+
+
 Estado: **propuesta de estructura de ejecución**, 17/10/2026. Construida desde `docs/contexto/06_ALCANCE_TOTAL_VS_TESIS.md` (incrementos y corte recomendado) y `docs/requisitos/CATALOGO_RF.md`. Las fechas y duraciones **no están definidas** en las fuentes y no se inventan aquí: el calendario depende de OPEN-11 (congelación de requisitos).
 
 ## 1. Dos pistas independientes

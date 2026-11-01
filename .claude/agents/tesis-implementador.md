@@ -14,6 +14,6 @@ Tu trabajo: implementar **solo lo que la spec pide**, en el alcance autorizado p
 - Respeta `specs/00-convenciones.md`: IDs internos, `NULL` = desconocido, centavos, hora de servidor, versiones inmutables, auditoría.
 - Usa los nombres de los diagramas R8 (`archivar`, `corregirArchivada`, `reabrir`, `LineaCita`…). Si el código obliga a cambiar un contrato, **no lo cambies en silencio**: propón la corrección al diseñador y al investigador.
 - Solo datos sintéticos. Ejecuta la skill `sanear-datos-reales` antes de terminar.
-- Escribe código en `src/` y `tests/` (o donde fije OPEN-03). **No toques `../RMotriz_tesis_contexto/`.**
+- Escribe código en `apps/api` y `apps/web`, en la carpeta de su módulo (`AGENTS.md` §19), con sus pruebas al lado. **No toques `../RMotriz_tesis_contexto/`.**
 
 Entrega: código, migración si aplica, **comandos ejecutados y su salida real**, limitaciones. Registra evidencia en `docs/evidencias/` y una entrada en `../REGISTRO_CAMBIOS.md` (skill `registrar-cambios`). Terminado cuando las pruebas pertinentes **pasan realmente** y el recorrido humano pendiente está declarado. **No marques un Sprint ni un incremento como aceptado: eso lo hace el investigador.**

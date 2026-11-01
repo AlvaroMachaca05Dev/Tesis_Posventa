@@ -1,5 +1,8 @@
 # INC-07 — Productos y logística *(extensión opcional)*
 
+> **Referencia por incremento (31/10/2026).** Extensión opcional, fuera de los slices del núcleo. El estado vigente está en `../docs/ESTADO_ACTUAL.md`.
+
+
 **Estado:** BORRADOR · **Versión:** 0.1 · **Fecha:** 17/10/2026 · **Autor:** asistente (Claude), derivado de las fuentes · **Aprobada por:** nadie todavía
 **Bloqueada por:** **OPEN-05** (¿entra a la tesis?), OPEN-01. **Depende de:** INC-01, INC-03. **No empezar** hasta que el núcleo (INC-01 a INC-06) esté estable (`06` §4 y §10).
 

@@ -1,5 +1,8 @@
 # Delimitación de la primera versión (prototipo R7.7)
 
+> **Histórico (31/10/2026).** La delimitación sigue vigente como alcance, pero lo que dice sobre la pila sin decidir y el sistema inexistente quedó atrás: la pila se aceptó el 20/10/2026 y el sistema ya existe. El estado vigente está en `../ESTADO_ACTUAL.md`.
+
+
 **Estado:** DECIDIDA por el investigador (mensaje de chat del 19/10/2026) y **demostrada en el prototipo R7.7** con datos sintéticos. **No** está aceptada por el profesor, por el experto mecánico ni por usuarios, y **no** es el sistema real (no existe servidor, base de datos operativa ni autenticación). Esta es la fuente para que el investigador delimite con los desarrolladores; lo que los desarrolladores decidan distinto debe registrarse en `docs/decisiones/DECISIONES_CERRADAS.md`.
 
 **Fecha:** 19/10/2026 · **Prototipo:** `prototipo/R_Motriz_R7.7.html` (se reconstruye con `python prototipo/capas/aplicar_r77.py R_Motriz_R7.6.html R_Motriz_R7.7.html`).

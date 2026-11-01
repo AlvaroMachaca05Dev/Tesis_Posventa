@@ -1,5 +1,8 @@
 # INC-02 — Importación XLSX/CSV idempotente y atómica
 
+> **Referencia por incremento (31/10/2026).** Se desarrolla por slices (S4). El estado vigente está en `../docs/ESTADO_ACTUAL.md`.
+
+
 **Estado:** BORRADOR · **Versión:** 0.1 · **Fecha:** 17/10/2026 · **Autor:** asistente (Claude), derivado de las fuentes · **Aprobada por:** nadie todavía
 **Bloqueada por:** OPEN-07 (no hay XLSX reales anonimizados), OPEN-01 (pila). **Depende de:** INC-01.
 

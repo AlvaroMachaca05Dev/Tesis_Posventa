@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthController, SesionController } from './controladores';
-import { UsuariosController } from './usuarios.controller';
-import { MaestrosController } from './maestros.controller';
-import { OrdenesController } from './ordenes.controller';
-import { AutenticacionGuard, PermisosGuard } from './guardias';
-import { PrismaService } from './prisma.service';
+import { AutenticacionGuard, PermisosGuard } from './comun/guardias';
+import { PrismaService } from './comun/prisma.service';
+import { AuthController, SesionController } from './sistema/sesion/sesion.controller';
+import { UsuariosController } from './sistema/usuario/usuario.controller';
+import { ClienteController } from './maestros/cliente/cliente.controller';
+import { VehiculoController } from './maestros/vehiculo/vehiculo.controller';
+import { OrdenesController } from './posventa/ordenServicio/ordenServicio.controller';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { PrismaService } from './prisma.service';
       },
     }),
   ],
-  controllers: [AuthController, SesionController, UsuariosController, MaestrosController, OrdenesController],
+  controllers: [AuthController, SesionController, UsuariosController, ClienteController, VehiculoController, OrdenesController],
   providers: [
     PrismaService,
     { provide: APP_GUARD, useClass: AutenticacionGuard },

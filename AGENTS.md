@@ -1,16 +1,17 @@
 # Tesis de Álvaro Machaca — Sistema de posventa para R Motriz (Robert Service Automotriz)
 
-Fuente única de instrucciones del proyecto para **Claude Code** (y Codex si el equipo lo usa) (`CLAUDE.md` solo importa este archivo). Actualizado el 19/10/2026. Si un archivo antiguo contradice este, prevalece este y las instrucciones explícitas del investigador.
+Fuente única de instrucciones del proyecto para **Claude Code** (y Codex si el equipo lo usa) (`CLAUDE.md` solo importa este archivo). Actualizado el 31/10/2026. Si un archivo antiguo contradice este, prevalece este y las instrucciones explícitas del investigador.
 
 ## 1. Antes de trabajar (obligatorio)
 1. **Revisa si la carpeta cambió** (la edita más de una herramienta y está sincronizada con Google Drive): `powershell -ExecutionPolicy Bypass -File herramientas\revisar_cambios.ps1` (skill `revisar-cambios-carpeta`).
 2. Lee `../REGISTRO_CAMBIOS.md`: qué se hizo y qué quedó pendiente.
 3. Al terminar: skill `registrar-cambios` (entrada en el registro, evidencia y `revisar_cambios.ps1 -Guardar`). Distingue lo configurado, lo implementado, lo **probado** y lo **aceptado por una persona**.
 
-## 2. Estado real del proyecto (17/10/2026)
-- **Línea principal: B** (decisión del investigador): prototipo HTML R7.x y tesis en LaTeX. Versión vigente **R7.7** (delimitada el 19/10/2026). El contexto original está en `../RMotriz_tesis_contexto/` (solo lectura); aquí están las fuentes de trabajo del proyecto y la tesis está en `../fuentes-latex/`.
-- **Existe:** una **demostración local** (HTML sin servidor ni autenticación real) con 117 requisitos demostrados y pruebas Playwright; un **motor de dominio de referencia** (JavaScript, en memoria); la tesis de 145 páginas; diagramas UML; un modelo SQL **propuesto**.
-- **NO existe:** el sistema. No hay servidor, base de datos operativa, autenticación real, importación XLSX ejecutada ni aceptación de usuarios o de un experto mecánico.
+## 2. Estado real del proyecto (31/10/2026)
+- **Resumen vigente:** `docs/ESTADO_ACTUAL.md`. Si otro archivo lo contradice, manda ese documento.
+- **Existe el sistema:** monorepo con `apps/api` (NestJS), `apps/web` (React) y `database` (Prisma y PostgreSQL). Slices S1 a S3 terminados: RF-001 a RF-007 y RF-011 a RF-017 implementados y probados.
+- **Fuentes vigentes:** requisitos y trazabilidad R81, diagramas `diagramas/R81_consolidados/`, plan por slices (`docs/plan/SLICES_NUCLEO.md`). R7.7 a R8.0, R8 y R77/R78 son históricos.
+- **No existe todavía:** S4 a S11, entorno en internet, CI, copias de seguridad ni aceptación de usuarios o de un experto mecánico.
 - **Delimitación (19/10/2026):** producto = software automotriz de **posventa**; las ODS se cargan a diario de forma masiva (Excel/CSV; la API queda como contrato beta); lo que no es beta es la primera versión; los módulos beta van al final del menú y son ocultables; quitados: reglas de precios, auditoría interna y movimientos de cuentas; sin apertura/cierre de caja (apagada); series por sede. Fuente: `docs/alcance/DELIMITACION_PRIMERA_VERSION_R77.md` y `DECISIONES_CERRADAS.md` §10.
 - **Línea A** (`../archivo/avance_implementacion/`, Python/SQLite, INC-01): **antecedente**; no se desarrolla.
 - **Pila tecnológica: ACEPTADA el 20/10/2026** (`docs/decisiones/ADR-001-pila-tecnologica.md`): React + TypeScript + Vite, NestJS, PostgreSQL con Prisma. El código vive en el repositorio de GitHub del proyecto (cierra OPEN-01 y OPEN-03).
@@ -25,39 +26,33 @@ Fuente única de instrucciones del proyecto para **Claude Code** (y Codex si el 
 ## 4. Mapa de la carpeta
 | Ruta | Qué es |
 |---|---|
+En este repositorio (`F:\Tesis\Tesis_Posventa`):
+
+| Ruta | Qué es |
+|---|---|
 | `AGENTS.md`, `CLAUDE.md`, `README.md` | Instrucciones y entrada humana |
-| `../REGISTRO_CAMBIOS.md` | Bitácora compartida entre herramientas |
-| `docs/00_INDICE.md` | Índice de toda la documentación |
-| `docs/contexto/` | Contexto maestro (resumen, decisiones, módulos, reglas, alcance, arquitectura, glosario) |
-| `docs/decisiones/` | Decisiones **cerradas**, **abiertas**, **inconsistencias** y el ADR de la pila |
-| `docs/requisitos/` | Catálogo RF-01 a RF-117 con incremento propuesto (generado); mapeo R7.7 (RF-118 a RF-215) y matriz de permisos |
-| `docs/alcance/` | **Delimitación de la primera versión** (R7.7, 19/10/2026) |
-| `docs/api/` | Contrato de API previsto (propuesta; no existe servidor) |
-| `docs/plan/` | Plan de desarrollo, entorno y flujo de trabajo |
-| `docs/evidencias/` | Evidencia de cada trabajo (fecha, comando, resultado) |
-| `docs/historial/R7/` | Cambios R7.1–R7.6, estado de migración, análisis de ClickUp |
-| `docs/referencias/` | PDF fuente y análisis de ClickUp (sin datos reales) |
-| `specs/` | **Especificaciones SDD** por incremento (INC-01 a INC-07) y R7.7 |
-| `prototipo/` | Prototipo HTML R7.7, base R7.6, capas y pruebas Playwright (pista P) |
-| `nucleo-referencia/` | Motor de dominio R8 (JavaScript) y sus pruebas |
-| `../../1_github-proyecto/` | Copia generada de lo que se sube a GitHub |
-| `../../2_documento-tesis-overleaf/` | Copia generada para Overleaf |
-| `diagramas/R8_propuesta/` | UML R8 (clases, estados, secuencias) y verificador |
-| `diagramas/R77_delimitacion/` | UML de la delimitación R7.7 (casos de uso, módulos, clases, secuencias y estados) y verificador |
-| `../fuentes-latex/` | LaTeX, PDF, trazabilidad, capturas y modelo SQL propuesto |
-| `src/`, `tests/` | Implementación real (**vacías hasta que el Sprint 1 cree el esqueleto) |
+| `apps/api`, `apps/web` | El sistema: API y pantalla, por módulo (§19) |
+| `database/` | Esquema Prisma, migraciones, semillas y precarga |
+| `docs/ESTADO_ACTUAL.md` | **Estado y fuentes vigentes** (empieza aquí) |
+| `docs/decisiones/` | Decisiones **cerradas**, **abiertas**, **inconsistencias** y el ADR de la pila (aceptado) |
+| `docs/requisitos/` | Requisitos y trazabilidad R81 (vigentes), estado por RF y versiones anteriores |
+| `docs/alcance/` | Delimitación de la primera versión (R7.7, 19/10/2026) |
+| `docs/api/` | Contrato de API de R7.7 (referencia; la API real está en `apps/api`) |
+| `docs/plan/` | Slices, plan, entorno, precarga y sesiones |
+| `specs/` | Especificaciones SDD de slices (S1…) e incrementos (INC-01 a INC-07) |
+| `prototipo/` | Prototipo HTML R7.8, capas y pruebas Playwright |
+| `nucleo-referencia/` | Motor de dominio R8 (JavaScript), antecedente |
+| `diagramas/` | UML; vigente `R81_consolidados/`, el resto histórico (`diagramas/LEEME.md`) |
 | `agentes/definiciones/` | Fuente de los 6 agentes |
 | `.agents/skills/`, `.codex/agents/`, `.claude/` | Skills y agentes de Codex y de Claude Code (**generados/sincronizados**) |
 | `herramientas/` | Scripts de apoyo y binarios (`herramientas/bin/`: PlantUML, Tectonic) |
-| `../RMotriz_tesis_contexto/` | **Solo lectura.** Origen del contexto y de la línea B |
-| `../archivo/` | Línea A, entregables, temporales y demás material histórico |
+En Google Drive (`J:\Mi unidad\Trabajo RSA\Tesis sistema posventa\`), fuera del repositorio: la tesis en `2_documento-tesis-overleaf/`, el registro de cambios y el contexto en `3_contexto-drive/` (incluye `3_contexto-drive/RMotriz_tesis_contexto/`, **solo lectura**, y `3_contexto-drive/archivo/` con el material histórico).
 
 ## 5. Qué leer primero
-1. `docs/00_INDICE.md` y `docs/plan/PLAN_DESARROLLO.md`.
-2. `docs/contexto/00_LEEME_PRIMERO.md` (orden de lectura del contexto) y `docs/contexto/06_ALCANCE_TOTAL_VS_TESIS.md`.
-3. `docs/decisiones/DECISIONES_ABIERTAS.md` e `INCONSISTENCIAS.md` **antes de proponer nada**.
-4. La spec del incremento en `specs/`.
-5. `docs/historial/R7/CLAUDE_RMotriz_tesis_contexto.md`: reglas de la línea B y pendientes de R7.7.
+1. `docs/ESTADO_ACTUAL.md` y `docs/plan/SLICES_NUCLEO.md`.
+2. `docs/decisiones/DECISIONES_ABIERTAS.md` e `INCONSISTENCIAS.md` **antes de proponer nada**.
+3. La spec del slice en `specs/`.
+4. `docs/historial/R7/CLAUDE_RMotriz_tesis_contexto.md`: reglas de la línea B y pendientes de R7.7.
 
 ## 6. Cómo se trabaja (Scrum + IA-ASE con SDD)
 Metodología unificada y decidida el 19/10/2026: `docs/plan/METODOLOGIA_SCRUM_IA_ASE.md`. Herramienta de IA: Claude Code (no ChatGPT).
@@ -132,6 +127,22 @@ Cada cambio que se desarrolle debe poder **ejecutarse en la terminal y verse en 
 ## 18. Módulos de tipo tabla: modal y filtros por columna (regla fija desde el 28/10/2026)
 Toda pantalla con tabla sigue el patrón de Clientes y Vehículos:
 - Crear y editar se hacen en un modal centrado de dos columnas.
-- Cada columna, menos Acciones, tiene su filtro (`FiltrosColumna.tsx`, igual al del prototipo) y no hay buscador general.
+- Cada columna, menos Acciones, tiene su filtro (`comun/FiltrosColumna.tsx`, igual al del prototipo) y no hay buscador general.
 - No se agregan textos explicativos en la interfaz.
 Detalle en la skill `modulo-tabla`. Es obligatoria al crear o cambiar cualquier módulo.
+
+## 19. Carpetas por módulo (regla fija desde el 31/10/2026)
+El código se ordena por área y módulo del negocio, igual en la API y en la web, como el sistema real de Robert Service (`app/cotizar/ordenServicio/…`):
+
+| Carpeta (en `apps/api/src` y `apps/web/src`) | Qué va |
+|---|---|
+| `comun/` | Lo compartido: acceso y guardias, Prisma y validaciones (API); `api.ts` y `FiltrosColumna.tsx` (web) |
+| `sistema/` | Sesión, menú, usuarios y roles; catálogo de módulos |
+| `maestros/cliente/`, `maestros/vehiculo/` | Maestros, uno por carpeta |
+| `posventa/ordenServicio/` | ODS: controlador, reglas y pruebas (API); lista, editor, abonos, fechas, ingreso y estado del vehículo (web) |
+| `facturacion/` | Reservada para la facturación electrónica |
+
+- Cada módulo nuevo nace en su carpeta con su `*.controller.ts` y su `*.spec.ts` (API) y sus pantallas y su `*.test.tsx` (web).
+- Las pruebas que cruzan módulos (`base.spec.ts`, `precarga.spec.ts`) siguen en `apps/api/test/`.
+- La base de datos es una sola: `database/prisma/schema.prisma` y sus migraciones.
+- La lógica de negocio va en la API, no en triggers ni procedimientos almacenados.

@@ -1,5 +1,8 @@
 # INC-03 — Servicios, tareas y agenda de técnicos
 
+> **Referencia por incremento (31/10/2026).** Se desarrolla por slices (S7 a S9). El estado vigente está en `../docs/ESTADO_ACTUAL.md`.
+
+
 **Estado:** BORRADOR · **Versión:** 0.1 · **Fecha:** 17/10/2026 · **Autor:** asistente (Claude), derivado de las fuentes · **Aprobada por:** nadie todavía
 **Bloqueada por:** OPEN-24 (almuerzo y horario), OPEN-25 (máximo de simultáneos), OPEN-01. **Depende de:** INC-01.
 

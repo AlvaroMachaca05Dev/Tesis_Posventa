@@ -1,5 +1,8 @@
 # Contrato de API previsto (R7.7) — PROPUESTA
 
+> **Histórico (31/10/2026).** Contrato propuesto antes de la API real; la API vigente está en `apps/api`. El estado vigente está en `../ESTADO_ACTUAL.md`.
+
+
 **Estado:** PROPUESTA del asistente a partir de la delimitación del 19/10/2026. **No existe servidor ni API.** La pila tecnológica está sin decidir (`docs/decisiones/ADR-001-pila-tecnologica.md`, PROPUESTO); este contrato no la presupone. Todos los ejemplos usan **datos sintéticos**. Nada de esto está implementado ni probado: lo que hoy existe es la **carga masiva** por Excel o CSV (sección 2), que define la forma de los datos.
 
 ## 1. Para qué sirve

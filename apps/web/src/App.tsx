@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, Me, sesion } from './api';
-import Login from './Login';
-import Shell from './Shell';
+import { api, Me, sesion } from './comun/api';
+import Login from './sistema/Login';
+import Shell from './sistema/Shell';
 
 export default function App() {
   const [me, setMe] = useState<Me | null>(null);
