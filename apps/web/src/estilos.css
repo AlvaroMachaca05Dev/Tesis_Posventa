@@ -42,6 +42,8 @@ header { display:flex; justify-content:space-between; align-items:center; gap:10
 .como button { background:#3a2f10; color:#f5d98b; border:1px solid #6b5320; border-radius:8px; padding:4px 10px; cursor:pointer; }
 .contenido { padding:18px; }
 .panel { background:var(--panel); border:1px solid var(--borde); border-radius:14px; padding:18px; max-width:none; margin-bottom:14px; }
+/* Las tablas van pegadas al fondo del sistema, sin la tarjeta redondeada detrás (igual en toda vista). */
+.panel:has(.tabla) { background:transparent; border:none; border-radius:0; padding:0; }
 .panel h1 { margin:0 0 6px; font-size:22px; }
 .boton { display:inline-block; margin-top:8px; background:var(--acento); color:#10200a; padding:8px 14px; border-radius:10px; font-weight:700; }
 
@@ -98,8 +100,14 @@ aside::-webkit-scrollbar { display: none; }
 .pestanas button.on { border-color:var(--acento); color:var(--acento); }
 .chico { padding:8px 14px; margin-top:0; }
 .ok { color:#9be28a; margin:6px 0; }
-.tabla { overflow-x:auto; margin-top:12px; }
-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+.tabla { overflow-x:hidden; overflow-y:auto; margin-top:12px; }
+table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.tabla th, .tabla td { padding:6px 7px; }
+.paginacion { display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap; }
+.paginacion select { padding:4px 6px; }
+.paginacion .nav-paginas { display:flex; gap:3px; margin-left:auto; }
+.paginacion .nav-paginas button { padding:4px 9px; }
+.paginacion .nav-paginas button[aria-current="true"] { font-weight:700; }
 th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--borde); vertical-align:middle; }
 th { color:var(--suave); font-weight:600; font-size:12px; }
 td.acc { white-space:nowrap; }
@@ -155,7 +163,7 @@ td.acc button.peligro { color:#ff9a9a; }
 .abono { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; } .abono label { display:flex; flex-direction:column; font-size:12px; color:var(--suave); }
 .fondo-modal { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:50; display:flex; justify-content:center; align-items:flex-start; overflow:auto; padding:12px; }
 /* Modal de la ODS: 20 % más chico para ver más ítems; cabecera con cotización, estado, decisión y Salir */
-.modal-ods { background:var(--panel); border:1px solid var(--borde); border-radius:14px; padding:12px 16px; width:min(1875px,122vw); zoom:.8; }
+.modal-ods { background:var(--panel); border:1px solid var(--borde); border-radius:14px; padding:14px 20px; width:min(1800px,96vw); max-height:94vh; overflow-y:auto; }
 .modal-ods h2 { margin:0; font-size:19px; white-space:nowrap; } .modal-ods h3 { margin:6px 0 4px; font-size:15px; }
 .modal-ods button:not(.primario):not(.ac), .modal-estado button:not(.primario) { background:#18233a; color:var(--texto); border:1px solid var(--borde); border-radius:8px; padding:6px 12px; cursor:pointer; }
 .cab-ods { display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
@@ -187,6 +195,10 @@ td.acc button.peligro { color:#ff9a9a; }
 .borde-verde { border-color:#c6f432 !important; color:#c6f432 !important; background:transparent !important; font-weight:700; }
 .abono { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; margin:6px 0; }
 .abono label { display:flex; flex-direction:column; font-size:12px; color:var(--suave); gap:2px; }
+.abono h4 { width:100%; margin:10px 0 0; font-size:13px; }
+.historial-pagos { width:100%; list-style:none; margin:0; padding:0; max-height:160px; overflow:auto; }
+.historial-pagos li { display:flex; gap:10px; padding:6px 2px; border-bottom:1px solid var(--borde); font-size:12.5px; align-items:center; }
+.historial-pagos li > :last-child { margin-left:auto; }
 .ingreso .galeria { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
 .ingreso figure { position:relative; margin:0; width:110px; }
 .ingreso img, .ingreso video { width:110px; height:82px; object-fit:cover; border-radius:6px; border:1px solid var(--borde); display:block; }
@@ -232,3 +244,53 @@ td.acc button.peligro { color:#ff9a9a; }
 .modal-form .check { display:flex; align-items:center; gap:6px; } .modal-form .check input { width:auto; }
 .modal-form .modulo { flex-direction:row; align-items:center; justify-content:space-between; gap:6px; } .modal-form .modulo select { width:auto; max-width:55%; }
 .fondo-modal:has(.modal-form) { overflow:auto; }
+.modal-camara video { width:100%; max-height:70vh; border-radius:8px; background:#000; display:block; margin-bottom:8px; }
+/* 05/11: con una ventana abierta solo se desplaza la ventana (una sola barra, la del borde de la pantalla) */
+html:has(.fondo-modal) { overflow:hidden; }
+/* S5: maestros, precio por grupo y solapamiento */
+.pill.ambar { background:#3a2f12; color:#f5c451; }
+.aviso-solape { background:#3a2f12; border:1px solid #6b5418; color:#f5dd9a; border-radius:10px; padding:8px 12px; margin:8px 0; display:grid; gap:6px; }
+.aviso-solape .linea { display:flex; gap:8px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+.aviso-solape button { padding:4px 10px; }
+.precio-mod { color:#f5c451; font-size:11px; display:block; }
+/* Ancho de columna según el tamaño del dato: corta no se parte en líneas; larga tiene un máximo y envuelve el texto. */
+.tabla td.corta, .tabla th.corta { white-space: nowrap; }
+.tabla td.larga, .tabla th.larga { white-space: normal; word-break: break-word; max-width: 220px; }
+.tabla td.media, .tabla th.media { white-space: normal; word-break: break-word; max-width: 150px; }
+/* Buscador de catálogo (servicios y productos) al escribir el Detalle de un ítem, con tarjetas tipo Tuulapp. */
+.celda-buscador { position: relative; }
+.panel-buscador { position: fixed; z-index: 80; width: 440px; max-height: 320px; overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--borde); border-radius: 10px; padding: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.45); display: grid; gap: 5px; }
+.tarjeta-sugerencia { display: block; width: 100%; text-align: left; background: #18233a; border: 1px solid var(--borde); border-radius: 8px; padding: 8px 10px; cursor: pointer; color: var(--texto); }
+.tarjeta-sugerencia:hover { border-color: var(--acento); }
+.tarjeta-sugerencia .chips { flex-wrap: wrap; margin-top: 4px; }
+.pill.violeta { background: #2a2140; color: #b9a6ff; }
+.pill.azul { background: #122a3a; color: #7fd4f5; }
+/* Aviso de cierre sin nota de venta (reemplaza la «Decisión del cliente» en pantalla). */
+.nota-cierre { background: #3a1a1a; color: #ff9a9a; border-radius: 6px; padding: 3px 8px; font-size: 12px; }
+/* Botones de crear cliente/vehículo junto a sus selects, y el encabezado del panel de sugerencias. */
+.con-boton { display: flex; align-items: flex-end; gap: 4px; }
+.con-boton > label { flex: 1; }
+.con-boton > button.mas { height: 34px; width: 34px; flex: 0 0 auto; padding: 0; font-size: 18px; line-height: 1; border-radius: 50%; background: var(--acento); color: #11210f; border: 0; font-weight: 700; }
+.cerrar { background: transparent; border: 0; color: var(--texto); font-size: 22px; line-height: 1; cursor: pointer; padding: 0 4px; }
+.menu-acciones { position: relative; display: inline-block; }
+.menu-acciones > .icono { background: #18233a; border: 1px solid var(--borde); color: var(--texto); border-radius: 8px; padding: 5px 9px; cursor: pointer; }
+.menu-lista { position: absolute; top: 100%; left: 0; z-index: 20; background: var(--panel); border: 1px solid var(--borde); border-radius: 8px; min-width: 150px; display: flex; flex-direction: column; padding: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+.menu-lista button { text-align: left; background: transparent !important; border: 0 !important; border-radius: 6px !important; padding: 7px 10px; white-space: nowrap; }
+.menu-lista button:hover { background: #18233a !important; }
+.desc.chica { max-width: 220px; }
+.cab-sugerencias { padding: 2px 4px 6px; border-bottom: 1px solid var(--borde); margin-bottom: 4px; }
+.sin-sugerencias { padding: 6px 4px; margin: 0; font-size: 13px; }
+
+/* Columnas que el usuario puede estirar arrastrando el borde derecho del encabezado. */
+.col-redim { position: relative; }
+.col-redim .resizer { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 5; }
+.col-redim .resizer:hover, .col-redim .resizer:active { background: var(--acento); opacity: .5; }
+/* Datos del comprobante en 3 filas exactas (en vez de la cuadrícula que se desordenaba). */
+.comprobante .filas3 { display: flex; flex-direction: column; gap: 10px; }
+.comprobante .fila-cab { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; }
+.comprobante .fila-cab > label, .comprobante .fila-cab > .con-boton, .comprobante .fila-cab > .campo-tipo { flex: 1 1 110px; min-width: 100px; }
+.comprobante .fila-cab > .angosta { flex: 1 1 160px; max-width: 280px; }
+.comprobante .fila-cab > .descuento-der { margin-left: auto; flex: 0 0 auto; max-width: 220px; }
+.comprobante .campo-tipo { display: flex; flex-direction: column; gap: 3px; }
+.comprobante .campo-tipo input { margin-top: 2px; }

@@ -21,5 +21,22 @@ export const leerNumero = (t: string) => {
   const n = Number(String(t).trim().replace(/\s/g, '').replace(',', '.'));
   return String(t).trim() === '' || !Number.isFinite(n) ? null : n;
 };
-export const totalLinea = (d: DetalleOds) => r2((d.tipo === 'servicio' ? 1 : d.cantidad) * d.precio * (1 - d.descuentoPct / 100));
+export const r6 = (x: number) => Math.round((x + Number.EPSILON) * 1e6) / 1e6;
+/** Importe de la línea sin descuentos: en un servicio la cantidad son H-H y no multiplican el precio. */
+export const baseLinea = (d: DetalleOds) => (d.tipo === 'servicio' ? 1 : d.cantidad) * d.precio;
+/** Total de la línea: el Desc. (%) ya incluye el descuento por solapamiento (RF-102). */
+export const totalLinea = (d: DetalleOds) => r2(baseLinea(d) * (1 - d.descuentoPct / 100));
+/** Descuento manual en soles (lo que no es solapamiento). */
+const manualSoles = (d: DetalleOds) => Math.max(0, r2(baseLinea(d) * (d.descuentoPct / 100) - (d.descuentoMonto ?? 0)));
+/** Porcentaje manual, sin el solapamiento. */
+export const pctManual = (d: DetalleOds) => { const b = baseLinea(d); return b > 0 ? r6((manualSoles(d) / b) * 100) : 0; };
+/** Total antes del descuento por solapamiento: sirve para evaluar las reglas y su tope. */
+export const totalSinSolape = (d: DetalleOds) => r2(Math.max(0, baseLinea(d) - manualSoles(d)));
+/** Pone (o quita, con monto 0) el descuento por solapamiento dentro del Desc. (%) para que el total baje exactamente ese monto. */
+export function conSolape(d: DetalleOds, monto: number, regla: string | null): DetalleOds {
+  const base = baseLinea(d);
+  const total = r2(Math.max(0, totalSinSolape(d) - monto));
+  const x = { ...d, descuentoMonto: monto, solapamientoId: regla, descuentoPct: base > 0 ? r6((1 - total / base) * 100) : 0 };
+  return { ...x, total: totalLinea(x) };
+}
 export const itemVacio = (): DetalleOds => ({ tipo: 'servicio', descripcion: '', referencia: null, cantidad: 1, costo: null, rentabilidadPct: null, precio: 0, descuentoPct: 0, impuesto: 'IGV', total: 0, tecnicoId: null });

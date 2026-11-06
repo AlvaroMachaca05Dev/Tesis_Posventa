@@ -4,8 +4,9 @@ import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/ac
 import { PrismaService } from '../comun/prisma.service';
 import { choqueUnico, empresaDe, texto } from '../comun/validacion';
 import { KM_MAXIMO, normalizarPlaca } from './vehiculo.reglas';
+import { asignarGrupo } from '../maestros/maestros.reglas';
 
-type VehiculoFila = Prisma.VehiculoGetPayload<{ include: { cliente: true; lecturas: true } }>;
+type VehiculoFila = Prisma.VehiculoGetPayload<{ include: { cliente: true; lecturas: true; grupo: true } }>;
 
 function resumenVehiculo(v: VehiculoFila) {
   return {
@@ -19,14 +20,17 @@ function resumenVehiculo(v: VehiculoFila) {
     nroVin: v.nroVin,
     nroMotor: v.nroMotor,
     comentario: v.comentario,
-    grupo: v.grupo,
+    grupoId: v.grupoId,
+    grupo: v.grupo?.codigo ?? null,
+    grupoFuente: v.grupoFuente,
+    codigoMotor: v.codigoMotor,
     creadoEn: v.creadoEn.toISOString(),
     kmActual: v.lecturas[0]?.km ?? null,
     cliente: { id: v.cliente.id, nombre: v.cliente.nombre, documento: v.cliente.documento, tipoDocumento: v.cliente.tipoDocumento },
   };
 }
 
-const INCLUIR_VEHICULO = { cliente: true, lecturas: { orderBy: { fecha: 'desc' as const }, take: 1 } };
+const INCLUIR_VEHICULO = { cliente: true, grupo: true, lecturas: { orderBy: { fecha: 'desc' as const }, take: 1 } };
 
 @Controller()
 export class VehiculoController {
@@ -46,8 +50,31 @@ export class VehiculoController {
       if (a !== null && (!Number.isInteger(a) || a < 1900 || a > 2100)) throw new BadRequestException('El año no es válido.');
       d.anio = a;
     }
-    for (const k of ['marca', 'modelo', 'color', 'nroSerie', 'nroVin', 'nroMotor', 'comentario', 'grupo']) if (!parcial || viene(k)) d[k] = texto(b[k]);
+    for (const k of ['marca', 'modelo', 'color', 'nroSerie', 'nroVin', 'nroMotor', 'comentario']) if (!parcial || viene(k)) d[k] = texto(b[k]);
+    if (!parcial || viene('codigoMotor')) d.codigoMotor = texto(b.codigoMotor, 20)?.toUpperCase().replace(/\s+/g, '') ?? null;
     return d;
+  }
+
+  /**
+   * Grupo del vehículo (RF-100). Elegido a mano: se respeta (MANUAL). Vacío o sin elegir: por familia de motor;
+   * si no se conoce el motor, por marca + modelo + año (solo reglas automáticas); si no, sin grupo.
+   */
+  private async grupoDe(organizacionId: string, b: Record<string, unknown>, v: { codigoMotor?: unknown; marca?: unknown; modelo?: unknown; anio?: unknown }) {
+    if (b.grupoId) {
+      const g = await this.prisma.grupoVehicular.findFirst({ where: { id: String(b.grupoId), organizacionId, activo: true } });
+      if (!g) throw new BadRequestException('Elige un grupo activo de la empresa.');
+      return { grupoId: g.id, grupoFuente: 'MANUAL' };
+    }
+    const [familias, modelos] = await Promise.all([
+      this.prisma.familiaMotor.findMany({ where: { organizacionId }, include: { grupo: true } }),
+      this.prisma.reglaAsignacionModelo.findMany({ where: { organizacionId }, include: { grupo: true } }),
+    ]);
+    const r = asignarGrupo(
+      { codigoMotor: v.codigoMotor as string, marca: v.marca as string, modelo: v.modelo as string, anio: v.anio as number },
+      familias.filter((f) => f.grupo?.activo).map((f) => ({ codigo: f.codigo, codigos: f.codigos, grupo: f.grupo!.id })),
+      modelos.filter((m) => m.grupo.activo).map((m) => ({ ...m, grupo: m.grupoId })),
+    );
+    return r.grupo && !r.sugerido ? { grupoId: r.grupo, grupoFuente: r.fuente } : { grupoId: null, grupoFuente: null };
   }
 
   private async placaRepetida(organizacionId: string, placaNorm: string, exceptoId?: string) {
@@ -109,7 +136,8 @@ export class VehiculoController {
     await this.clienteDeEmpresa(organizacionId, cuerpo.clienteId);
     await this.placaRepetida(organizacionId, d.placaNorm as string);
     try {
-      const v = await this.prisma.vehiculo.create({ data: { ...(d as Prisma.VehiculoUncheckedCreateInput), organizacionId, clienteId: String(cuerpo.clienteId) }, include: INCLUIR_VEHICULO });
+      const g = await this.grupoDe(organizacionId, cuerpo, d);
+      const v = await this.prisma.vehiculo.create({ data: { ...(d as Prisma.VehiculoUncheckedCreateInput), ...g, organizacionId, clienteId: String(cuerpo.clienteId) }, include: INCLUIR_VEHICULO });
       const res = resumenVehiculo(v);
       await auditar(this.prisma, real, s, 'vehiculo', v.id, null, res, 'Vehículo creado');
       return res;
@@ -132,6 +160,9 @@ export class VehiculoController {
       d.clienteId = String(cuerpo.clienteId);
     }
     if (d.placaNorm !== undefined) await this.placaRepetida(organizacionId, d.placaNorm as string, id);
+    // El grupo se recalcula si se pidió (grupoId vacío = automático) o si cambió el motor, la marca, el modelo o el año de un vehículo sin grupo manual.
+    const tocaGrupo = cuerpo.grupoId !== undefined || (actual.grupoFuente !== 'MANUAL' && ['codigoMotor', 'marca', 'modelo', 'anio'].some((k) => cuerpo[k] !== undefined));
+    if (tocaGrupo) Object.assign(d, await this.grupoDe(organizacionId, cuerpo, { codigoMotor: actual.codigoMotor, marca: actual.marca, modelo: actual.modelo, anio: actual.anio, ...d }));
     try {
       const v = await this.prisma.vehiculo.update({ where: { id }, data: d as Prisma.VehiculoUncheckedUpdateInput, include: INCLUIR_VEHICULO });
       const res = resumenVehiculo(v);

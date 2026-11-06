@@ -71,7 +71,7 @@ it('Clientes: lista el documento, el nombre, el móvil con su prefijo y el estad
   simular();
   render(<App />);
   const fila = (await screen.findByText('JOAQUIN IGNACIO DEL CARPIO')).closest('tr')!;
-  expect(within(fila).getByText('DNI 73867734')).toBeInTheDocument();
+  expect(within(fila).getByText('73867734')).toBeInTheDocument();
   expect(within(fila).getByText('+51 987654321')).toBeInTheDocument();
   expect(within(fila).getByText('Activo')).toBeInTheDocument();
   expect(screen.getByText('Clientes varios')).toBeInTheDocument();
@@ -83,9 +83,9 @@ it('Clientes: sin buscador general; cada columna tiene su filtro y el embudo adm
   render(<App />);
   await screen.findByText('Clientes varios');
   expect(screen.queryByLabelText('Buscar cliente')).toBeNull();
-  await userEvent.type(screen.getByLabelText('Filtrar Documento'), '738');
+  await userEvent.type(screen.getByLabelText('Filtrar Número de documento'), '738');
   expect(screen.queryByText('Clientes varios')).toBeNull();
-  await userEvent.clear(screen.getByLabelText('Filtrar Documento'));
+  await userEvent.clear(screen.getByLabelText('Filtrar Número de documento'));
   expect(screen.getByText('Clientes varios')).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Más condiciones para Cliente' }));
   await userEvent.selectOptions(screen.getByLabelText('Primera condición'), 'nocontiene');
@@ -99,6 +99,7 @@ it('Clientes: «+ Cliente» y «Editar» abren un modal centrado, sin bajar la t
   simular();
   render(<App />);
   await screen.findByText('Clientes varios');
+  await userEvent.click(screen.getAllByRole('button', { name: 'Acciones' })[0]);
   await userEvent.click(screen.getAllByRole('button', { name: 'Editar' })[0]);
   expect(screen.getByRole('dialog', { name: 'Editar cliente' })).toBeInTheDocument();
 });
@@ -151,10 +152,12 @@ it('Clientes: eliminar pide confirmación y envía activo=false; «Clientes vari
   vi.stubGlobal('confirm', () => true);
   render(<App />);
   const fila = (await screen.findByText('JOAQUIN IGNACIO DEL CARPIO')).closest('tr')!;
+  await userEvent.click(within(fila).getByRole('button', { name: 'Acciones' }));
   await userEvent.click(within(fila).getByRole('button', { name: 'Eliminar' }));
   await waitFor(() => expect(llamadas.some((l) => l.metodo === 'PATCH' && l.ruta === '/clientes/c1')).toBe(true));
   expect(llamadas.find((l) => l.metodo === 'PATCH')!.cuerpo).toEqual({ activo: false });
   const filaVarios = screen.getByText('Clientes varios').closest('tr')!;
+  await userEvent.click(within(filaVarios).getByRole('button', { name: 'Acciones' }));
   expect(within(filaVarios).queryByRole('button', { name: 'Eliminar' })).toBeNull();
 });
 
@@ -168,7 +171,7 @@ it('Vehículos: lista la placa, el vehículo, el titular con su documento y el k
   expect(within(fila).getByText('JIMMY')).toBeInTheDocument();
   expect(within(fila).getByText('2012')).toBeInTheDocument();
   expect(within(fila).getByText('JOAQUIN IGNACIO DEL CARPIO')).toBeInTheDocument();
-  expect(within(fila).getByText('DNI 73867734')).toBeInTheDocument();
+  expect(within(fila).getByText('73867734')).toBeInTheDocument();
   expect(within(fila).getByText('64 000 km')).toBeInTheDocument();
 });
 
@@ -221,6 +224,7 @@ it('Vehículos: «Registrar km» guarda la lectura del kilometraje', async () =>
   simular();
   render(<App />);
   const fila = (await screen.findByText('B5W-165')).closest('tr')!;
+  await userEvent.click(within(fila).getByRole('button', { name: 'Acciones' }));
   await userEvent.click(within(fila).getByRole('button', { name: 'Registrar km' }));
   await userEvent.type(screen.getByLabelText('Kilometraje'), '70000');
   await userEvent.click(screen.getByRole('button', { name: 'Guardar lectura' }));

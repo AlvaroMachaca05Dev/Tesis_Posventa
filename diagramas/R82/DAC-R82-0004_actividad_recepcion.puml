@@ -1,0 +1,29 @@
+@startuml
+!include _estilo.iuml
+title Proceso de recepción (R8.2)
+|Cajera|
+start
+if (¿Tiene cita?) then (sí)
+  :Abrir la cita y marcar Atendida;
+  |Sistema|
+  :Preguntar «¿Deseas crear la orden?»;
+  :Crear la ODS con el encabezado\ny la cotización de la cita;
+else (no)
+  |Cajera|
+  :Buscar o registrar cliente y vehículo;
+  |Sistema|
+  :Completar datos con la consulta\nvehicular y de DNI (RN-10);
+  |Cajera|
+  :Crear la ODS en Recepción;
+endif
+|Sistema|
+if (¿El vehículo ya tiene una ODS abierta?) then (sí)
+  :Aceptar solo una ODS de garantía\nenlazada a la de origen (RN-07);
+else (no)
+endif
+:Poner código, precio por grupo y\nresponsables por defecto;
+:Crear una tarea por ítem;
+|Cajera|
+:Tomar hasta 5 fotos y registrar\nel estado del vehículo;
+stop
+@enduml

@@ -12,7 +12,8 @@
     "testEnvironment": "node",
     "rootDir": ".",
     "testRegex": "(src|test)/.*\\.spec\\.ts$",
-    "testTimeout": 30000
+    "testTimeout": 30000,
+    "setupFiles": ["<rootDir>/test/base-pruebas.ts"]
   },
   "dependencies": {
     "@nestjs/common": "^10",

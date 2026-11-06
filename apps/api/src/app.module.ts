@@ -8,6 +8,7 @@ import { UsuariosController } from './usuario/usuario.controller';
 import { ClienteController } from './cliente/cliente.controller';
 import { VehiculoController } from './vehiculo/vehiculo.controller';
 import { OrdenesController } from './ordenServicio/ordenServicio.controller';
+import { MaestrosController } from './maestros/maestros.controller';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { OrdenesController } from './ordenServicio/ordenServicio.controller';
       },
     }),
   ],
-  controllers: [AuthController, SesionController, UsuariosController, ClienteController, VehiculoController, OrdenesController],
+  controllers: [AuthController, SesionController, UsuariosController, ClienteController, VehiculoController, OrdenesController, MaestrosController],
   providers: [
     PrismaService,
     { provide: APP_GUARD, useClass: AutenticacionGuard },

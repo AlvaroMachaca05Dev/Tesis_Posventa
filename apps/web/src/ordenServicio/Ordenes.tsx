@@ -3,9 +3,10 @@ import { api, CatalogosOds, Cliente, Orden, Vehiculo } from '../comun/api';
 import EditorOrden from './EditorOrden';
 import FormAbono from './FormAbono';
 import FormFechas from './FormFechas';
+import { Paginacion, usePaginacion } from '../comun/Paginacion';
 import { ESTADOS, fecha, hace, Nivel, soles } from './ordenServicio.util';
 
-export default function Ordenes({ nivel, superadmin = false }: { nivel: Nivel; superadmin?: boolean }) {
+export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nivel: Nivel; superadmin?: boolean; usuarioId?: string }) {
   const puedeEditar = nivel === 'A' || nivel === 'E';
   const [estado, setEstado] = useState('Recepcion');
   const [f, setF] = useState({ q: '', desde: '', hasta: '', clienteId: '', vehiculoId: '', n: '10' });
@@ -28,6 +29,7 @@ export default function Ordenes({ nivel, superadmin = false }: { nivel: Nivel; s
     cargar('Recepcion').catch((e) => setError((e as Error).message));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const { visibles: ordenesVisibles, pagina, setPagina, tam, setTam, total, totalPaginas, inicio, fin } = usePaginacion(ordenes);
   const ok = async (m: string) => { setError(''); setMensaje(m); setMenu(null); await cargar(); };
   const falla = (e: unknown) => { setMensaje(''); setError((e as Error).message); };
 
@@ -73,7 +75,7 @@ export default function Ordenes({ nivel, superadmin = false }: { nivel: Nivel; s
       </form>
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !abierta && <p className="error" role="alert">{error}</p>}
-      {ordenes.map((o) => (
+      {ordenesVisibles.map((o) => (
         <article key={o.id} className="tarjeta-ods">
           <div className="info">
             <div><b>Consecutivo:</b> <span>{'#' + o.codigo}</span> <button type="button" className={'etq' + (o.conComprobante ? ' si' : '')} onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'comprobantes' ? null : { id: o.id, tipo: 'comprobantes' })}>{o.conComprobante ? 'Con comprobante' : 'Sin comprobante'}</button></div>
@@ -81,7 +83,7 @@ export default function Ordenes({ nivel, superadmin = false }: { nivel: Nivel; s
             <div><b>Fecha de inicio:</b> {fecha(o.fechaInicio)} · <b>Fecha de cierre:</b> {fecha(o.fechaCierre)}</div>
             <div><b>Cliente:</b> {o.cliente.nombre} ({o.cliente.documento})</div>
             <div><b>Vehículo:</b> {[o.vehiculo.marca && `Marca: ${o.vehiculo.marca}`, o.vehiculo.modelo && `Modelo: ${o.vehiculo.modelo}`, o.vehiculo.anio && `Año: ${o.vehiculo.anio}`, `Placa: ${o.vehiculo.placa}`, o.vehiculo.nroVin && `VIN: ${o.vehiculo.nroVin}`, o.km != null && `Kilometraje: ${o.km}`].filter(Boolean).join(', ')}</div>
-            <div><b>Tipo de atención:</b> {o.tipoAtencion} · <b>Decisión:</b> {o.decision}</div>
+            <div><b>Tipo de atención:</b> {o.tipoAtencion === 'Otro' && o.tipoAtencionDetalle ? o.tipoAtencionDetalle : o.tipoAtencion}</div>
             {o.observaciones && <div><b>Comentarios:</b> {o.observaciones}</div>}
             <div><b>Técnico:</b> {o.tecnico?.nombre ?? 'Sin asignar'} · <b>Usuario:</b> {o.creadoPor?.nombre ?? '—'} · <b>Total:</b> {soles(o.total)}</div>
             {o.ultimaBitacora && <div className="suave">💬 {o.ultimaBitacora.actor}: {o.ultimaBitacora.texto} ({hace(o.ultimaBitacora.fecha)})</div>}
@@ -103,10 +105,15 @@ export default function Ordenes({ nivel, superadmin = false }: { nivel: Nivel; s
               <button type="button" className="ac" aria-label="Bitácora" title="Bitácora" onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'bitacora' ? null : { id: o.id, tipo: 'bitacora' })}>💬</button>
               {menu?.id === o.id && menu.tipo === 'bitacora' && <div className="menu ancho">{o.bitacora.length ? o.bitacora.map((b, i) => <p key={i}><b>{b.actor}</b> · {fecha(b.fecha)}<br />{b.texto}</p>) : <p>Sin registros.</p>}</div>}
             </span>
-            <span className="rel">
-              <button type="button" className="ac" aria-label="Registrar abono o pago" title="Registrar abono o pago" disabled={!puedeEditar} onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'abono' ? null : { id: o.id, tipo: 'abono' })}>💵</button>
-              {menu?.id === o.id && menu.tipo === 'abono' && cat && <div className="menu ancho"><FormAbono orden={o} metodos={cat.metodosPago} alGuardar={ok} alFallar={falla} /></div>}
-            </span>
+            <button type="button" className="ac" aria-label="Registrar abono o pago" title="Registrar abono o pago" disabled={!puedeEditar} onClick={() => setMenu({ id: o.id, tipo: 'abono' })}>💵</button>
+            {menu?.id === o.id && menu.tipo === 'abono' && cat && (
+              <div className="fondo-modal">
+                <div className="modal-form" role="dialog" aria-modal="true" aria-label="Pagos recibidos">
+                  <div className="fila entre"><h3>Pagos recibidos</h3><button type="button" className="cerrar" aria-label="Cerrar" onClick={() => setMenu(null)}>×</button></div>
+                  <FormAbono orden={o} metodos={cat.metodosPago} alGuardar={ok} alFallar={falla} />
+                </div>
+              </div>
+            )}
             <span className="rel">
               <button type="button" className="ac" aria-label="Imprimir" title="Imprimir" onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'imprimir' ? null : { id: o.id, tipo: 'imprimir' })}>🖨</button>
               {menu?.id === o.id && menu.tipo === 'imprimir' && (
@@ -118,6 +125,7 @@ export default function Ordenes({ nivel, superadmin = false }: { nivel: Nivel; s
         </article>
       ))}
       {ordenes.length === 0 && <p className="suave">No hay órdenes en este estado con esos filtros.</p>}
+      {ordenes.length > 0 && <Paginacion pagina={pagina} setPagina={setPagina} tam={tam} setTam={setTam} total={total} totalPaginas={totalPaginas} inicio={inicio} fin={fin} />}
       {abierta && cat && (
         <EditorOrden
           orden={abierta === 'nueva' ? null : abierta}
@@ -125,6 +133,7 @@ export default function Ordenes({ nivel, superadmin = false }: { nivel: Nivel; s
           clientes={clientes}
           vehiculos={vehiculos}
           puedeEditar={puedeEditar}
+          usuarioId={usuarioId}
           alCerrar={async (m) => { setAbierta(null); if (m) await ok(m); else await cargar(); }}
         />
       )}

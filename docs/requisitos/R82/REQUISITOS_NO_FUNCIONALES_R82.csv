@@ -1,0 +1,13 @@
+﻿Codigo,Categoria,Requisito,Medicion,Estado,Evidencia
+RNF-01,Seguridad,Las contraseñas se guardan cifradas con bcrypt y la sesión vence a las 8 horas.,Revisión de código y prueba de ingreso,Cumplido,sesion.spec
+RNF-02,Seguridad,"Cada petición se autoriza en el servidor por rol, módulo y local, aunque la pantalla oculte la opción.",Prueba: un módulo sin permiso responde 403,Cumplido,sesion.spec
+RNF-03,Seguridad,"Los cambios de clientes, vehículos, usuarios y ODS quedan en una auditoría que no se edita.","Prueba: cada cambio guarda actor, antes y después",Cumplido,"maestros.spec, usuario.spec"
+RNF-04,Seguridad,Las claves y los tokens viven fuera del repositorio (.env) y el repositorio solo tiene datos sintéticos.,Revisión del repositorio,Cumplido,Revisión manual
+RNF-05,Integridad,Los guardados son atómicos y los correlativos no se repiten aunque haya peticiones simultáneas.,"Prueba de concurrencia: ODS, abonos y números",Cumplido,"base.spec, ordenServicio.spec"
+RNF-06,Exactitud,Los importes usan decimales exactos y redondeo a 2 decimales por línea; los textos se guardan en UTF-8 y las fechas en la zona America/Lima.,"Prueba: 3 × 0,1 = 0,3 y texto con tildes y emojis",Cumplido,base.spec
+RNF-07,Rendimiento,Las listas y búsquedas responden en menos de 2 s con 50 000 ODS.,Prueba de carga en el entorno de pruebas,Pendiente,—
+RNF-08,Usabilidad,"Todas las tablas usan el mismo patrón: filtros por columna y modal centrado de dos columnas, sin textos de ayuda en la interfaz.",Prueba de pantalla y revisión con usuarios,Cumplido,Maestros.test
+RNF-09,Portabilidad,"La interfaz funciona en computadora, tablet y celular; en celular el menú es un cajón y la cámara se abre para las fotos.",Prueba de pantalla a 375 px y revisión en tablet,Parcial,"App.test, Ordenes.test"
+RNF-10,Compatibilidad,"El sistema funciona en las dos últimas versiones de Chrome, Edge y Firefox.",Revisión manual en los tres navegadores,Pendiente,—
+RNF-11,Disponibilidad,La base de datos tiene copia de seguridad diaria y el sistema se despliega con Docker Compose.,Restauración de una copia en el entorno de pruebas,Pendiente,—
+RNF-12,Mantenibilidad,"El código es un monorepo TypeScript ordenado por módulo, igual en la API y en la interfaz, y cada módulo tiene sus pruebas automáticas.",Revisión del repositorio y ejecución de pruebas,Cumplido,pnpm test

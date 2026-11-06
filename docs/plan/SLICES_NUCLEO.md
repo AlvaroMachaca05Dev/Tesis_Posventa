@@ -1,30 +1,33 @@
-# Slices del núcleo (50 requisitos)
+# Slices de desarrollo (R8.2, 05/11/2026: 49 requisitos)
 
 Desarrollo **por funcionalidad completa** (base de datos, API, pantalla y prueba de una vez), en pareja con la IA y con validación del investigador en cada paso (skill `pareja-vertical`). El comportamiento esperado sale del prototipo HTML (skill `consultar-prototipo-html`). Al cerrar cada sesión se corre `resumen-de-sesion`.
 
-El núcleo son los 50 requisitos imprescindibles para demostrar la tesis: acceso, maestros, ODS, carga masiva, planes con línea de tiempo y reajuste, tareas, citas y agenda, bitácora, posventa y reportes básicos. Los demás RF quedan en la segunda ola o como prototipo verificado.
+El 05/11/2026 los requisitos bajaron de 99 a 49 (fuente: `docs/requisitos/R82/`). Los códigos no cambian hasta el cierre de la tesis; entonces se renumeran una sola vez con tabla de equivalencias. La carga masiva diaria se reemplazó por una **migración inicial** interna (RN-11) y las automatizaciones pasaron a **reglas fijas del servidor** (RN-01 a RN-18).
 
-| # | Slice (funcionalidad) | RF | Referencia en el prototipo | Semana |
+| # | Slice (funcionalidad) | RF | RNF | Estado |
 |---|---|---|---|---|
-| S1 | Acceso, roles y menú por rol (incluye el esqueleto mínimo del monorepo y la base) | 001, 002, 003 | Ingreso por rol, permisos, módulos beta ocultables | 27/10 a 2/11 |
-| S2 | Clientes y vehículos con lecturas de km | 004, 005, 006, 007 | Clientes, Vehículos, consulta de km | 27/10 a 2/11 |
-| S3 | ODS: crear, editar, ítems de servicio y producto, estados y cierre | 011, 012, 013, 014, 016, 017 | Órdenes de servicio, tarjetas y menú ⚙ | 3 a 9/11 |
-| S4 | Carga masiva diaria (vista previa, atómica, sin duplicar, trazabilidad) | 019, 020, 021, 022, 023 | Configuración › Carga masiva | 3 a 9/11 |
-| S5 | Planes preventivos: plantillas, versiones, reglas, aplicabilidad y asignación | 026, 027, 028, 029, 030 | Grupos de vehículos y planes | 10 a 16/11 |
-| S6 | Línea de tiempo, reajuste con servicio confirmado y recomendaciones | 031, 032, 033, 034, 035 | Línea temporal | 10 a 16/11 |
-| S7 | Tareas: creación desde la ODS, asignación, estados, fecha y duración | 036, 037, 038, 039, 040 | Espacio de trabajo | 17 a 23/11 |
-| S8 | Citas, llegada que crea la ODS, agenda y capacidad de dos bloques | 053, 054, 055, 056 | Citas y agenda | 17 a 23/11 |
-| S9 | Bitácora: comentarios, auditoría, historial y eventos automáticos | 059, 060, 063, 064 | Bitácora | 17 a 23/11 |
-| S10 | Posventa: automatizaciones, consulta de km, seguimiento, encuesta y reporte | 093, 094, 095, 097, 098 | Automatizaciones, encuesta, métricas | 24 a 30/11 |
-| S11 | Reportes básicos y configuración mínima | 066, 067, 068, 071 | Reportes, Empresa y locales | 24 a 30/11 |
+| S1 | Acceso, usuarios y roles | 001, 002, 003 | 01 a 04 | Terminado |
+| S2 | Clientes y vehículos con lecturas de km | 004, 005, 007 | 03, 06, 08 | Terminado |
+| S3 | Órdenes de servicio: crear y editar con ítems, tipo de atención, garantía, fotos, estados, cierre, corrección y abonos | 011, 015, 016, 018, 089 | 05, 06, 09 | En curso: falta RF-018 y los ajustes R8.2 (ocultar la decisión del cliente, cierre «Sin nota de venta» RN-06, tipo «Otro» con texto, garantía enlazada a la ODS de origen) |
+| S4 | Migración inicial (procedimiento interno RN-11) | — | — | Pendiente, sin requisitos funcionales: va después del S5 porque también carga los maestros |
+| S5 | Maestros: proveedores, servicios, productos, grupos, precios por grupo y solapamiento | 008, 009, 010, 100, 101, 102 | 03, 06, 08 | Terminado (05/11/2026): 22 pruebas de API y 3 de interfaz |
+| S6 | Planes preventivos y sugerencia a vehículos sin plan | 026, 028, 030, 103 | — | Pendiente |
+| S7 | Línea de tiempo, reajuste, recomendaciones y lista de próximos y vencidos | 031, 032, 034, 067 | — | Pendiente |
+| S8 | Tareas y vistas (lista, tablero y calendario como Google Calendar) | 036, 037, 039, 055 | 09 | Pendiente |
+| S9 | Citas y creación de la ODS desde la cita | 053, 054 | — | Pendiente |
+| S10 | Bitácora y auditoría | 059, 060, 063 | 03 | Pendiente (la auditoría y la bitácora de la ODS ya existen) |
+| S11 | Cotización, nota de venta, cuentas y bancos | 087, 088, 090, 091 | 05, 06 | Pendiente |
+| S12 | Compras e inventario (kárdex) | 078, 092 | 05 | Pendiente |
+| S13 | Posventa: consulta de km, encuesta y seguimiento | 094, 095, 097 | — | Pendiente |
+| S14 | Reportes, métricas y configuración | 065, 066, 096, 098, 071, 085 | 07 | Pendiente |
 
-Cierre y demostración: 1 a 5/12. **Hito 16/11:** recorrido mínimo integrado (ODS, importación, plan, reajuste).
+## Pruebas por sprint
+Cada sprint cierra solo cuando pasan todas sus pruebas. La tesis las presenta por sprint (S1, S2, S3 y S5) con sus casos, su resumen y su evidencia; el reparto por archivo está en `herramientas/r82/gen.py` (`SPRINT_ARCHIVO`).
 
 ## Reglas del orden
 - Cada slice termina funcionando de punta a punta antes de pasar al siguiente.
-- S1 incluye lo mínimo de infraestructura (monorepo, base y CI); no se construye infraestructura aparte.
 - Si un slice se atrasa, se recorta alcance dentro del slice, no se salta el recorrido.
-- Todo cambio a requisitos, diagramas o modelo de datos pasa antes por `guardian-coherencia-tesis`.
+- Todo cambio a requisitos, diagramas o modelo de datos pasa antes por `guardian-coherencia-tesis`, y se regenera el anexo (`docs/requisitos/R82/`) y la tesis.
 
 ## Demostración final (resumen)
-Entrar por rol, cargar el Excel del día con una fila mala (se rechaza) y luego bueno (sin duplicados), buscar el vehículo, asignarle plan y ver la línea de tiempo, abrir la ODS con sus tareas, agendar una cita (el tercer bloque se rechaza), cerrar la ODS y ver el reajuste de las proyecciones futuras con motivo, orden y responsable, ver el seguimiento y la encuesta, y consultar los reportes.
+Entrar por rol, buscar un vehículo migrado, asignarle el plan de su grupo y ver la línea de tiempo, agendar una cita con su cotización y, al marcarla Atendida, crear la ODS; trabajar las tareas en el calendario, cerrar la ODS con su nota de venta y ver el reajuste de las proyecciones futuras con motivo, orden y responsable, el seguimiento a los cinco días, la encuesta y los reportes.

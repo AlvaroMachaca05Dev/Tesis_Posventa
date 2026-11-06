@@ -5,6 +5,7 @@
     "type":  "module",
     "scripts":  {
                     "dev-db":  "node dev-db.mjs",
+                    "test-prep":  "dotenv -e ../.env -- node preparar-base-pruebas.mjs",
                     "generate":  "dotenv -e ../.env -- prisma generate --schema prisma/schema.prisma",
                     "migrate":  "dotenv -e ../.env -- prisma migrate dev --schema prisma/schema.prisma",
                     "deploy":  "dotenv -e ../.env -- prisma migrate deploy --schema prisma/schema.prisma",

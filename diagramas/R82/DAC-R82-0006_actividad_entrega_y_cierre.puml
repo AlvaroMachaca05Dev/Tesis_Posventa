@@ -1,0 +1,32 @@
+@startuml
+!include _estilo.iuml
+title Proceso de entrega y cierre (R8.2)
+|Cajera|
+start
+:Revisar la ODS En entrega;
+if (¿Se cobra en el sistema?) then (sí)
+  :Emitir la nota de venta con\nIGV por ítem y detracción;
+  |Sistema|
+  :Poner la serie del local y el número (RN-03);
+  :Descontar los productos en el kárdex;
+  |Cajera|
+  :Registrar el pago y la cuenta del banco;
+  |Sistema|
+  if (¿Queda saldo?) then (sí)
+    :Dejar el saldo en cuentas por cobrar;
+  else (no)
+  endif
+else (no)
+  |Cajera|
+  :Cerrar sin nota de venta;
+  |Sistema|
+  :Marcar «Sin nota de venta» (RN-06);
+endif
+|Cajera|
+:Entregar el vehículo y cerrar la ODS;
+|Sistema|
+:Poner la fecha de cierre (RN-04);
+:Reajustar las proyecciones del plan;
+:Programar el seguimiento a los 5 días hábiles;
+stop
+@enduml

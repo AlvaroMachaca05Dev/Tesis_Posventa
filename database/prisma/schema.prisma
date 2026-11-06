@@ -12,19 +12,25 @@ datasource db {
 }
 
 model Organizacion {
-  id          String             @id @default(uuid())
-  nombre      String
-  ruc         String?
-  activa      Boolean            @default(true)
-  paisPredeterminado String      @default("PE")
-  locales     Local[]
-  roles       Rol[]
-  usuarios    Usuario[]
-  modulos     ModuloHabilitado[]
-  clientes    Cliente[]
-  vehiculos   Vehiculo[]
-  marcasVehiculo MarcaVehiculo[]
-  ordenes     OrdenServicio[]
+  id                 String             @id @default(uuid())
+  nombre             String
+  ruc                String?
+  activa             Boolean            @default(true)
+  paisPredeterminado String             @default("PE")
+  locales            Local[]
+  roles              Rol[]
+  usuarios           Usuario[]
+  modulos            ModuloHabilitado[]
+  clientes           Cliente[]
+  vehiculos          Vehiculo[]
+  marcasVehiculo     MarcaVehiculo[]
+  ordenes            OrdenServicio[]
+  proveedores        Proveedor[]
+  productos          Producto[]
+  servicios          Servicio[]
+  grupos             GrupoVehicular[]
+  reglasPrecio       ReglaPrecio[]
+  solapamientos      Solapamiento[]
 }
 
 // Qué módulos tiene contratados cada empresa. Lo define el Propietario de la plataforma.
@@ -37,31 +43,33 @@ model ModuloHabilitado {
 }
 
 model Local {
-  id             String          @id @default(uuid())
+  id             String                 @id @default(uuid())
   organizacionId String
   nombre         String
   direccion      String?
-  organizacion   Organizacion    @relation(fields: [organizacionId], references: [id])
+  organizacion   Organizacion           @relation(fields: [organizacionId], references: [id])
   usuarios       Usuario[]
   ordenes        OrdenServicio[]
+  stock          StockProducto[]
+  movimientos    MovimientoInventario[]
 }
 
 // Los roles son datos: los base se crean por empresa y el Superadministrador puede crear roles propios.
 // organizacionId vacío = rol de plataforma (Propietario).
 model Rol {
-  id             String        @id @default(uuid())
-  organizacionId String?
-  nombre         String
-  ambito         String        @default("empresa") // "plataforma" | "empresa"
-  esBase         Boolean       @default(false)
+  id                  String        @id @default(uuid())
+  organizacionId      String?
+  nombre              String
+  ambito              String        @default("empresa") // "plataforma" | "empresa"
+  esBase              Boolean       @default(false)
   // Nivel jerárquico: 5 Desarrollador, 4 Superadministrador, 3 Administrador, 2 Jefe de taller, 1 Cajera, Técnico, Logístico y roles propios.
   // Un usuario solo gestiona roles de nivel inferior al suyo.
-  nivel          Int           @default(1)
+  nivel               Int           @default(1)
   // Si la persona puede aparecer en la agenda y recibir servicios (Técnico y Jefe de taller sí; el Administrador no).
-  asignableAServicios Boolean  @default(false)
-  organizacion   Organizacion? @relation(fields: [organizacionId], references: [id])
-  usuarios       UsuarioRol[]
-  permisos       RolPermiso[]
+  asignableAServicios Boolean       @default(false)
+  organizacion        Organizacion? @relation(fields: [organizacionId], references: [id])
+  usuarios            UsuarioRol[]
+  permisos            RolPermiso[]
 
   @@unique([organizacionId, nombre])
 }
@@ -87,21 +95,21 @@ model RolPermiso {
 }
 
 model Usuario {
-  id             String        @id @default(uuid())
+  id             String             @id @default(uuid())
   organizacionId String?
   localId        String?
   nombre         String
-  correo         String        @unique
+  correo         String             @unique
   passwordHash   String
-  activo         Boolean       @default(true)
-  organizacion   Organizacion? @relation(fields: [organizacionId], references: [id])
-  local          Local?        @relation(fields: [localId], references: [id])
+  activo         Boolean            @default(true)
+  organizacion   Organizacion?      @relation(fields: [organizacionId], references: [id])
+  local          Local?             @relation(fields: [localId], references: [id])
   roles          UsuarioRol[]
   detalles       DetalleODS[]
   bitacora       Bitacora[]
-  odsTecnico     OrdenServicio[] @relation("OdsTecnico")
-  odsJefe        OrdenServicio[] @relation("OdsJefe")
-  odsCreadas     OrdenServicio[] @relation("OdsCreador")
+  odsTecnico     OrdenServicio[]    @relation("OdsTecnico")
+  odsJefe        OrdenServicio[]    @relation("OdsJefe")
+  odsCreadas     OrdenServicio[]    @relation("OdsCreador")
   abonos         Abono[]
   evidencias     EvidenciaIngreso[]
 }
@@ -117,22 +125,22 @@ model UsuarioRol {
 }
 
 model Cliente {
-  id              String        @id @default(uuid())
+  id              String          @id @default(uuid())
   organizacionId  String
-  tipoDocumento   TipoDocumento @default(DNI)
+  tipoDocumento   TipoDocumento   @default(DNI)
   documento       String
   nombre          String
   nombreComercial String?
-  pais            String        @default("PE")
+  pais            String          @default("PE")
   movil           String?
   direccionFiscal String?
   email           String?
   ubigeo          String?
   comentario      String?
-  esGenerico      Boolean       @default(false)
-  activo          Boolean       @default(true)
-  creadoEn        DateTime      @default(now())
-  organizacion    Organizacion  @relation(fields: [organizacionId], references: [id])
+  esGenerico      Boolean         @default(false)
+  activo          Boolean         @default(true)
+  creadoEn        DateTime        @default(now())
+  organizacion    Organizacion    @relation(fields: [organizacionId], references: [id])
   vehiculos       Vehiculo[]
   ordenes         OrdenServicio[]
 
@@ -160,10 +168,15 @@ model Vehiculo {
   nroVin         String?
   nroMotor       String?
   comentario     String?
-  grupo          String?
+  // Grupo del vehículo (RF-100): por familia de motor; si no se conoce, por marca + modelo + año; si no, a mano o sin grupo.
+  grupoId        String?
+  grupoFuente    String? // FAMILIA_MOTOR | MODELO | MANUAL
+  // Código del motor (G3LA, A08S3…): sirve para hallar la familia de motor y con ella el grupo.
+  codigoMotor    String?
   creadoEn       DateTime        @default(now())
   organizacion   Organizacion    @relation(fields: [organizacionId], references: [id])
   cliente        Cliente         @relation(fields: [clienteId], references: [id])
+  grupo          GrupoVehicular? @relation(fields: [grupoId], references: [id])
   lecturas       LecturaKm[]
   ordenes        OrdenServicio[]
 
@@ -182,52 +195,56 @@ model MarcaVehiculo {
 }
 
 model LecturaKm {
-  id         String   @id @default(uuid())
-  vehiculoId String
-  km         Int
-  fecha      DateTime
-  fuente     String
+  id          String   @id @default(uuid())
+  vehiculoId  String
+  km          Int
+  fecha       DateTime
+  fuente      String
   observacion String?
-  vehiculo   Vehiculo @relation(fields: [vehiculoId], references: [id])
+  vehiculo    Vehiculo @relation(fields: [vehiculoId], references: [id])
 }
 
 model OrdenServicio {
-  id              String       @id @default(uuid())
-  organizacionId  String
-  vehiculoId      String
-  clienteId       String
-  localId         String
+  id                      String             @id @default(uuid())
+  organizacionId          String
+  vehiculoId              String
+  clienteId               String
+  localId                 String
   // AAAAMMDD + correlativo de la empresa (DEC-67); las externas llevan «E» delante y no usan correlativo
-  codigo          String
-  correlativo     Int?
-  externa         Boolean      @default(false)
-  estado          String       @default("Recepcion")
-  decision        String       @default("Pendiente de aprobación")
-  tipoAtencion    String
-  fechaInicio     DateTime     @default(now())
-  fechaCierre     DateTime?
-  km              Int?
-  tecnicoId       String?
-  jefeTallerId    String?
-  creadoPorId     String
-  observaciones   String?
-  recomendaciones String?
+  codigo                  String
+  correlativo             Int?
+  externa                 Boolean            @default(false)
+  estado                  String             @default("Recepcion")
+  decision                String             @default("Pendiente de aprobación")
+  tipoAtencion            String
+  // Texto que escribe la cajera cuando tipoAtencion es «Otro».
+  tipoAtencionDetalle     String?
+  fechaInicio             DateTime           @default(now())
+  fechaCierre             DateTime?
+  km                      Int?
+  tecnicoId               String?
+  jefeTallerId            String?
+  creadoPorId             String
+  observaciones           String?
+  recomendaciones         String?
   // Estado del vehículo al ingresar (combustible, fluidos, inventario, documentos, daños): lista de chequeo (RF-015)
-  estadoVehiculo  Json?
-  eliminada       Boolean      @default(false)
-  motivoEliminacion String?
-  creadoEn        DateTime     @default(now())
-  organizacion    Organizacion @relation(fields: [organizacionId], references: [id])
-  vehiculo        Vehiculo     @relation(fields: [vehiculoId], references: [id])
-  cliente         Cliente      @relation(fields: [clienteId], references: [id])
-  local           Local        @relation(fields: [localId], references: [id])
-  tecnico         Usuario?     @relation("OdsTecnico", fields: [tecnicoId], references: [id])
-  jefeTaller      Usuario?     @relation("OdsJefe", fields: [jefeTallerId], references: [id])
-  creadoPor       Usuario      @relation("OdsCreador", fields: [creadoPorId], references: [id])
-  detalles        DetalleODS[]
-  abonos          Abono[]
-  bitacora        Bitacora[]
-  evidencias      EvidenciaIngreso[]
+  estadoVehiculo          Json?
+  // Reglas de solapamiento opcionales que la cajera decidió no aplicar («Mantener montos»).
+  solapamientosMantenidos String[]           @default([])
+  eliminada               Boolean            @default(false)
+  motivoEliminacion       String?
+  creadoEn                DateTime           @default(now())
+  organizacion            Organizacion       @relation(fields: [organizacionId], references: [id])
+  vehiculo                Vehiculo           @relation(fields: [vehiculoId], references: [id])
+  cliente                 Cliente            @relation(fields: [clienteId], references: [id])
+  local                   Local              @relation(fields: [localId], references: [id])
+  tecnico                 Usuario?           @relation("OdsTecnico", fields: [tecnicoId], references: [id])
+  jefeTaller              Usuario?           @relation("OdsJefe", fields: [jefeTallerId], references: [id])
+  creadoPor               Usuario            @relation("OdsCreador", fields: [creadoPorId], references: [id])
+  detalles                DetalleODS[]
+  abonos                  Abono[]
+  bitacora                Bitacora[]
+  evidencias              EvidenciaIngreso[]
 
   @@unique([organizacionId, codigo])
 }
@@ -250,25 +267,34 @@ model DetalleODS {
   rentabilidadPct Decimal?      @db.Decimal(8, 3)
   // precio de venta final por unidad, con el impuesto incluido (DEC-73)
   precio          Decimal       @default(0) @db.Decimal(12, 3)
-  descuentoPct    Decimal       @default(0) @db.Decimal(6, 3)
+  descuentoPct    Decimal       @default(0) @db.Decimal(9, 6)
   impuesto        String        @default("IGV")
   total           Decimal       @default(0) @db.Decimal(12, 2)
   tecnicoId       String?
+  // Del catálogo (S5): el servicio o producto, las horas y el precio del grupo del vehículo con la traza de reglas (RN-09).
+  servicioId      String?
+  productoId      String?
+  horas           Decimal?      @db.Decimal(6, 2)
+  precioGrupo     Decimal?      @db.Decimal(12, 3)
+  trazaPrecio     Json?
+  // Descuento en soles por solapamiento de servicios (RF-102) y la regla que lo dio.
+  descuentoMonto  Decimal       @default(0) @db.Decimal(12, 2)
+  solapamientoId  String?
   orden           OrdenServicio @relation(fields: [ordenId], references: [id])
   tecnico         Usuario?      @relation(fields: [tecnicoId], references: [id])
 }
 
 // Abono o pago antes del comprobante (DEC-28): reduce el saldo, no el total.
 model Abono {
-  id               String        @id @default(uuid())
-  ordenId          String
-  fecha            DateTime      @default(now())
-  metodo           String
-  concepto         String?
-  valor            Decimal       @db.Decimal(12, 2)
-  registradoPorId  String
-  orden            OrdenServicio @relation(fields: [ordenId], references: [id])
-  registradoPor    Usuario       @relation(fields: [registradoPorId], references: [id])
+  id              String        @id @default(uuid())
+  ordenId         String
+  fecha           DateTime      @default(now())
+  metodo          String
+  concepto        String?
+  valor           Decimal       @db.Decimal(12, 2)
+  registradoPorId String
+  orden           OrdenServicio @relation(fields: [ordenId], references: [id])
+  registradoPor   Usuario       @relation(fields: [registradoPorId], references: [id])
 }
 
 // Fotos y videos del vehículo al ingresar (RF-015). El archivo se guarda en la base para no depender de un disco aparte.
@@ -316,4 +342,200 @@ model Auditoria {
   despues        Json?
   motivo         String?
   fecha          DateTime @default(now())
+}
+
+// ───────────── Slice S5: maestros (RF-008, RF-009, RF-010, RF-100, RF-101, RF-102) ─────────────
+// Modelo de grupos, precios y solapamiento: integracion/esquema_propuesto.prisma
+// (referencia Autodata en combinación con datos del taller RSA).
+
+model Proveedor {
+  id             String        @id @default(uuid())
+  organizacionId String
+  tipoDocumento  TipoDocumento @default(RUC)
+  documento      String
+  nombre         String
+  contacto       String?
+  telefono       String?
+  correo         String?
+  direccion      String?
+  rubro          String?
+  activo         Boolean       @default(true)
+  creadoEn       DateTime      @default(now())
+  organizacion   Organizacion  @relation(fields: [organizacionId], references: [id])
+  productos      Producto[]
+  servicios      Servicio[]
+
+  @@unique([organizacionId, documento])
+}
+
+model Producto {
+  id             String                 @id @default(uuid())
+  organizacionId String
+  codigo         String
+  nombre         String
+  referencia     String?
+  unidad         String                 @default("UND")
+  categoria      String?
+  marca          String?
+  precio         Decimal                @db.Decimal(12, 2)
+  costo          Decimal?               @db.Decimal(12, 2)
+  proveedorId    String?
+  activo         Boolean                @default(true)
+  creadoEn       DateTime               @default(now())
+  organizacion   Organizacion           @relation(fields: [organizacionId], references: [id])
+  proveedor      Proveedor?             @relation(fields: [proveedorId], references: [id])
+  stock          StockProducto[]
+  movimientos    MovimientoInventario[]
+
+  @@unique([organizacionId, codigo])
+}
+
+// Stock de cada producto en cada local (almacén).
+model StockProducto {
+  productoId String
+  localId    String
+  cantidad   Decimal  @default(0) @db.Decimal(12, 3)
+  producto   Producto @relation(fields: [productoId], references: [id])
+  local      Local    @relation(fields: [localId], references: [id])
+
+  @@id([productoId, localId])
+}
+
+// Movimiento del kárdex: hoy, los ajustes de inventario (con la contraseña de quien lo hace); luego compras y ventas.
+model MovimientoInventario {
+  id         String   @id @default(uuid())
+  productoId String
+  localId    String
+  tipo       String
+  entrada    Decimal  @default(0) @db.Decimal(12, 3)
+  salida     Decimal  @default(0) @db.Decimal(12, 3)
+  saldo      Decimal  @db.Decimal(12, 3)
+  motivo     String?
+  usuarioId  String
+  fecha      DateTime @default(now())
+  producto   Producto @relation(fields: [productoId], references: [id])
+  local      Local    @relation(fields: [localId], references: [id])
+}
+
+// Un solo servicio en todo el sistema con su tiempo y precio estándar (vehículo sin grupo); los grupos lo ajustan con reglas.
+model Servicio {
+  id             String       @id @default(uuid())
+  organizacionId String
+  codigo         String
+  nombre         String
+  categoria      String
+  descripcion    String?
+  trabajoMayor   Boolean      @default(false) // el tiempo va por horas enteras
+  externo        Boolean      @default(false) // lo hace un proveedor
+  proveedorId    String?
+  horasEstandar  Decimal      @db.Decimal(6, 2)
+  horasFuente    String       @default("AUTODATA") // AUTODATA | PREDETERMINADA (1 h, RN-08)
+  precioEstandar Decimal      @db.Decimal(10, 2)
+  // Precio y horas de cada grupo (G1 a G4). Un precio null = «No aplica» para ese grupo; sin clave, se usa el estándar.
+  preciosGrupo   Json?
+  horasGrupo     Json?
+  repuestos      String[]     @default([])
+  activo         Boolean      @default(true)
+  creadoEn       DateTime     @default(now())
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  proveedor      Proveedor?   @relation(fields: [proveedorId], references: [id])
+
+  @@unique([organizacionId, codigo])
+}
+
+model GrupoVehicular {
+  id             String                  @id @default(uuid())
+  organizacionId String
+  codigo         String
+  nombre         String
+  descripcion    String?
+  activo         Boolean                 @default(true)
+  organizacion   Organizacion            @relation(fields: [organizacionId], references: [id])
+  vehiculos      Vehiculo[]
+  familias       FamiliaMotor[]
+  reglas         ReglaPrecio[]
+  reglasModelo   ReglaAsignacionModelo[]
+
+  @@unique([organizacionId, codigo])
+}
+
+// Códigos de motor que se comportan igual en el taller (mismo plan, repuestos y tiempos de motor).
+model FamiliaMotor {
+  id             String          @id @default(uuid())
+  organizacionId String
+  codigo         String
+  combustible    String?
+  litros         String?
+  turbo          Boolean         @default(false)
+  codigos        String[]        @default([])
+  grupoId        String?
+  grupo          GrupoVehicular? @relation(fields: [grupoId], references: [id])
+
+  @@unique([organizacionId, codigo])
+}
+
+// Asignación de grupo por marca + modelo + años, solo cuando no se conoce el motor.
+model ReglaAsignacionModelo {
+  id             String         @id @default(uuid())
+  organizacionId String
+  marca          String
+  modelo         String
+  anioDesde      Int
+  anioHasta      Int
+  grupoId        String
+  confianza      Int
+  automatica     Boolean
+  grupo          GrupoVehicular @relation(fields: [grupoId], references: [id])
+}
+
+// Reglas acumulativas (RN-09): SERVICIO (del grupo para uno, varios o todos sus servicios), luego GRUPO
+// (generales del grupo) y luego GLOBAL (todos los grupos). FIJAR reemplaza, SUMAR suma o resta, PORCENTAJE sobre el precio.
+model ReglaPrecio {
+  id             String          @id @default(uuid())
+  organizacionId String
+  codigo         String
+  nivel          String
+  tipo           String
+  grupoId        String?
+  servicios      String[]        @default([])
+  horas          Decimal?        @db.Decimal(6, 2)
+  precio         Decimal?        @db.Decimal(10, 2)
+  porcentaje     Decimal?        @db.Decimal(6, 2)
+  precioDesde    Decimal?        @db.Decimal(10, 2)
+  precioHasta    Decimal?        @db.Decimal(10, 2)
+  orden          Int             @default(0)
+  activa         Boolean         @default(true)
+  nota           String?
+  creadoEn       DateTime        @default(now())
+  organizacion   Organizacion    @relation(fields: [organizacionId], references: [id])
+  grupo          GrupoVehicular? @relation(fields: [grupoId], references: [id])
+
+  @@unique([organizacionId, codigo])
+}
+
+// Dos servicios que comparten trabajo (RF-102): juntos en una ODS, el segundo lleva un descuento en soles.
+// AUTOMATICO: el sistema lo aplica y avisa. OPCIONAL: la alerta lo sugiere y la cajera decide.
+model Solapamiento {
+  id                 String       @id @default(uuid())
+  organizacionId     String
+  codigo             String
+  // PAR: si está uno de los servicios base, cada servicio reducido presente lleva el descuento.
+  // CONJUNTO: si hay «minimo» servicios del conjunto, todos menos el de mayor precio llevan el descuento.
+  tipo               String       @default("PAR")
+  serviciosBase      String[]     @default([])
+  serviciosReducidos String[]     @default([])
+  minimo             Int          @default(2)
+  // AUTOMATICO, OPCIONAL o AVISO (solo informa, sin descuento)
+  modo               String       @default("OPCIONAL")
+  descuentoEstandar  Decimal      @db.Decimal(10, 2)
+  descuentos         Json?
+  horasCompartidas   Decimal?     @db.Decimal(6, 2)
+  alerta             String?
+  nota               String?
+  estado             String       @default("Propuesto")
+  activo             Boolean      @default(true)
+  creadoEn           DateTime     @default(now())
+  organizacion       Organizacion @relation(fields: [organizacionId], references: [id])
+
+  @@unique([organizacionId, codigo])
 }

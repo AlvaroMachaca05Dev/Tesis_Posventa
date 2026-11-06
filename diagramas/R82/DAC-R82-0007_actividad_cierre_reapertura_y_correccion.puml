@@ -1,0 +1,30 @@
+@startuml
+!include _estilo.iuml
+title Cierre, reapertura y corrección de una ODS (R8.2)
+|Jefe de taller|
+start
+:Detectar un error en una ODS cerrada;
+:Solicitar la corrección o la reapertura;
+|Administrador|
+if (¿Autoriza?) then (sí)
+  if (¿Reabrir?) then (sí)
+    |Sistema|
+    :Pasar la ODS a En proceso;
+    :Borrar la fecha de cierre;
+    |Jefe de taller|
+    :Corregir y volver a cerrar;
+    |Sistema|
+    :Poner la nueva fecha de cierre;
+  else (no)
+    |Sistema|
+    :Guardar la corrección con\nel antes y el después (RN-13);
+  endif
+  |Sistema|
+  :Registrar en la auditoría y la bitácora;
+  :Recalcular el plan si cambió un servicio;
+else (no)
+  |Sistema|
+  :Mantener la ODS cerrada y registrar el rechazo;
+endif
+stop
+@enduml

@@ -53,7 +53,7 @@ export async function precargaMaestros(prisma: PrismaClient, organizacionId: str
         nroMotor: v.motor || null,
         nroSerie: v.serie || null,
         nroVin: v.vin || null,
-        grupo: v.grupo || null,
+        codigoMotor: v.motor ? v.motor.toUpperCase() : null,
       },
     });
     if (v.km && !(await prisma.lecturaKm.findFirst({ where: { vehiculoId: fila.id, fuente: 'precarga' } }))) {

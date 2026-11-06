@@ -1,0 +1,58 @@
+@startuml
+!include _estilo.iuml
+hide empty members
+skinparam classAttributeIconSize 0
+title Clases de tareas, citas, vistas y bitácora (R8.2)
+left to right direction
+class Tarea {
+  tipo: servicio | producto | preventiva | seguimiento
+  estado: Pendiente | En proceso | En espera | Completada
+  responsable
+  fecha y hora
+  duracionEstimada
+  duracionReal
+}
+class Cita {
+  codigo: CIT-AAAAMMDD-n
+  estado: Pendiente | Confirmada | Reprogramada | Atendida | No concretada
+  fecha y hora
+  tipoAtencion, km
+  observaciones: título en el calendario
+  recomendaciones
+  creadaPor
+  crearODS()
+}
+class Vista {
+  tipo: lista | tablero | calendario
+  nombre
+  filtros
+  columnas
+  duplicar()
+}
+class Cotizacion
+class OrdenServicio {
+  citaOrigen: opcional
+}
+class Bitacora {
+  texto
+  adjuntos
+  menciones
+}
+class Auditoria {
+  actor, fecha
+  antes, después
+  motivo
+}
+class Usuario
+OrdenServicio "1" -- "0..*" Tarea : crea una por ítem
+Cita "0..1" -- "0..1" Cotizacion : asigna o crea
+OrdenServicio "0..1" --> "0..1" Cita : se crea desde
+OrdenServicio "0..1" -- "0..1" Cotizacion : enlaza
+Usuario "1" -- "0..*" Vista : guarda sus filtros
+Usuario "1" -- "0..*" Tarea : responsable
+Usuario "1" -- "0..*" Cita : creó
+Tarea "1" -- "0..*" Bitacora
+OrdenServicio "1" -- "0..*" Bitacora
+OrdenServicio "1" -- "0..*" Auditoria
+note bottom of Vista : Tareas y citas se ven en lista,\ntablero o calendario (día, 4 días,\nsemana, mes; pasos de 15 min).
+@enduml

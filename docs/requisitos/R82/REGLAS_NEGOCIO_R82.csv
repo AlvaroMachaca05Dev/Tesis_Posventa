@@ -1,0 +1,19 @@
+﻿Codigo,Nombre,Regla,VieneDe,SeAplicaEn
+RN-01,Avisos,El sistema avisa al responsable cuando lo asignan a una tarea o lo mencionan en un comentario.,RF-052,"RF-037, RF-059"
+RN-02,Eventos automáticos,"El sistema registra en la bitácora los eventos relevantes (creación, cambio de estado, abonos, fotos) sin impedir los comentarios humanos.",RF-064,"RF-016, RF-060"
+RN-03,Serie y número,"Cada local tiene una serie de comprobante (N001 Unión, N002 Prohogar) y el número es consecutivo y automático, sin saltos ni repetidos; no se muestra ni se edita.",RF-086,RF-088
+RN-04,Automatizaciones fijas,"Las automatizaciones viven en el servidor y no se configuran en pantalla: fecha de cierre al pasar a Cerrada, tarea de seguimiento a los cinco días hábiles del cierre y recálculo de proyecciones al registrar un kilometraje.",RF-093,"RF-016, RF-094, RF-097"
+RN-05,Tipos de atención y estados fijos,"Los tipos de atención y los estados de la ODS, la tarea y la cita son fijos; con el tipo «Otro» se escribe un texto que se muestra en su lugar.",RF-073,"RF-015, RF-016, RF-039, RF-053"
+RN-06,Cierre sin nota de venta,Una ODS se puede cerrar sin nota de venta; queda marcada «Sin nota de venta» a la vista. Reemplaza a DEC-72.,DEC-72,RF-016
+RN-07,Dos ODS abiertas,"Un vehículo tiene como máximo dos ODS abiertas, y la segunda debe ser de garantía enlazada a su ODS de origen.",DEC-67,"RF-011, RF-015"
+RN-08,Tiempo del servicio,"El tiempo de cada servicio sale de AutoData; si AutoData no tiene dato, se usa 1 h.",Nuevo,RF-009
+RN-09,Precio por grupo,"El precio y las horas de un servicio parten de su estándar y se ajustan, en este orden, con las reglas del grupo para ese servicio, las generales del grupo y las de todos los grupos; una regla «Fijar» es una excepción. Los montos van en múltiplos de 5, el porcentaje redondea a 10 céntimos a favor de la empresa y las horas suben a la rejilla de 0,25 h. El precio se copia en la línea al agregarlo.",Nuevo,"RF-101, RF-011, RF-053, RF-087"
+RN-10,Consulta vehicular y de DNI,"Al registrar un vehículo por placa, el servidor consulta la API vehicular y completa VIN, código de motor, marca y modelo; con el DNI completa el nombre del cliente. La clave de la API no aparece en pantalla.",Nuevo,"RF-004, RF-005"
+RN-11,Migración inicial,"Los datos del sistema anterior del taller se migran una sola vez por un procedimiento interno: atómico, sin duplicar, conservando la fila de origen y normalizando la descripción del servicio.",RF-019 a RF-024,"RF-004, RF-005, RF-011"
+RN-12,Identificador interno,Cada registro tiene un identificador interno; la placa o el documento no lo reemplazan.,R8.1,"RF-004, RF-005"
+RN-13,ODS cerrada,La ODS cerrada no se edita de forma ordinaria; las correcciones quedan registradas con el antes y el después.,R8.1,"RF-016, RF-018"
+RN-14,Reajuste confirmado,Los planes se versionan sin alterar lo realizado y el reajuste solo se hace con un servicio confirmado.,R8.1,"RF-026, RF-032"
+RN-15,IGV y detracción,"Cada ítem es Gravado (el precio incluye el IGV), Exonerado o Inafecto. La detracción de 12 % se propone cuando hay servicios y el total supera S/ 700; la deposita la empresa.",R8.1,RF-088
+RN-16,Kárdex,Cada entrada y salida de un producto por local queda en el kárdex con su usuario; la nota de venta descuenta lo vendido.,R8.1,"RF-078, RF-092"
+RN-17,Responsables por defecto,"El responsable de un servicio es un técnico o el jefe de taller (por defecto, el técnico de la ODS) y el de un producto, una cajera o un logístico (por defecto, la cajera).",R8.1,"RF-011, RF-037"
+RN-18,Lo que ve el técnico,El técnico ve solo las ODS donde está asignado y las carpetas del espacio de trabajo compartidas con él; sí ve todo el módulo de citas.,R8.1,"RF-002, RF-053"

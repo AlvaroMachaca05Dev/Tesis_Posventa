@@ -5,6 +5,7 @@ import { PrismaService } from '../comun/prisma.service';
 import { choqueUnico, empresaDe, texto } from '../comun/validacion';
 import { PAISES } from './paises';
 import { normalizarPlaca } from '../vehiculo/vehiculo.reglas';
+import { errorDocumento } from '../maestros/maestros.reglas';
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TIPOS_DOCUMENTO = ['DNI', 'CARNET_EXTRANJERIA', 'RUC'];
@@ -44,7 +45,7 @@ export class ClienteController {
       d.tipoDocumento = t;
     }
     if (!parcial || viene('documento')) {
-      const doc = texto(b.documento, 20)?.toUpperCase();
+      const doc = texto(b.documento, 20)?.toUpperCase().replace(/\s+/g, '');
       if (!doc) throw new BadRequestException('Escribe el número de documento (hasta 20 caracteres).');
       d.documento = doc;
     }
@@ -118,6 +119,8 @@ export class ClienteController {
     const org = await this.prisma.organizacion.findUniqueOrThrow({ where: { id: organizacionId } });
     const d = this.datosCliente(b ?? {}, org.paisPredeterminado, false);
     this.validarMovil(d.pais as string, d.movil as string | null);
+    const errDoc = errorDocumento(String(d.tipoDocumento), String(d.documento));
+    if (errDoc) throw new BadRequestException(errDoc);
     const igual = await this.prisma.cliente.findUnique({ where: { organizacionId_documento: { organizacionId, documento: d.documento as string } } });
     if (igual) throw new ConflictException(`Ese documento ya existe en el sistema (${igual.nombre}).`);
     try {
@@ -144,6 +147,10 @@ export class ClienteController {
       if (d.documento !== undefined && d.documento !== actual.documento) throw new BadRequestException('«Clientes varios» no puede cambiar de documento.');
     }
     this.validarMovil((d.pais as string | undefined) ?? actual.pais, d.movil !== undefined ? (d.movil as string | null) : actual.movil);
+    if (!actual.esGenerico && (d.tipoDocumento !== undefined || d.documento !== undefined)) {
+      const errDoc = errorDocumento(String(d.tipoDocumento ?? actual.tipoDocumento), String(d.documento ?? actual.documento));
+      if (errDoc) throw new BadRequestException(errDoc);
+    }
     if (d.documento !== undefined && d.documento !== actual.documento) {
       const igual = await this.prisma.cliente.findUnique({ where: { organizacionId_documento: { organizacionId, documento: d.documento as string } } });
       if (igual) throw new ConflictException(`Ese documento ya existe en el sistema (${igual.nombre}).`);

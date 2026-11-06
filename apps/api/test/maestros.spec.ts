@@ -10,8 +10,11 @@ const prisma = new PrismaClient();
 let app: INestApplication;
 const CLAVE = process.env.SEED_PASSWORD as string;
 let n = 0;
-const sufijo = `${Date.now() % 1_000_000}`;
-const doc = () => `PRB${sufijo}${n++}`;
+const sufijo = `${Date.now() % 100000}`.padStart(5, '0');
+// Documentos sintéticos válidos: DNI de 8 dígitos, RUC de 11 y carné de extranjería de 10 caracteres.
+const doc = () => `7${sufijo}${String(n++ % 100).padStart(2, '0')}`;
+const ruc = () => `20${sufijo}${String(n++ % 10000).padStart(4, '0')}`;
+const ce = () => `CE${sufijo}${String(n++ % 1000).padStart(3, '0')}`;
 const placa = () => `ZP${sufijo.slice(-3)}${n++}`;
 
 const tokens: Record<string, string> = {};
@@ -43,7 +46,7 @@ beforeAll(async () => {
   });
 });
 afterAll(async () => {
-  const clientes = await prisma.cliente.findMany({ where: { documento: { startsWith: 'PRB' } } });
+  const clientes = await prisma.cliente.findMany({ where: { OR: [{ documento: { startsWith: `7${sufijo}` } }, { documento: { startsWith: `20${sufijo}` } }, { documento: { startsWith: `CE${sufijo}` } }] } });
   const vehiculos = await prisma.vehiculo.findMany({ where: { OR: [{ clienteId: { in: clientes.map((c) => c.id) } }, { placa: { startsWith: 'ZP' } }] } });
   const ids = [...vehiculos.map((v) => v.id), ...clientes.map((c) => c.id)];
   await prisma.lecturaKm.deleteMany({ where: { vehiculoId: { in: vehiculos.map((v) => v.id) } } });
@@ -62,17 +65,18 @@ describe('clientes (CA-S2-01)', () => {
     expect(r.body).toMatchObject({ tipoDocumento: 'DNI', nombre: 'Prueba Ana', nombreComercial: 'Ana SAC', pais: 'PE', movil: '987654321', ubigeo: '150101', activo: true, esGenerico: false });
     expect(new Date(r.body.creadoEn).getTime()).toBeGreaterThan(Date.now() - 60_000);
   });
-  it('el número de documento no se repite, ni con otro tipo de documento (409)', async () => {
+  it('el número de documento no se repite', async () => {
     const c = await nuevoCliente();
     const igual = await como(CAJERA, 'post', '/clientes', clienteBase({ documento: c.documento }));
     expect(igual.status).toBe(409);
     expect(igual.body.message).toMatch(/documento/i);
-    expect((await como(CAJERA, 'post', '/clientes', clienteBase({ documento: c.documento, tipoDocumento: 'RUC' }))).status).toBe(409);
+    // Un RUC tiene 11 dígitos y un DNI 8: el mismo valor no puede ser válido para los dos tipos, así que primero se rechaza el formato (400).
+    expect((await como(CAJERA, 'post', '/clientes', clienteBase({ documento: c.documento, tipoDocumento: 'RUC' }))).status).toBe(400);
   });
   it('solo se aceptan DNI, Carné de extranjería y RUC; el nombre y el documento son obligatorios (400)', async () => {
     expect((await como(CAJERA, 'post', '/clientes', clienteBase({ tipoDocumento: 'PASAPORTE' }))).status).toBe(400);
-    expect((await como(CAJERA, 'post', '/clientes', clienteBase({ tipoDocumento: 'CARNET_EXTRANJERIA' }))).status).toBe(201);
-    expect((await como(CAJERA, 'post', '/clientes', clienteBase({ tipoDocumento: 'RUC', nombre: 'Empresa Prueba SAC' }))).status).toBe(201);
+    expect((await como(CAJERA, 'post', '/clientes', clienteBase({ tipoDocumento: 'CARNET_EXTRANJERIA', documento: ce() }))).status).toBe(201);
+    expect((await como(CAJERA, 'post', '/clientes', clienteBase({ tipoDocumento: 'RUC', documento: ruc(), nombre: 'Empresa Prueba SAC' }))).status).toBe(201);
     expect((await como(CAJERA, 'post', '/clientes', clienteBase({ nombre: '  ' }))).status).toBe(400);
     expect((await como(CAJERA, 'post', '/clientes', clienteBase({ documento: '' }))).status).toBe(400);
   });

@@ -1,7 +1,9 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { api, Cliente, Marca, Vehiculo } from '../comun/api';
-import { etiquetaDocumento } from '../cliente/Clientes';
+import { api, Cliente, Grupo, Marca, Vehiculo } from '../comun/api';
+import { useColumnasRedimensionables } from '../comun/useColumnasRedimensionables';
 import { FilaFiltros, useFiltros } from '../comun/FiltrosColumna';
+import { MenuAcciones } from '../comun/TablaMaestro';
+import { Paginacion, usePaginacion } from '../comun/Paginacion';
 
 type Nivel = 'A' | 'E' | 'V';
 const fecha = (iso: string) => new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
@@ -11,6 +13,7 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
   const puedeEditar = nivel === 'A' || nivel === 'E';
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [marcas, setMarcas] = useState<Marca[]>([]);
+  const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [editando, setEditando] = useState<Vehiculo | 'nuevo' | null>(null);
   const [lectura, setLectura] = useState<Vehiculo | null>(null);
   const [mensaje, setMensaje] = useState('');
@@ -23,14 +26,23 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
     Promise.all([cargar(''), api.marcasVehiculo()])
       .then(([, m]) => setMarcas(m))
       .catch((e) => setError((e as Error).message));
+    api.grupos().then((g) => setGrupos(g.filter((x) => x.activo))).catch(() => setGrupos([]));
   }, [cargar]);
 
-  const COLUMNAS = ['Placa', 'Marca', 'Modelo', 'Año', 'Color', 'Titular', 'Último kilometraje', 'Registro'];
+  const COLUMNAS = ['Cliente', 'Número de documento', 'Placa', 'Marca', 'Modelo', 'Año', 'Color', 'Grupo', 'Nro. serie', 'Nro. VIN', 'Nro. motor', 'Último kilometraje', 'Registro'];
   const { filtros, setFiltros, pasa } = useFiltros<Vehiculo>([
-    (v) => v.placa, (v) => v.marca ?? '', (v) => v.modelo ?? '', (v) => String(v.anio ?? ''), (v) => v.color ?? '',
-    (v) => `${v.cliente.nombre} ${etiquetaDocumento(v.cliente.tipoDocumento)} ${v.cliente.documento}`, (v) => String(v.kmActual ?? ''), (v) => fecha(v.creadoEn),
+    (v) => v.cliente.nombre, (v) => v.cliente.documento, (v) => v.placa, (v) => v.marca ?? '', (v) => v.modelo ?? '', (v) => String(v.anio ?? ''), (v) => v.color ?? '', (v) => v.grupo ?? 'Sin grupo',
+    (v) => v.nroSerie ?? '', (v) => v.nroVin ?? '', (v) => v.nroMotor ?? '', (v) => String(v.kmActual ?? ''), (v) => fecha(v.creadoEn),
   ]);
-  const visibles = vehiculos.filter(pasa);
+  const filtrados = vehiculos.filter(pasa);
+  const { visibles, pagina, setPagina, tam, setTam, total, totalPaginas, inicio, fin } = usePaginacion(filtrados);
+  const { anchos, iniciarArrastre } = useColumnasRedimensionables('vehiculos');
+  const cabecera = (nombre: string, clase = '') => (
+    <th className={(clase + ' col-redim').trim()} style={anchos[nombre] ? { width: anchos[nombre], maxWidth: anchos[nombre] } : undefined}>
+      {nombre}
+      <span className="resizer" onMouseDown={iniciarArrastre(nombre, anchos[nombre] ?? 160)} />
+    </th>
+  );
   const cerrar = () => { setEditando(null); setLectura(null); setError(''); };
   const exito = async (m: string) => {
     setEditando(null);
@@ -50,21 +62,26 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
       {puedeEditar && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Vehículo</button></div>}
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !editando && !lectura && <p className="error" role="alert">{error}</p>}
-      {editando && <FormVehiculo vehiculo={editando === 'nuevo' ? null : editando} marcas={marcas} error={error} alCancelar={cerrar} alGuardar={exito} alFallar={fallo} />}
+      {editando && <FormVehiculo vehiculo={editando === 'nuevo' ? null : editando} marcas={marcas} grupos={grupos} error={error} alCancelar={cerrar} alGuardar={exito} alFallar={fallo} />}
       {lectura && <FormKm vehiculo={lectura} error={error} alCancelar={cerrar} alGuardar={exito} alFallar={fallo} />}
       <div className="tabla">
         <table>
           <thead>
             <tr>
-              {puedeEditar && <th>Acciones</th>}
-              <th>Placa</th>
-              <th>Marca</th>
-              <th>Modelo</th>
-              <th>Año</th>
-              <th>Color</th>
-              <th>Titular</th>
-              <th>Último kilometraje</th>
-              <th>Registro</th>
+              {puedeEditar && cabecera('Acciones')}
+              {cabecera('Cliente', 'media')}
+              {cabecera('Número de documento', 'corta')}
+              {cabecera('Placa', 'corta')}
+              {cabecera('Marca', 'media')}
+              {cabecera('Modelo', 'media')}
+              {cabecera('Año', 'corta')}
+              {cabecera('Color', 'corta')}
+              {cabecera('Grupo', 'corta')}
+              {cabecera('Nro. serie', 'corta')}
+              {cabecera('Nro. VIN', 'corta')}
+              {cabecera('Nro. motor', 'corta')}
+              {cabecera('Último kilometraje', 'corta')}
+              {cabecera('Registro', 'corta')}
             </tr>
             <FilaFiltros nombres={COLUMNAS} conAcciones={puedeEditar} filtros={filtros} setFiltros={setFiltros} />
           </thead>
@@ -73,34 +90,39 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
               <tr key={v.id}>
                 {puedeEditar && (
                   <td className="acc">
-                    <button type="button" onClick={() => { setLectura(null); setEditando(v); }}>Editar</button>
-                    <button type="button" onClick={() => { setEditando(null); setLectura(v); }}>Registrar km</button>
+                    <MenuAcciones>
+                      <button type="button" onClick={() => { setLectura(null); setEditando(v); }}>Editar</button>
+                      <button type="button" onClick={() => { setEditando(null); setLectura(v); }}>Registrar km</button>
+                    </MenuAcciones>
                   </td>
                 )}
-                <td><b>{v.placa}</b></td>
-                <td>{v.marca ?? '—'}</td>
-                <td>{v.modelo ?? '—'}</td>
-                <td>{v.anio ?? '—'}</td>
-                <td className="suave">{v.color ?? '—'}</td>
-                <td>
-                  <div>{v.cliente.nombre}</div>
-                  <div className="suave">{`${etiquetaDocumento(v.cliente.tipoDocumento)} ${v.cliente.documento}`}</div>
-                </td>
-                <td>{km(v.kmActual)}</td>
-                <td className="suave">{fecha(v.creadoEn)}</td>
+                <td className="media">{v.cliente.nombre}</td>
+                <td className="corta">{v.cliente.documento}</td>
+                <td className="corta"><b>{v.placa}</b></td>
+                <td className="media">{v.marca ?? '—'}</td>
+                <td className="media">{v.modelo ?? '—'}</td>
+                <td className="corta">{v.anio ?? '—'}</td>
+                <td className="suave corta">{v.color ?? '—'}</td>
+                <td className="corta">{v.grupo ?? <span className="suave">Sin grupo</span>}</td>
+                <td className="corta">{v.nroSerie || '—'}</td>
+                <td className="corta">{v.nroVin || '—'}</td>
+                <td className="corta">{v.nroMotor || '—'}</td>
+                <td className="corta">{km(v.kmActual)}</td>
+                <td className="suave corta">{fecha(v.creadoEn)}</td>
               </tr>
             ))}
             {visibles.length === 0 && (
-              <tr><td colSpan={puedeEditar ? 9 : 8} className="suave">No hay vehículos que coincidan.</td></tr>
+              <tr><td colSpan={puedeEditar ? 14 : 13} className="suave">No hay vehículos que coincidan.</td></tr>
             )}
           </tbody>
         </table>
       </div>
+      <Paginacion pagina={pagina} setPagina={setPagina} tam={tam} setTam={setTam} total={total} totalPaginas={totalPaginas} inicio={inicio} fin={fin} />
     </div>
   );
 }
 
-function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; error?: string; alCancelar: () => void; alGuardar: (m: string) => Promise<void>; alFallar: (m: string) => void }) {
+export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; grupos: Grupo[]; error?: string; alCancelar: () => void; alGuardar: (m: string, vehiculo?: Vehiculo) => Promise<void>; alFallar: (m: string) => void }) {
   const v = p.vehiculo;
   const [cliente, setCliente] = useState<{ id: string; nombre: string; documento: string } | null>(v ? v.cliente : null);
   const [busca, setBusca] = useState('');
@@ -115,6 +137,9 @@ function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; error?: s
   const [vin, setVin] = useState(v?.nroVin ?? '');
   const [motor, setMotor] = useState(v?.nroMotor ?? '');
   const [comentario, setComentario] = useState(v?.comentario ?? '');
+  const [codigoMotor, setCodigoMotor] = useState(v?.codigoMotor ?? '');
+  // Grupo: «Automático» lo asigna el sistema por la familia del motor o por marca, modelo y año (RF-100).
+  const [grupoId, setGrupoId] = useState(v?.grupoFuente === 'MANUAL' ? v.grupoId ?? '' : '');
   const modelos = p.marcas.find((m) => m.nombre.toLowerCase() === marca.trim().toLowerCase())?.modelos ?? [];
 
   // Se busca al cliente por documento o nombre; se ve a quién está enlazado antes de elegirlo.
@@ -133,14 +158,14 @@ function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; error?: s
   async function enviar(e: FormEvent) {
     e.preventDefault();
     if (!cliente) return p.alFallar('Elige el cliente: búscalo por documento o por nombre.');
-    const datos = { clienteId: cliente.id, placa, marca, modelo, anio: anio ? Number(anio) : null, color, nroSerie: serie, nroVin: vin, nroMotor: motor, comentario };
+    const datos = { clienteId: cliente.id, placa, marca, modelo, anio: anio ? Number(anio) : null, color, nroSerie: serie, nroVin: vin, nroMotor: motor, comentario, codigoMotor, grupoId };
     try {
       if (v) {
-        await api.editarVehiculo(v.id, datos);
-        await p.alGuardar('Vehículo guardado.');
+        const guardado = await api.editarVehiculo(v.id, datos);
+        await p.alGuardar('Vehículo guardado.', guardado);
       } else {
-        await api.crearVehiculo(datos);
-        await p.alGuardar('Vehículo creado.');
+        const creado = await api.crearVehiculo(datos);
+        await p.alGuardar('Vehículo creado.', creado);
       }
     } catch (err) {
       p.alFallar((err as Error).message);
@@ -185,6 +210,12 @@ function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; error?: s
           {campo('v-serie', 'Nro. de serie', serie, setSerie)}
           {campo('v-vin', 'Nro. de VIN', vin, setVin)}
           {campo('v-motor', 'Nro. de motor', motor, setMotor)}
+          {campo('v-codmotor', 'Código de motor', codigoMotor, setCodigoMotor)}
+          <div className="campo"><label htmlFor="v-grupo">Grupo</label>
+            <select id="v-grupo" value={grupoId} onChange={(e) => setGrupoId(e.target.value)}>
+              <option value="">{v?.grupo && v.grupoFuente !== 'MANUAL' ? `Automático (${v.grupo})` : 'Automático'}</option>
+              {p.grupos.map((g) => <option key={g.id} value={g.id}>{`${g.codigo} · ${g.nombre}`}</option>)}
+            </select></div>
           <div className="campo ancha"><label htmlFor="v-com">Comentarios</label>
             <textarea id="v-com" rows={2} value={comentario} onChange={(e) => setComentario(e.target.value)} /></div>
         </div>

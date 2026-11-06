@@ -1,0 +1,104 @@
+﻿Codigo,NumeroFinal,Nombre,Descripcion,Modulo,Actor,Importancia,Estado,Destino,Comentario
+RF-001,,Iniciar sesión,El sistema permite autenticar al usuario con su correo y contraseña antes de acceder a la información operativa.,"Acceso, usuarios y roles",Todos los usuarios,Alta,Implementado,Queda,Texto R8.2
+RF-002,,"Permisos por rol, módulo y local","El sistema permite aplicar permisos por rol, módulo y local, sumando los permisos cuando un usuario tiene varios roles; el Administrador ve todos los módulos de su empresa salvo los que se le quiten.","Acceso, usuarios y roles","Superusuario, Administrador",Alta,Implementado,Queda,Texto R8.2
+RF-003,,Usuarios y roles propios,"El sistema permite que el superusuario de cada empresa administre usuarios con uno o más roles y arme roles propios eligiendo sus módulos y niveles, gestionando solo roles de nivel inferior al propio y registrando cada cambio.","Acceso, usuarios y roles","Superusuario, Superadministrador",Alta,Implementado,Queda,Texto R8.2
+RF-004,,Clientes,"El sistema permite registrar, editar, buscar y dar de baja recuperable clientes con documento único por empresa, conservando su historial aunque se corrija el documento.",Clientes y vehículos,"Cajera, Administrador",Alta,Implementado,Queda,Texto R8.2
+RF-005,,Vehículos,"El sistema permite registrar, editar, buscar y traspasar vehículos vinculados a su titular, sin perder el historial al corregir la placa; al registrar por placa, el sistema completa los datos con la consulta vehicular (RN-10).",Clientes y vehículos,"Cajera, Administrador",Alta,Implementado,Queda,Texto R8.2
+RF-006,,,"El sistema permite buscar clientes y vehículos por placa (con o sin guiones), documento, VIN o nombre.",,,,—,Absorbido,Criterio de aceptación de RF-004 y RF-005
+RF-007,,Lecturas de kilometraje,"El sistema permite conservar el kilometraje, la fuente, la fecha y la observación de cada lectura; el kilometraje actual es el de la última.",Clientes y vehículos,"Cajera, Técnico",Alta,Implementado,Queda,Texto R8.2
+RF-008,,Proveedores,El sistema permite administrar proveedores y asociarlos a las compras y a los servicios externos.,"Maestros de servicios, productos y proveedores","Administrador, Logístico",Media,Implementado,Queda,Texto R8.2
+RF-009,,Servicios con horas estándar,"El sistema permite mantener el catálogo de servicios con su categoría técnica, sus horas estándar (de AutoData, o 1 h si no hay dato, RN-08), su precio base y la marca de servicio externo.","Maestros de servicios, productos y proveedores",Administrador,Alta,Implementado,Queda,Texto R8.2
+RF-010,,Productos,"El sistema permite mantener el catálogo de productos con código, referencia, unidad, categoría, marca, precio y costo, para cotizar, vender y descontar en el kárdex.","Maestros de servicios, productos y proveedores","Administrador, Logístico",Alta,Implementado,Queda,Texto R8.2
+RF-011,,Crear y editar la ODS,"El sistema permite crear una ODS con cliente, vehículo, local, hora de llegada y responsable, en el estado elegido, y editar su encabezado y sus ítems de servicio y de producto mientras no esté cerrada.",Órdenes de servicio,"Cajera, Jefe de taller",Alta,Implementado,Queda,Texto R8.2
+RF-012,,,El sistema permite editar cabecera y detalle de una ODS mientras la operación lo permita.,,,,—,Absorbido,Criterio de aceptación de RF-011
+RF-013,,,"El sistema permite registrar servicios, responsable técnico, duración estimada y observaciones.",,,,—,Absorbido,Criterio de aceptación de RF-011
+RF-014,,,El sistema permite distinguir ítems de servicio e ítems de producto en una misma ODS.,,,,—,Absorbido,Criterio de aceptación de RF-011
+RF-015,,"Tipo de atención, garantía e ingreso","El sistema permite registrar el tipo de atención («Otro» con texto propio), la garantía enlazada a la ODS y a los servicios de origen, hasta cinco fotos opcionales de ingreso y el estado del vehículo.",Órdenes de servicio,"Cajera, Técnico",Alta,Parcial,Queda,Texto R8.2
+RF-016,,Estados y cierre de la ODS,"El sistema permite mover la ODS entre Recepción, En proceso, En entrega y Cerrada, y cerrarla dejando la información consultable y auditable.",Órdenes de servicio,"Cajera, Jefe de taller",Alta,Parcial,Queda,Texto R8.2
+RF-017,,,El sistema permite cerrar una ODS dejando la información consultable y auditable.,,,,—,Absorbido,Criterio de aceptación de RF-016
+RF-018,,Corregir o reabrir una ODS cerrada,El sistema permite solicitar y autorizar correcciones o la reapertura de una ODS cerrada sin borrar el historial.,Órdenes de servicio,"Jefe de taller, Administrador",Media,Pendiente,Queda,Texto R8.2
+RF-019,,,El sistema permite reconocer perfiles de importación Excel o CSV y sus encabezados versionados.,,,,—,Migración interna,Pasa al procedimiento de migración RN-11
+RF-020,,,"El sistema permite previsualizar lote, filas válidas, advertencias y errores antes de aplicar.",,,,—,Migración interna,Pasa al procedimiento de migración RN-11
+RF-021,,,"El sistema permite importar clientes, vehículos, servicios y ODS de forma atómica.",,,,—,Migración interna,Pasa al procedimiento de migración RN-11
+RF-022,,,El sistema permite evitar duplicidad mediante identificadores externos e importación idempotente.,,,,—,Migración interna,Pasa al procedimiento de migración RN-11
+RF-023,,,"El sistema permite conservar fila original, fuente, usuario y resultado de cada importación.",,,,—,Migración interna,Pasa al procedimiento de migración RN-11
+RF-024,,,El sistema permite normalizar descripciones de servicio sin perder el texto de origen.,,,,—,Migración interna,Pasa al procedimiento de migración RN-11
+RF-025,,,El sistema permite exportar resultado de importación y conciliación para revisión operativa.,,,,—,Beta,Segunda versión
+RF-026,,Plantillas de mantenimiento,El sistema permite crear plantillas de mantenimiento por grupo o compatibilidad de vehículo y versionarlas sin reescribir los servicios ni las proyecciones históricas.,Planes y línea de tiempo,Jefe de taller,Alta,Pendiente,Queda,Texto R8.2
+RF-027,,,El sistema permite versionar planes y reglas sin reescribir servicios o proyecciones históricas.,,,,—,Absorbido,Criterio de aceptación de RF-026
+RF-028,,Reglas por km y tiempo,"El sistema permite definir reglas por kilometraje, tiempo, perfil de uso y servicio, y evaluar si una regla aplica al vehículo antes de proponerla.",Planes y línea de tiempo,Jefe de taller,Alta,Pendiente,Queda,Texto R8.2
+RF-029,,,El sistema permite evaluar si una regla es aplicable al vehículo antes de generar propuesta.,,,,—,Absorbido,Criterio de aceptación de RF-028
+RF-030,,Asignar un plan al vehículo,El sistema permite asignar explícitamente un plan vigente a cada vehículo cuando corresponda.,Planes y línea de tiempo,"Jefe de taller, Cajera",Alta,Pendiente,Queda,Texto R8.2
+RF-031,,Línea de tiempo del vehículo,"El sistema permite mostrar la línea de tiempo con el historial real, las proyecciones y las evidencias, conservando la fuente y la fecha de cada evento que modifica el plan.",Planes y línea de tiempo,"Jefe de taller, Cajera",Alta,Pendiente,Queda,Texto R8.2
+RF-032,,Reajuste de las proyecciones,El sistema permite reajustar únicamente las proyecciones futuras después de un servicio confirmado.,Planes y línea de tiempo,"Sistema, Jefe de taller",Alta,Pendiente,Queda,Texto R8.2
+RF-033,,,El sistema permite conservar fuente y fecha de cada evento que modifica el plan.,,,,—,Absorbido,Criterio de aceptación de RF-031
+RF-034,,Recomendaciones,"El sistema permite generar recomendaciones con fundamento visible y registrar su aceptación, postergación o rechazo por una persona.",Planes y línea de tiempo,"Jefe de taller, Cajera",Alta,Pendiente,Queda,Texto R8.2
+RF-035,,,"El sistema permite registrar aceptación, postergación o rechazo de una recomendación.",,,,—,Absorbido,Criterio de aceptación de RF-034
+RF-036,,Tareas preventivas,El sistema permite mantener tareas preventivas vinculadas a un plan y a un vehículo.,Tareas y vistas,"Sistema, Cajera",Alta,Pendiente,Queda,Texto R8.2
+RF-037,,Tareas desde la ODS,"El sistema permite crear las tareas de servicio y de producto desde la ODS y asignarlas al técnico, al jefe de taller, a la cajera o al logístico.",Tareas y vistas,"Sistema, Jefe de taller",Alta,Pendiente,Queda,Texto R8.2
+RF-038,,,"El sistema permite asignar tarea a técnico, jefe de taller o responsable definido.",,,,—,Absorbido,Criterio de aceptación de RF-037
+RF-039,,Estados y tiempos de la tarea,"El sistema permite usar los estados Pendiente, En proceso, En espera y Completada, y registrar la fecha, la hora y la duración estimada y real.",Tareas y vistas,"Técnico, Cajera",Alta,Pendiente,Queda,Texto R8.2
+RF-040,,,"El sistema permite registrar fecha, hora, duración estimada y duración real de la tarea.",,,,—,Absorbido,Criterio de aceptación de RF-039
+RF-041,,,El sistema permite reprogramar una tarea sin alterar la fecha de llegada de la ODS.,,,,—,Beta,Mover en el calendario de RF-055 lo cubre
+RF-042,,,El sistema permite dividir una tarea iniciada y conservar vínculo entre sus bloques de tiempo.,,,,—,Beta,Segunda versión
+RF-043,,,El sistema permite continuar una tarea dividida en otro día u horario.,,,,—,Beta,Segunda versión
+RF-044,,,El sistema permite extender una tarea y registrar motivo opcional cuando supera lo planificado.,,,,—,Beta,Estirar en el calendario de RF-055 lo cubre
+RF-045,,,El sistema permite redistribuir duración de servicios en intervalos de 0.25 H-H.,,,,—,Beta,Segunda versión
+RF-046,,,El sistema permite recalcular horas de servicios cuando cambia el tiempo real de la ODS.,,,,—,Beta,Segunda versión
+RF-047,,,"El sistema permite permitir al técnico declarar avance, pausa o postergación con pocos pasos.",,,,—,Beta,Segunda versión
+RF-048,,,El sistema permite bloquear edición de jornada cuando el jefe de taller la consolida.,,,,—,Beta,Segunda versión
+RF-049,,,El sistema permite permitir a jefe de taller corregir jornada bloqueada con registro de cambio.,,,,—,Beta,Segunda versión
+RF-050,,,El sistema permite distinguir tiempo de servicio de huecos no asignados para reporte operativo.,,,,—,Beta,Segunda versión
+RF-051,,,El sistema permite mantener subtareas o bloques relacionados bajo la misma ODS.,,,,—,Beta,Segunda versión
+RF-052,,,"El sistema permite notificar al responsable ante asignación, cambio relevante o comentario mencionado.",,,,—,Regla de negocio,Pasa a RN-01
+RF-053,,Citas,"El sistema permite crear citas con el encabezado de una ODS (cliente, vehículo, tipo de atención, km, técnico, jefe de taller, fecha y hora, observaciones y recomendaciones), asignar o crear su cotización, en cualquier sede y sin límite por día, guardando quién la creó.",Citas,Cajera,Alta,Pendiente,Queda,Texto R8.2
+RF-054,,Atender la cita y crear la ODS,"El sistema permite marcar la cita como Atendida y ofrecer crear la ODS con su encabezado y su cotización, guardando el origen.",Citas,Cajera,Alta,Pendiente,Queda,Texto R8.2
+RF-055,,"Vistas de lista, tablero y calendario","El sistema permite ver las tareas y las citas en vistas de lista, tablero y calendario, crear vistas propias de cada tipo, nombrarlas, duplicarlas y guardar sus filtros por persona; el calendario muestra día, cuatro días, semana y mes y mueve o estira los bloques de 15 en 15 minutos.",Tareas y vistas,Todos los usuarios,Alta,Pendiente,Queda,Texto R8.2
+RF-056,,,El sistema permite validar capacidad y advertir empalmes antes de programar trabajo.,,,,—,Beta,Segunda versión
+RF-057,,,"El sistema permite mover, redimensionar o dividir bloques de agenda en pasos de 15 minutos.",,,,—,Beta,Lo cubre el calendario de RF-055
+RF-058,,,El sistema permite mostrar almuerzo y horario no disponible sin contabilizarlos como servicio.,,,,—,Beta,Segunda versión
+RF-059,,Comentarios de bitácora,"El sistema permite crear comentarios de bitácora en la ODS, la tarea o el producto, con fotos o archivos adjuntos y menciones a usuarios.",Bitácora y auditoría,Todos los usuarios,Media,Pendiente,Queda,Texto R8.2
+RF-060,,Auditoría de cambios,"El sistema permite registrar el actor, la fecha, el valor anterior, el nuevo y el motivo cuando aplique.",Bitácora y auditoría,Sistema,Alta,Parcial,Queda,Texto R8.2
+RF-061,,,El sistema permite adjuntar foto o archivo como evidencia de una acción autorizada.,,,,—,Absorbido,Criterio de aceptación de RF-059
+RF-062,,,"El sistema permite mencionar usuarios y enlazar una bitácora con tarea, ODS o producto.",,,,—,Absorbido,Criterio de aceptación de RF-059
+RF-063,,Historial cronológico,"El sistema permite mostrar el historial cronológico de la ODS, del vehículo y de sus tareas.",Bitácora y auditoría,Todos los usuarios,Media,Parcial,Queda,Texto R8.2
+RF-064,,,El sistema permite registrar automáticamente eventos relevantes sin impedir comentarios humanos.,,,,—,Regla de negocio,Pasa a RN-02
+RF-065,,Reporte de técnicos,El sistema permite reportar por técnico del servicio las horas hombre y el valor vendido.,Reportes y métricas,"Administrador, Jefe de taller",Media,Pendiente,Queda,Texto R8.2
+RF-066,,Reporte de ODS,"El sistema permite reportar las ODS por estado, local, responsable y periodo, con filtros y descarga.",Reportes y métricas,Administrador,Media,Pendiente,Queda,Texto R8.2
+RF-067,,Mantenimientos próximos y vencidos,"El sistema permite listar los vehículos con mantenimientos próximos o vencidos, con filtro por local.",Planes y línea de tiempo,"Cajera, Jefe de taller",Alta,Pendiente,Queda,Texto R8.2
+RF-068,,,"El sistema permite filtrar reportes por local, fecha, técnico, vehículo y estado.",,,,—,Absorbido,Criterio de aceptación de RF-066
+RF-069,,,El sistema permite exportar resultados operativos para revisión administrativa.,,,,—,Absorbido,Criterio de aceptación de RF-066
+RF-070,,,El sistema permite diferenciar indicadores de operación de información comercial restringida.,,,,—,Beta,Segunda versión
+RF-071,,Organización y locales,"El sistema permite configurar la organización, sus locales y el alcance de cada usuario por local.",Configuración,Superusuario,Alta,Parcial,Queda,Texto R8.2
+RF-072,,,"El sistema permite configurar horarios, almuerzo, intervalos y capacidad de agenda.",,,,—,Beta,Segunda versión
+RF-073,,,"El sistema permite configurar catálogo, tiempos estándar, tipos de atención y estados permitidos.",,,,—,Regla de negocio,Pasa a RN-05
+RF-074,,,El sistema permite solicitar un producto desde una ODS y vincularlo al ítem requerido.,,,,—,Beta,Segunda versión
+RF-075,,,"El sistema permite registrar cotización editable con proveedor, alternativa, costo, venta y margen referencial.",,,,—,Beta,Segunda versión
+RF-076,,,El sistema permite cambiar la decisión de cliente a pendiente de aprobación solo al agregar ítems nuevos.,,,,—,Beta,"Segunda fase: la decisión pasa a pendiente de aprobación por ítem, solo en el ítem nuevo (no en toda la ODS)"
+RF-077,,,"El sistema permite aprobar o no aprobar la ODS a nivel de orden, conservando los ítems aprobados.",,,,—,Beta,Segunda fase: se aprueba o no cada ítem; la ODS ya no tiene una sola decisión a nivel de orden
+RF-078,,Compras,"El sistema permite registrar la compra de productos o servicios externos con su comprobante y proveedor, enlazarla a una ODS y llevarla al kárdex y a los egresos.",Compras e inventario,"Logístico, Cajera",Media,Pendiente,Queda,Texto R8.2
+RF-079,,,El sistema permite registrar entrega al técnico y mantener la tarea abierta hasta su conformidad.,,,,—,Beta,Segunda versión
+RF-080,,,El sistema permite completar la tarea logística solo cuando el técnico da conformidad o se resuelve la observación.,,,,—,Beta,Segunda versión
+RF-081,,,El sistema permite medir el tiempo desde aprobación de compra hasta entrega y conformidad técnica.,,,,—,Beta,Segunda versión
+RF-082,,,El sistema permite permitir al técnico editar la duración prevista de cada servicio asignado.,,,,—,Beta,Segunda versión
+RF-083,,,El sistema permite asociar retraso de repuesto o logística como causa reportable sin alterar el historial.,,,,—,Beta,Segunda versión
+RF-084,,,El sistema permite que el Administrador asuma las funciones de finanzas: bancos,,,,—,Absorbido,Criterio de aceptación de RF-002
+RF-085,,"Empresa, logotipos y formatos","El sistema permite configurar los datos de la empresa, dos logotipos y los formatos de los documentos.",Configuración,Superusuario,Media,Pendiente,Queda,Texto R8.2
+RF-086,,,El sistema permite asignar series de comprobantes por local.,,,,—,Regla de negocio,Pasa a RN-03
+RF-087,,Cotización,"El sistema permite emitir una cotización con kilometraje, ítems, descuento y observaciones, enlazarla a una cita o a una ODS y registrarla en la bitácora.",Comercial y finanzas,Cajera,Alta,Pendiente,Queda,Texto R8.2
+RF-088,,Nota de venta,"El sistema permite emitir la nota de venta interna desde la ODS, con tipo de IGV por ítem (gravado, exonerado o inafecto) y cálculo de la detracción, en PDF o ticket, como molde de la boleta y la factura.",Comercial y finanzas,Cajera,Alta,Pendiente,Queda,Texto R8.2
+RF-089,,Abonos y saldo,El sistema permite registrar pagos y abonos de la ODS o de la nota de venta y mostrar el saldo pendiente.,Órdenes de servicio,Cajera,Alta,Implementado,Queda,Texto R8.2
+RF-090,,Cuentas por cobrar y por pagar,El sistema permite consultar las cuentas por cobrar de las notas de venta a crédito y las cuentas por pagar de las compras a crédito.,Comercial y finanzas,"Administrador, Cajera",Media,Pendiente,Queda,Texto R8.2
+RF-091,,Bancos y movimientos,"El sistema permite registrar ingresos, egresos y traslados entre cuentas bancarias por local.",Comercial y finanzas,"Administrador, Cajera",Media,Pendiente,Queda,Texto R8.2
+RF-092,,Inventario y kárdex,"El sistema permite registrar requerimientos, consumo y traslado de inventario entre locales, con cada entrada y salida en el kárdex.",Compras e inventario,"Logístico, Cajera",Media,Pendiente,Queda,Texto R8.2
+RF-093,,,"El sistema permite ejecutar automatizaciones de ODS, cita, kilometraje, seguimiento y tareas con historial de ejecución.",,,,—,Regla de negocio,Pasa a RN-04
+RF-094,,Consulta de kilometraje,El sistema permite consultar el kilometraje al cliente para agendar la cita según su plan de mantenimiento y registrar la respuesta.,Posventa,Cajera,Alta,Pendiente,Queda,Texto R8.2
+RF-095,,Encuesta con enlace,El sistema permite enviar la encuesta con un enlace y registrar las respuestas del cliente para la satisfacción y el NPS.,Posventa,"Cajera, Cliente",Media,Pendiente,Queda,Texto R8.2
+RF-096,,Métricas,"El sistema permite consultar las métricas de taller, ventas y satisfacción con filtro por local.",Reportes y métricas,Administrador,Media,Pendiente,Queda,Texto R8.2
+RF-097,,Seguimiento a los cinco días,El sistema permite registrar el resultado del seguimiento de posventa que se programa a los cinco días hábiles del cierre de la ODS.,Posventa,Cajera,Alta,Pendiente,Queda,Texto R8.2
+RF-098,,Reporte de posventa,"El sistema permite consultar la cantidad de citas, de ODS y de citas que crearon una ODS, la tasa de conversión y las citas por usuario que las creó.",Reportes y métricas,Administrador,Media,Pendiente,Queda,Texto R8.2
+RF-099,,,"El sistema permite asignar a cada ítem su tipo de IGV (gravado con 18 %, exonerado o inafecto), calcular la detracción y consultar un reporte referencial de impuestos y detracciones con alerta sobre el monto mínimo configurable.",,,,—,Absorbido,Criterio de aceptación de RF-088
+RF-100,,Grupos de vehículos,"El sistema permite definir los grupos de vehículos (hoy cinco) y asignar cada vehículo a un grupo según su marca, modelo, motor y año.","Maestros de servicios, productos y proveedores","Administrador, Jefe de taller",Alta,Implementado,Queda,Nuevo en R8.2
+RF-101,,Precios por grupo,"El sistema permite fijar el precio y el tiempo estándar de cada servicio y ajustarlos por grupo con reglas acumulativas (del grupo para uno o varios servicios, generales del grupo y de todos los grupos) que fijan, suman o aplican un porcentaje, editables en pantalla.","Maestros de servicios, productos y proveedores",Administrador,Alta,Implementado,Queda,Nuevo en R8.2
+RF-102,,Solapamiento de servicios,"El sistema permite registrar qué servicios comparten trabajo (por par o por conjunto, como los de una misma rueda) y el descuento en soles que lleva el segundo cuando se juntan en una misma ODS: automático, opcional o solo un aviso, con un monto estándar y otro por grupo, y las horas que comparten.","Maestros de servicios, productos y proveedores","Jefe de taller, Administrador",Media,Implementado,Queda,Nuevo en R8.2
+RF-103,,Sugerir un plan a vehículos sin plan,"El sistema permite sugerir un plan existente a los vehículos sin plan que tengan las mismas características (marca, modelo, motor y año), para no crear planes repetidos.",Planes y línea de tiempo,Jefe de taller,Media,Pendiente,Queda,Nuevo en R8.2

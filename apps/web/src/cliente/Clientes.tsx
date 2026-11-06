@@ -1,6 +1,10 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { api, Cliente, Pais, TipoDocumento } from '../comun/api';
 import { FilaFiltros, useFiltros } from '../comun/FiltrosColumna';
+import { largoDocumento } from '../comun/documento';
+import { useColumnasRedimensionables } from '../comun/useColumnasRedimensionables';
+import { MenuAcciones } from '../comun/TablaMaestro';
+import { Paginacion, usePaginacion } from '../comun/Paginacion';
 
 type Nivel = 'A' | 'E' | 'V';
 export const TIPOS: { valor: TipoDocumento; etiqueta: string }[] = [
@@ -35,12 +39,20 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
   }, [cargar]);
 
   const movilDe = (c: Cliente) => (c.movil ? `${paises.find((p) => p.codigo === c.pais)?.prefijo ?? ''} ${c.movil}`.trim() : '—');
-  const COLUMNAS = ['Documento', 'Cliente', 'Nombre comercial', 'Móvil', 'Vehículos', 'Registro', 'Estado'];
+  const COLUMNAS = ['Tipo de documento', 'Número de documento', 'Cliente', 'Nombre comercial', 'Móvil', 'Vehículos', 'Registro', 'Estado'];
   const { filtros, setFiltros, pasa } = useFiltros<Cliente>([
-    (c) => `${etiquetaDocumento(c.tipoDocumento)} ${c.documento}`, (c) => c.nombre, (c) => c.nombreComercial ?? '', movilDe,
+    (c) => etiquetaDocumento(c.tipoDocumento), (c) => c.documento, (c) => c.nombre, (c) => c.nombreComercial ?? '', movilDe,
     (c) => String(c.vehiculos ?? 0), (c) => fecha(c.creadoEn), (c) => (c.activo ? 'Activo' : 'Eliminado'),
   ]);
-  const visibles = clientes.filter((c) => (verEliminados || c.activo) && pasa(c));
+  const filtrados = clientes.filter((c) => (verEliminados || c.activo) && pasa(c));
+  const { visibles, pagina, setPagina, tam, setTam, total, totalPaginas, inicio, fin } = usePaginacion(filtrados);
+  const { anchos, iniciarArrastre } = useColumnasRedimensionables('clientes');
+  const cabecera = (nombre: string, clase = '') => (
+    <th className={(clase + ' col-redim').trim()} style={anchos[nombre] ? { width: anchos[nombre], maxWidth: anchos[nombre] } : undefined}>
+      {nombre}
+      <span className="resizer" onMouseDown={iniciarArrastre(nombre, anchos[nombre] ?? 160)} />
+    </th>
+  );
 
   async function cambiarEstado(c: Cliente) {
     if (c.activo && !window.confirm(`¿Eliminar a ${c.nombre} de la lista activa? Sus vehículos y su historial se conservan y puedes restaurarlo.`)) return;
@@ -88,14 +100,15 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
         <table>
           <thead>
             <tr>
-              {puedeEditar && <th>Acciones</th>}
-              <th>Documento</th>
-              <th>Cliente</th>
-              <th>Nombre comercial</th>
-              <th>Móvil</th>
-              <th>Vehículos</th>
-              <th>Registro</th>
-              <th>Estado</th>
+              {puedeEditar && cabecera('Acciones')}
+              {cabecera('Tipo de documento', 'corta')}
+              {cabecera('Número de documento', 'corta')}
+              {cabecera('Cliente', 'larga')}
+              {cabecera('Nombre comercial', 'larga')}
+              {cabecera('Móvil', 'corta')}
+              {cabecera('Vehículos', 'corta')}
+              {cabecera('Registro', 'corta')}
+              {cabecera('Estado', 'corta')}
             </tr>
             <FilaFiltros nombres={COLUMNAS} conAcciones={puedeEditar} filtros={filtros} setFiltros={setFiltros} />
           </thead>
@@ -104,39 +117,43 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
               <tr key={c.id}>
                 {puedeEditar && (
                   <td className="acc">
-                    <button type="button" onClick={() => setEditando(c)}>Editar</button>
-                    {!c.esGenerico && (
-                      <button type="button" className={c.activo ? 'peligro' : ''} onClick={() => void cambiarEstado(c)}>{c.activo ? 'Eliminar' : 'Restaurar'}</button>
-                    )}
-                    <button type="button" onClick={() => void api.cliente(c.id).then((x) => setVehiculosDe({ cliente: x.nombre, placas: x.vehiculos.map((v) => v.placa) })).catch((e) => setError((e as Error).message))}>Vehículos</button>
+                    <MenuAcciones>
+                      <button type="button" onClick={() => setEditando(c)}>Editar</button>
+                      {!c.esGenerico && (
+                        <button type="button" className={c.activo ? 'peligro' : ''} onClick={() => void cambiarEstado(c)}>{c.activo ? 'Eliminar' : 'Restaurar'}</button>
+                      )}
+                      <button type="button" onClick={() => void api.cliente(c.id).then((x) => setVehiculosDe({ cliente: x.nombre, placas: x.vehiculos.map((v) => v.placa) })).catch((e) => setError((e as Error).message))}>Vehículos</button>
+                    </MenuAcciones>
                   </td>
                 )}
-                <td>{`${etiquetaDocumento(c.tipoDocumento)} ${c.documento}`}</td>
-                <td>{c.nombre}</td>
-                <td className="suave">{c.nombreComercial ?? '—'}</td>
-                <td>{movilDe(c)}</td>
-                <td>{c.vehiculos ?? 0}</td>
-                <td className="suave">{fecha(c.creadoEn)}</td>
-                <td><span className={'pill ' + (c.activo ? 'verde' : 'rojo')}>{c.activo ? 'Activo' : 'Eliminado'}</span></td>
+                <td className="corta">{etiquetaDocumento(c.tipoDocumento)}</td>
+                <td className="corta">{c.documento}</td>
+                <td className="larga">{c.nombre}</td>
+                <td className="suave larga">{c.nombreComercial ?? '—'}</td>
+                <td className="corta">{movilDe(c)}</td>
+                <td className="corta">{c.vehiculos ?? 0}</td>
+                <td className="suave corta">{fecha(c.creadoEn)}</td>
+                <td className="corta"><span className={'pill ' + (c.activo ? 'verde' : 'rojo')}>{c.activo ? 'Activo' : 'Eliminado'}</span></td>
               </tr>
             ))}
             {visibles.length === 0 && (
-              <tr><td colSpan={puedeEditar ? 8 : 7} className="suave">No hay clientes que coincidan.</td></tr>
+              <tr><td colSpan={puedeEditar ? 9 : 8} className="suave">No hay clientes que coincidan.</td></tr>
             )}
           </tbody>
         </table>
       </div>
+      <Paginacion pagina={pagina} setPagina={setPagina} tam={tam} setTam={setTam} total={total} totalPaginas={totalPaginas} inicio={inicio} fin={fin} />
     </div>
   );
 }
 
-function FormCliente(p: {
+export function FormCliente(p: {
   cliente: Cliente | null;
   paises: Pais[];
   paisBase: string;
   error?: string;
   alCancelar: () => void;
-  alGuardar: (m: string) => Promise<void>;
+  alGuardar: (m: string, cliente?: Cliente) => Promise<void>;
   alFallar: (m: string) => void;
 }) {
   const c = p.cliente;
@@ -157,11 +174,11 @@ function FormCliente(p: {
     const datos = { tipoDocumento: tipo, documento, nombre, nombreComercial: comercial, pais, movil, direccionFiscal: direccion, email, ubigeo, comentario };
     try {
       if (c) {
-        await api.editarCliente(c.id, datos);
-        await p.alGuardar('Cliente guardado.');
+        const guardado = await api.editarCliente(c.id, datos);
+        await p.alGuardar('Cliente guardado.', guardado);
       } else {
-        await api.crearCliente(datos);
-        await p.alGuardar('Cliente creado.');
+        const creado = await api.crearCliente(datos);
+        await p.alGuardar('Cliente creado.', creado);
       }
     } catch (err) {
       p.alFallar((err as Error).message);
@@ -175,11 +192,12 @@ function FormCliente(p: {
         {p.error && <p className="error" role="alert">{p.error}</p>}
         <div className="dos-col">
           <div className="campo"><label htmlFor="c-tipo">Tipo de documento</label>
-            <select id="c-tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoDocumento)} disabled={c?.esGenerico}>
+            <select id="c-tipo" value={tipo} onChange={(e) => { const t = e.target.value as TipoDocumento; setTipo(t); setDocumento((d) => d.slice(0, largoDocumento(t).max)); }} disabled={c?.esGenerico}>
               {TIPOS.map((t) => <option key={t.valor} value={t.valor}>{t.etiqueta}</option>)}
             </select></div>
           <div className="campo"><label htmlFor="c-doc">Número de documento</label>
-            <input id="c-doc" value={documento} onChange={(e) => setDocumento(e.target.value)} required disabled={c?.esGenerico} /></div>
+            <input id="c-doc" value={documento} maxLength={c?.esGenerico ? undefined : largoDocumento(tipo).max} inputMode={largoDocumento(tipo).digitos ? 'numeric' : undefined}
+              onChange={(e) => setDocumento(largoDocumento(tipo).digitos ? e.target.value.replace(/\D/g, '') : e.target.value.toUpperCase())} required disabled={c?.esGenerico} /></div>
           <div className="campo"><label htmlFor="c-nombre">Razón social o nombre</label>
             <input id="c-nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} required /></div>
           <div className="campo"><label htmlFor="c-comercial">Nombre comercial</label>
@@ -191,7 +209,7 @@ function FormCliente(p: {
           <div className="campo"><label htmlFor="c-movil">Móvil</label>
             <div className="movil">
               <span className="prefijo">{prefijo}</span>
-              <input id="c-movil" inputMode="numeric" value={movil} onChange={(e) => setMovil(e.target.value)} placeholder="Sin prefijo" />
+              <input id="c-movil" inputMode="numeric" maxLength={pais === 'PE' ? 9 : 15} value={movil} onChange={(e) => setMovil(e.target.value.replace(/\D/g, ''))} placeholder="Sin prefijo" />
             </div></div>
           <div className="campo"><label htmlFor="c-dir">Dirección fiscal</label>
             <input id="c-dir" value={direccion} onChange={(e) => setDireccion(e.target.value)} /></div>

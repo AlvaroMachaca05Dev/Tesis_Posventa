@@ -49,3 +49,68 @@
 #modal.r78-maestro .formgrid{grid-template-columns:1fr 1fr!important;gap:8px 14px}
 #modal.r78-maestro .formgrid .wide,#modal.r78-maestro .formgrid label:has(textarea){grid-column:span 2}
 @media (max-width:560px){#modal.r78-maestro .formgrid{grid-template-columns:1fr!important}#modal.r78-maestro .formgrid label:has(textarea){grid-column:auto}}
+/* 03/11: cámara para las fotos de ingreso */
+.r78-capa-camara{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:10000}
+.r78-camara{background:var(--panel,#111a2e);border:1px solid var(--line,#2a3550);border-radius:12px;padding:12px;width:min(640px,96vw)}
+.r78-camara video{width:100%;max-height:70vh;border-radius:8px;background:#000;display:block;margin-bottom:8px}
+/* 05/11: los modales grandes (ODS y nota de venta) no tienen barra propia: se desplazan con la barra de la ventana */
+#modal.r78-ancho[open]{position:fixed;inset:0;width:100vw!important;max-width:100vw!important;height:100vh;max-height:100vh;margin:0;padding:14px 0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow-y:auto;overflow-x:hidden;zoom:1}
+#modal.r78-ancho[open]>#modalbody{background:#142133;border:1px solid var(--line,#2a3550);border-radius:14px;padding:16px 20px;width:min(1875px,122vw);margin:0 auto;zoom:.8;box-shadow:0 30px 90px #0008}
+html:has(#modal.r78-ancho[open]){overflow:hidden}
+@media (max-width:1000px){#modal.r78-ancho[open]>#modalbody{zoom:1;width:98vw}}
+/* 05/11: nota de venta */
+.r78-en{display:flex;gap:6px;align-items:center}.r78-en select{flex:1;min-width:0}
+.r78-radios{display:flex;gap:14px;align-items:center;min-height:34px}
+.r78-nota .r78-cab .r78-cot{max-width:420px}
+.r78-catalogo{min-width:min(520px,60vw)}
+.r78-pagar select,.r78-pagar input{min-width:0;flex:1}.r78-pagar{gap:8px}
+.r78-detra{gap:16px;margin-top:8px}.r78-detra label:not(.r78-chk){display:flex;flex-direction:column;font-size:12px;gap:2px}
+.r78-totales .r78-suma{justify-content:space-between;gap:0}.r78-totales .r78-suma>:last-child{text-align:right}
+.r78-rojo{color:#ff7b72;font-weight:700}
+.r78-verdetxt{color:#3fb950;font-weight:700}
+.r78-nota .r78-rejilla label.r78-chk,.r78-detra label.r78-chk{flex-direction:row;align-items:center;gap:6px}
+.r78-nota .r78-radios{gap:18px}
+.r78-detra{align-items:flex-end}
+/* 05/11: kárdex calcado de AIM */
+.r78-migas{display:flex;gap:2px;margin:6px 0 12px}.r78-migas span{background:#1d3a5c;color:#fff;padding:7px 22px 7px 16px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%,12px 50%);font-weight:600;font-size:13px}.r78-migas span:first-child{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%)}.r78-migas span.on{background:#22282f}
+.r78-kfiltros{border:2px solid #3fb950;border-radius:6px;margin-bottom:14px;background:var(--panel,#111a2e)}.r78-kfiltros h3{margin:0;padding:9px 14px;background:rgba(63,185,80,.18);font-size:14px;font-weight:600}
+.r78-kfg{display:grid;grid-template-columns:1fr 2fr 1fr 1fr auto;gap:10px 22px;padding:12px 14px 14px;align-items:start}.r78-kfg label{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.r78-kbot{display:flex;flex-direction:column;gap:6px;padding-top:18px}.r78-kbot button{min-width:96px}
+.r78-kcaja{border:1px solid var(--line,#2a3550);border-radius:6px;padding:0 12px 14px;background:var(--panel,#111a2e)}.r78-kpest{display:inline-block;padding:9px 14px;border:1px solid var(--line,#2a3550);border-top:2px solid #3b82f6;border-bottom:0;margin:0 0 10px -12px;font-weight:700;font-size:14px}
+.r78-ktabla{width:100%;border-collapse:collapse;font-size:13.5px}.r78-ktabla th,.r78-ktabla td{border:1px solid var(--line,#2a3550);padding:8px 10px}.r78-ktabla thead th{background:rgba(255,255,255,.05);text-align:center}.r78-ktabla .r78-kprodfila th{text-align:left}.r78-ktabla .r78-c{text-align:center}.r78-ktabla a{color:#60a5fa}.r78-kvacio{padding:14px 0}
+@media (max-width:900px){.r78-kfg{grid-template-columns:1fr 1fr}.r78-kbot{flex-direction:row;padding-top:0}.r78-kcaja{overflow-x:auto}}
+.r78-ktabla th{text-transform:none;letter-spacing:0;font-size:13.5px}
+/* 05/11: reportes con un solo formato */
+.r78-rep{display:grid;grid-template-columns:minmax(260px,320px) minmax(0,1fr);gap:14px;margin:10px 0 14px;align-items:start}
+.r78-rep-fil{display:flex;flex-direction:column;gap:10px}.r78-rep-fil h3{margin:0}.r78-rep-fil .r77-sedebar,.r78-rep-fil .r77-kf{border:0;padding:0;margin:0;background:none;box-shadow:none}.r78-rep-fil .r72-filters,.r78-rep-fil .r77-kfg{display:flex;flex-direction:column;gap:8px}.r78-rep-fil label{display:flex;flex-direction:column;gap:3px}.r78-rep-fil .r72-dl{width:100%}
+.r78-rep-graf{display:flex;flex-direction:column;gap:12px;min-width:0}.r78-rep-graf .r72-chart,.r78-rep-graf .r78-graf{margin:0}
+.r78-chks{border:1px solid var(--line,#2a3550);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:4px}.r78-chks legend{font-size:12px;font-weight:700}.r78-chks .r78-chk{flex-direction:row!important;align-items:center;gap:6px}
+.r78-barras{width:100%;height:220px;display:block}.r78-barras-et{display:flex;gap:4px}.r78-barras-et span{flex:1;text-align:center;font-size:12px;display:flex;flex-direction:column}
+.r78-posventa{margin-top:18px}
+@media (max-width:900px){.r78-rep{grid-template-columns:1fr}}
+/* 05/11: configuración de la carpeta */
+.r78-cfgcarpeta{display:flex;flex-direction:column;gap:14px}.r78-cfgcarpeta>label,.r78-cfg2 label{display:flex;flex-direction:column;gap:6px;font-weight:600}.r78-cfg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.r78-ico{display:inline-grid;place-items:center;min-width:34px;height:34px;border-radius:8px;color:#fff;font-weight:700}.r78-color{width:34px;height:34px;padding:0;border:0;background:none}
+.r78-switch{position:relative;width:46px;height:26px}.r78-switch input{opacity:0;width:0;height:0}.r78-switch span{position:absolute;inset:0;border-radius:99px;background:#3a4357;cursor:pointer}.r78-switch span:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.15s}.r78-switch input:checked+span{background:#0a84ff}.r78-switch input:checked+span:before{transform:translateX(20px)}
+.r78-avatares{display:flex;align-items:center;gap:0}.r78-av{width:34px;height:34px;border-radius:50%;margin-left:-6px;border:2px solid #142133;background:#3b82f6;color:#fff;font-size:12px;font-weight:700;cursor:pointer}.r78-avadd{margin-left:8px;max-width:160px}
+.r78-rep-fil .r72-ig{display:flex!important;flex-direction:column;gap:3px}.r78-rep-fil .r72-ig span{background:none;padding:0;font-size:12.5px}.r78-rep-fil input,.r78-rep-fil select{width:100%}
+.r78-rep-fil input[type=checkbox]{width:auto;flex:none}.r78-rep-fil .r78-chks .r78-chk{justify-content:flex-start;font-size:13px}.r78-rep-fil .r72-filters>b{display:none}.r78-rep-fil .r77-sedebar{display:flex;flex-direction:column}
+/* 05/11: panel de la tarea como ClickUp (las reglas generales de «aside» lo dejaban en 196 px) */
+aside.r6-taskpanel{width:min(780px,62vw)!important;max-width:100vw!important;left:auto!important;right:0!important;padding:18px 26px 28px!important;zoom:1!important;overflow-x:hidden!important;overflow-y:auto!important;display:flex;flex-direction:column;gap:14px;background:#0f1724!important}
+aside.r6-taskpanel>*{order:6;min-width:0}aside.r6-taskpanel>.paneltop{order:0;top:-18px}aside.r6-taskpanel>.titleedit{order:1;font-size:30px;line-height:1.2}aside.r6-taskpanel>.r6-flow{order:2}aside.r6-taskpanel>.tabs{order:3}aside.r6-taskpanel>.r6-detailgrid{order:4}
+aside.r6-taskpanel .r6-detailgrid{display:grid!important;grid-template-columns:190px minmax(0,1fr)!important;gap:6px 14px;align-items:center}
+aside.r6-taskpanel .r6-detailgrid>label{color:#9baac0;font-size:14px;display:flex;align-items:center;gap:8px;min-height:38px}
+aside.r6-taskpanel .r6-detailgrid>select,aside.r6-taskpanel .r6-detailgrid>input,aside.r6-taskpanel .r6-detailgrid>button,aside.r6-taskpanel .r6-detailgrid>textarea{width:100%!important;max-width:none;min-width:0;background:transparent;border:1px solid transparent;border-radius:8px;padding:7px 10px;text-align:left;font-size:14px}
+aside.r6-taskpanel .r6-detailgrid>select:hover,aside.r6-taskpanel .r6-detailgrid>input:hover,aside.r6-taskpanel .r6-detailgrid>button:hover,aside.r6-taskpanel .r6-detailgrid>textarea:hover,aside.r6-taskpanel .r6-detailgrid>*:focus{border-color:#34445c;background:#16213a}
+aside.r6-taskpanel .r6-detailgrid>.wide,aside.r6-taskpanel .r6-detailgrid>textarea{grid-column:1/-1}
+aside.r6-taskpanel>.tabs{display:flex;gap:6px;border-bottom:1px solid #2a3550;padding-bottom:6px}aside.r6-taskpanel>.tabs button{width:auto!important;padding:6px 14px;border-radius:8px}
+aside.r6-taskpanel .r77-evbox,aside.r6-taskpanel .r6-flow{max-width:100%}aside.r6-taskpanel .r77-evbox .row{flex-wrap:wrap}
+@media (max-width:900px){aside.r6-taskpanel{width:100vw!important;padding:14px!important}aside.r6-taskpanel .r6-detailgrid{grid-template-columns:120px minmax(0,1fr)!important}}
+aside.r6-taskpanel .r6-detailgrid>label{justify-content:flex-start!important;text-align:left!important;padding-left:2px}aside.r6-taskpanel>.titleedit{font-size:24px;text-overflow:ellipsis}
+aside.r6-taskpanel>.titleedit{field-sizing:content;min-height:44px;resize:none;overflow:hidden;font-family:inherit;color:inherit;background:transparent;border:0;font-weight:800;padding:2px 0}aside.r6-taskpanel .r6-detailgrid{justify-items:stretch!important}aside.r6-taskpanel .r6-detailgrid>label{justify-self:start!important;width:100%}
+aside.r6-taskpanel .r6-detailgrid>label{flex-direction:row!important}
+aside.r6-taskpanel>h2,aside.r6-taskpanel>h3:first-of-type{order:1;font-size:24px;margin:0}aside.r6-taskpanel>h2+p,aside.r6-taskpanel>h2+.sub{order:1;margin:0}
+aside.r6-taskpanel table{width:100%;table-layout:auto}aside.r6-taskpanel table input,aside.r6-taskpanel table select{min-width:0;max-width:100%}aside.r6-taskpanel .r72-gridbox,aside.r6-taskpanel .panel{max-width:100%;overflow-x:auto}
+/* S5: alerta amarilla de solapamiento y modo opcional */
+.pill.s5-ambar{background:#fff3cd;color:#7a5a00}
+.s5-aviso{background:#fff8e1;border:1px solid #f0d58a;border-radius:10px;padding:8px 12px}

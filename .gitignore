@@ -23,3 +23,4 @@ secretos/
 # Herramientas pesadas y registros del entorno local
 herramientas/bin/
 .local/
+.estado/

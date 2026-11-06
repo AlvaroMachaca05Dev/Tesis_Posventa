@@ -4,6 +4,10 @@ import Usuarios from '../usuario/Usuarios';
 import Clientes from '../cliente/Clientes';
 import Vehiculos from '../vehiculo/Vehiculos';
 import Ordenes from '../ordenServicio/Ordenes';
+import Proveedores from '../maestros/Proveedores';
+import Catalogo from '../maestros/Catalogo';
+import Grupos from '../maestros/Grupos';
+import Solapamientos from '../maestros/Solapamientos';
 
 const NIVEL: Record<string, string> = { A: 'Ver, editar y acciones sensibles', E: 'Ver y editar', V: 'Solo ver' };
 const CONSULTA_MOVIL = '(max-width: 900px)';
@@ -193,8 +197,12 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
           {mostrado?.id === 'usuarios' && <Usuarios me={me} nivel={mostrado.nivel} />}
           {mostrado?.id === 'clientes' && <Clientes nivel={mostrado.nivel} />}
           {mostrado?.id === 'vehiculos' && <Vehiculos nivel={mostrado.nivel} />}
-          {mostrado?.id === 'ods' && <Ordenes nivel={mostrado.nivel} superadmin={me.roles.includes('Superadministrador')} />}
-          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods'].includes(mostrado.id) && (
+          {mostrado?.id === 'ods' && <Ordenes nivel={mostrado.nivel} superadmin={me.roles.includes('Superadministrador')} usuarioId={me.usuario.id} />}
+          {mostrado?.id === 'proveedores' && <Proveedores nivel={mostrado.nivel} />}
+          {mostrado?.id === 'catalogo' && <Catalogo nivel={mostrado.nivel} />}
+          {mostrado?.id === 'grupos' && <Grupos nivel={mostrado.nivel} />}
+          {mostrado?.id === 'solapes' && <Solapamientos nivel={mostrado.nivel} />}
+          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods', 'proveedores', 'catalogo', 'grupos', 'solapes'].includes(mostrado.id) && (
             <div className="panel">
               <h1>{mostrado.label}</h1>
               <p className="sub">Nivel de tu rol: {NIVEL[mostrado.nivel]}.</p>

@@ -1,0 +1,818 @@
+{
+ "fecha": "2026-11-05",
+ "conjunto": "api",
+ "aprobadas": 135,
+ "total": 135,
+ "pruebas": [
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-19 Proveedores (RF-008) › crea, edita y lista un proveedor; el documento no se repite",
+   "estado": "passed",
+   "ms": 76
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-19 Proveedores (RF-008) › un servicio externo necesita su proveedor",
+   "estado": "passed",
+   "ms": 28
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-20 Servicios con horas estándar (RF-009, RN-08) › un servicio guarda categoría, horas, precio base y marca externo",
+   "estado": "passed",
+   "ms": 9
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-20 Servicios con horas estándar (RF-009, RN-08) › sin horas de AutoData el servicio toma 1 h (RN-08)",
+   "estado": "passed",
+   "ms": 16
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-21 Productos (RF-010) › un producto guarda código, unidad, precio y costo; el código no se repite",
+   "estado": "passed",
+   "ms": 29
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-21 Productos (RF-010) › el producto del catálogo se usa como ítem de la ODS",
+   "estado": "passed",
+   "ms": 325
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-22 Grupos de vehículos (RF-100) › se crea, renombra y quita un grupo sin perder sus vehículos",
+   "estado": "passed",
+   "ms": 56
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-22 Grupos de vehículos (RF-100) › el vehículo toma su grupo por la familia del motor y se puede reasignar",
+   "estado": "passed",
+   "ms": 134
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-23 Precios por grupo (RF-101, RN-09) › el servicio agregado a la ODS toma el precio y las horas del grupo del vehículo (RN-09)",
+   "estado": "passed",
+   "ms": 91
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-23 Precios por grupo (RF-101, RN-09) › un precio cambiado en la línea queda marcado como modificado",
+   "estado": "passed",
+   "ms": 53
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-23 Precios por grupo (RF-101, RN-09) › una regla con monto que no termina en 0 o 5 se rechaza y la cajera no edita reglas",
+   "estado": "passed",
+   "ms": 25
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-24 Solapamiento de servicios (RF-102) › con dos servicios que se solapan, el automático aplica el descuento y avisa en la bitácora",
+   "estado": "passed",
+   "ms": 94
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-24 Solapamiento de servicios (RF-102) › el par solapado descuenta las horas compartidas",
+   "estado": "passed",
+   "ms": 68
+  },
+  {
+   "archivo": "apps/api/test/s5.spec.ts",
+   "prueba": "CP-24 Solapamiento de servicios (RF-102) › el opcional se aplica solo si la cajera lo acepta y se puede mantener el monto",
+   "estado": "passed",
+   "ms": 119
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "crear ODS (RF-011, DEC-67, DEC-71) › el código es AAAAMMDD + correlativo de 5 dígitos y el técnico es opcional",
+   "estado": "passed",
+   "ms": 111
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "crear ODS (RF-011, DEC-67, DEC-71) › se puede crear directo en el estado y la decisión que corresponden, y queda en la bitácora",
+   "estado": "passed",
+   "ms": 78
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "crear ODS (RF-011, DEC-67, DEC-71) › crear ya cerrada solo si la decisión es «No aprobada», con fecha de cierre; estados y decisiones fuera de la lista se rechazan",
+   "estado": "passed",
+   "ms": 122
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "crear ODS (RF-011, DEC-67, DEC-71) › un número eliminado no se reutiliza: la siguiente ODS sigue el correlativo y la baja queda auditada",
+   "estado": "passed",
+   "ms": 177
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "crear ODS (RF-011, DEC-67, DEC-71) › dos ODS que se crean a la vez reciben números distintos",
+   "estado": "passed",
+   "ms": 127
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "crear ODS (RF-011, DEC-67, DEC-71) › un vehículo puede tener dos ODS abiertas solo si una es de Garantía, y nunca dos de Garantía",
+   "estado": "passed",
+   "ms": 115
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "crear ODS (RF-011, DEC-67, DEC-71) › el Técnico ve las ODS pero no las crea (403)",
+   "estado": "passed",
+   "ms": 125
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ítems y totales (RF-013, RF-014, DEC-73) › servicios y productos con referencia; cada línea se redondea a 2 decimales y el total es la suma",
+   "estado": "passed",
+   "ms": 115
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ítems y totales (RF-013, RF-014, DEC-73) › en un servicio la cantidad son H-H y no multiplican el precio; en un producto sí",
+   "estado": "passed",
+   "ms": 80
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ítems y totales (RF-013, RF-014, DEC-73) › el descuento en % se aplica a todos los ítems",
+   "estado": "passed",
+   "ms": 85
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ítems y totales (RF-013, RF-014, DEC-73) › un ítem sin descripción o con precio negativo se rechaza",
+   "estado": "passed",
+   "ms": 52
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ítems y totales (RF-013, RF-014, DEC-73) › agregar un ítem nuevo devuelve la decisión a «Pendiente de aprobación» y queda en la bitácora",
+   "estado": "passed",
+   "ms": 97
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "estados, decisión y cierre (RF-016, RF-017, DEC-61, DEC-72) › los estados se mueven libremente, incluso de Recepción a Entrega",
+   "estado": "passed",
+   "ms": 68
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "estados, decisión y cierre (RF-016, RF-017, DEC-61, DEC-72) › sin nota de venta solo se cierra una ODS «No aprobada»; al cerrar se pone la fecha de cierre y al reabrir se borra",
+   "estado": "passed",
+   "ms": 91
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "estados, decisión y cierre (RF-016, RF-017, DEC-61, DEC-72) › la decisión solo acepta sus cuatro valores y el estado los suyos",
+   "estado": "passed",
+   "ms": 54
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "estados, decisión y cierre (RF-016, RF-017, DEC-61, DEC-72) › una ODS cerrada deja de contar como abierta para el límite por vehículo",
+   "estado": "passed",
+   "ms": 82
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "encabezado, abonos y lista (RF-012, DEC-28, DEC-80) › se edita el encabezado: técnico, jefe de taller, observaciones y recomendaciones",
+   "estado": "passed",
+   "ms": 54
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "encabezado, abonos y lista (RF-012, DEC-28, DEC-80) › los abonos no superan lo pendiente y bajan el saldo, no el total",
+   "estado": "passed",
+   "ms": 108
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "encabezado, abonos y lista (RF-012, DEC-28, DEC-80) › la lista filtra por estado, texto, cliente y fechas, y trae lo de la tarjeta",
+   "estado": "passed",
+   "ms": 67
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "encabezado, abonos y lista (RF-012, DEC-28, DEC-80) › catálogos: tipos de atención, decisiones, estados y personal asignable",
+   "estado": "passed",
+   "ms": 8
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "intentos de romper la ODS (pruebas de ataque del 28/10) › un tipo de atención fuera de la lista se rechaza",
+   "estado": "passed",
+   "ms": 26
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "intentos de romper la ODS (pruebas de ataque del 28/10) › cuatro ODS creadas a la vez para el mismo vehículo dejan solo una abierta",
+   "estado": "passed",
+   "ms": 39
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "intentos de romper la ODS (pruebas de ataque del 28/10) › tres abonos a la vez por todo lo pendiente: solo entra uno",
+   "estado": "passed",
+   "ms": 104
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "intentos de romper la ODS (pruebas de ataque del 28/10) › el total no puede quedar por debajo de lo abonado y una ODS cerrada no admite abonos",
+   "estado": "passed",
+   "ms": 119
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "intentos de romper la ODS (pruebas de ataque del 28/10) › solo un Técnico o Jefe de taller puede ser técnico de la ODS",
+   "estado": "passed",
+   "ms": 47
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "intentos de romper la ODS (pruebas de ataque del 28/10) › kilometraje gigante y fechas de filtro inválidas no tumban el servidor (400)",
+   "estado": "passed",
+   "ms": 32
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ingreso, responsable y fechas (RF-015, 28/10) › estado del vehículo: se guarda la lista de chequeo y se ignoran claves raras",
+   "estado": "passed",
+   "ms": 59
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ingreso, responsable y fechas (RF-015, 28/10) › evidencias: sube una foto, la devuelve y la quita; rechaza lo que no es foto ni video",
+   "estado": "passed",
+   "ms": 104
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ingreso, responsable y fechas (RF-015, 28/10) › evidencias: son opcionales y como máximo 5 fotos por ODS",
+   "estado": "passed",
+   "ms": 122
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ingreso, responsable y fechas (RF-015, 28/10) › responsable del ítem: debe ser técnico o jefe de taller de la empresa",
+   "estado": "passed",
+   "ms": 73
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ingreso, responsable y fechas (RF-015, 28/10) › responsable de un producto: una cajera o un logístico; un técnico no sirve para productos ni un logístico para servicios",
+   "estado": "passed",
+   "ms": 103
+  },
+  {
+   "archivo": "apps/api/src/ordenServicio/ordenServicio.spec.ts",
+   "prueba": "ingreso, responsable y fechas (RF-015, 28/10) › fechas de inicio y cierre: solo el Superadministrador las corrige y queda en la bitácora",
+   "estado": "passed",
+   "ms": 197
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "crear usuarios (CA-S1-05) › el Superadministrador crea un usuario con rol Cajera, entra con su clave y queda auditado",
+   "estado": "passed",
+   "ms": 330
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "crear usuarios (CA-S1-05) › correo repetido responde 409 y contraseña corta 400",
+   "estado": "passed",
+   "ms": 307
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "crear usuarios (CA-S1-05) › un Técnico no puede crear usuarios (403)",
+   "estado": "passed",
+   "ms": 78
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "crear usuarios (CA-S1-05) › desactivar a un usuario le impide entrar; reactivarlo lo devuelve",
+   "estado": "passed",
+   "ms": 391
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "solo se gestionan roles de nivel inferior (CA-S1-16) › el Administrador crea un Jefe de taller, pero no otro Administrador ni un Superadministrador",
+   "estado": "passed",
+   "ms": 306
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "solo se gestionan roles de nivel inferior (CA-S1-16) › el Administrador no puede modificar a un Superadministrador",
+   "estado": "passed",
+   "ms": 81
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "solo se gestionan roles de nivel inferior (CA-S1-16) › el Superadministrador crea un Administrador",
+   "estado": "passed",
+   "ms": 149
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "el rol Desarrollador es exclusivo (CA-S1-18) › el Superadministrador no puede asignar el rol Desarrollador",
+   "estado": "passed",
+   "ms": 83
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "el rol Desarrollador es exclusivo (CA-S1-18) › no puede modificar al Desarrollador: no existe para él",
+   "estado": "passed",
+   "ms": 78
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "cada empresa ve solo lo suyo (CA-S1-13) › un usuario de otra empresa no aparece en la lista del Superadministrador, pero sí para el Desarrollador",
+   "estado": "passed",
+   "ms": 247
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "roles propios con módulos elegidos (CA-S1-14) › el Superadministrador crea un rol con módulos y niveles, y quien lo recibe ve exactamente eso",
+   "estado": "passed",
+   "ms": 313
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "roles propios con módulos elegidos (CA-S1-14) › un nombre repetido responde 409",
+   "estado": "passed",
+   "ms": 163
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "roles propios con módulos elegidos (CA-S1-14) › no se pueden elegir módulos que la empresa no tiene habilitados",
+   "estado": "passed",
+   "ms": 86
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "roles propios con módulos elegidos (CA-S1-14) › el Administrador no puede crear roles (403) y nadie puede dar un permiso mayor al suyo",
+   "estado": "passed",
+   "ms": 78
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "roles propios con módulos elegidos (CA-S1-14) › un rol propio no aparece con nivel de gestión: queda en el nivel más bajo y se puede asignar",
+   "estado": "passed",
+   "ms": 84
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "locales de la empresa › la lista de usuarios indica el local de cada persona",
+   "estado": "passed",
+   "ms": 80
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "locales de la empresa › el Superadministrador lista los locales de su empresa",
+   "estado": "passed",
+   "ms": 78
+  },
+  {
+   "archivo": "apps/api/src/usuario/usuario.spec.ts",
+   "prueba": "el Superadministrador asigna hasta su mismo nivel (DEC-79) › crea y modifica a otro Superadministrador; el Administrador sigue sin poder",
+   "estado": "passed",
+   "ms": 312
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "clientes (CA-S2-01) › la Cajera crea un cliente con sus datos y la fecha de registro se pone sola",
+   "estado": "passed",
+   "ms": 150
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "clientes (CA-S2-01) › el número de documento no se repite, ni con otro tipo de documento (409)",
+   "estado": "passed",
+   "ms": 25
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "clientes (CA-S2-01) › solo se aceptan DNI, Carné de extranjería y RUC; el nombre y el documento son obligatorios (400)",
+   "estado": "passed",
+   "ms": 42
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "clientes (CA-S2-01) › el Técnico puede ver clientes pero no crearlos ni editarlos (403)",
+   "estado": "passed",
+   "ms": 111
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "clientes (CA-S2-01) › la fecha de registro no se puede editar",
+   "estado": "passed",
+   "ms": 19
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "móvil y país (CA-S2-02) › en Perú el móvil lleva 9 dígitos sin prefijo; se aceptan espacios",
+   "estado": "passed",
+   "ms": 22
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "móvil y país (CA-S2-02) › con otro país el móvil se valida según ese país y un país desconocido se rechaza",
+   "estado": "passed",
+   "ms": 16
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "móvil y país (CA-S2-02) › sin país se usa el predeterminado de la empresa y la configuración lo expone con los prefijos",
+   "estado": "passed",
+   "ms": 15
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "móvil y país (CA-S2-02) › el correo, si se escribe, debe ser válido",
+   "estado": "passed",
+   "ms": 7
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "vehículos y placa (CA-S2-03) › se crea un vehículo con todos sus datos, ligado a un cliente, y se escribe la placa como la dé la empresa",
+   "estado": "passed",
+   "ms": 80
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "vehículos y placa (CA-S2-03) › la misma placa con otro formato (sin guion, minúsculas, con espacios) ya existe: 409 con el titular",
+   "estado": "passed",
+   "ms": 59
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "vehículos y placa (CA-S2-03) › la placa es obligatoria y el cliente debe existir en la empresa",
+   "estado": "passed",
+   "ms": 24
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "vehículos y placa (CA-S2-03) › otra empresa puede tener la misma placa y no ve la de esta",
+   "estado": "passed",
+   "ms": 56
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "el enlace es por ID interno (CA-S2-04) › cambiar el documento del cliente no desvincula sus vehículos y queda auditado",
+   "estado": "passed",
+   "ms": 50
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "el enlace es por ID interno (CA-S2-04) › no se puede cambiar el documento a uno que ya existe (409)",
+   "estado": "passed",
+   "ms": 28
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "el enlace es por ID interno (CA-S2-04) › corregir la placa conserva el vehículo, su ID y sus lecturas; una placa repetida se rechaza",
+   "estado": "passed",
+   "ms": 79
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "el enlace es por ID interno (CA-S2-04) › traspasar el vehículo a otro titular es editar el vehículo y queda auditado",
+   "estado": "passed",
+   "ms": 45
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "búsqueda por placa, documento, VIN o nombre (CA-S2-05) › los vehículos se encuentran por placa sin importar guiones ni mayúsculas, VIN, nombre y documento del titular",
+   "estado": "passed",
+   "ms": 63
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "búsqueda por placa, documento, VIN o nombre (CA-S2-05) › los clientes se encuentran por documento, nombre parcial o por la placa de su vehículo",
+   "estado": "passed",
+   "ms": 60
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "búsqueda por placa, documento, VIN o nombre (CA-S2-05) › al ver un cliente se listan sus vehículos",
+   "estado": "passed",
+   "ms": 36
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "«Clientes varios» (CA-S2-06) › existe, no se puede dar de baja ni cambiarle el documento y admite vehículos",
+   "estado": "passed",
+   "ms": 35
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "baja recuperable (CA-S2-07) › dar de baja a un cliente no borra sus vehículos y se puede reactivar",
+   "estado": "passed",
+   "ms": 66
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "lecturas de kilometraje (CA-S2-08) › cada lectura se guarda y el kilometraje actual es el de la última",
+   "estado": "passed",
+   "ms": 58
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "lecturas de kilometraje (CA-S2-08) › un kilometraje negativo o con decimales se rechaza (400)",
+   "estado": "passed",
+   "ms": 45
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "auditoría de maestros (CA-S2-09) › crear y editar un cliente guarda quién lo hizo, antes y después",
+   "estado": "passed",
+   "ms": 20
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "auditoría de maestros (CA-S2-09) › el Superadministrador también puede editar y su actor queda registrado",
+   "estado": "passed",
+   "ms": 91
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "observación de la lectura (RF-007) › cada lectura conserva kilometraje, fuente, fecha y observación",
+   "estado": "passed",
+   "ms": 42
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "intentos de romper los maestros (pruebas de ataque del 28/10) › kilometraje gigante o con fecha futura se rechaza sin error del servidor",
+   "estado": "passed",
+   "ms": 40
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "intentos de romper los maestros (pruebas de ataque del 28/10) › textos demasiado largos se rechazan y el documento no distingue mayúsculas",
+   "estado": "passed",
+   "ms": 32
+  },
+  {
+   "archivo": "apps/api/test/maestros.spec.ts",
+   "prueba": "intentos de romper los maestros (pruebas de ataque del 28/10) › no se asignan vehículos a un cliente eliminado",
+   "estado": "passed",
+   "ms": 22
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-01 inicio de sesión (RF-001) › sin sesión una ruta protegida responde 401",
+   "estado": "passed",
+   "ms": 12
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-01 inicio de sesión (RF-001) › credenciales válidas devuelven sesión con sus roles",
+   "estado": "passed",
+   "ms": 131
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-01 inicio de sesión (RF-001) › contraseña incorrecta o usuario inexistente responden 401",
+   "estado": "passed",
+   "ms": 75
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-01 inicio de sesión (RF-001) › un usuario desactivado no entra",
+   "estado": "passed",
+   "ms": 150
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-03 y 04 permisos en el servidor (RF-002) › un Técnico recibe 403 en bancos aunque la pantalla lo oculte",
+   "estado": "passed",
+   "ms": 83
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-03 y 04 permisos en el servidor (RF-002) › la Cajera accede a bancos",
+   "estado": "passed",
+   "ms": 77
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-03 y 04 permisos en el servidor (RF-002) › con dos roles se suman los permisos y gana el nivel más alto",
+   "estado": "passed",
+   "ms": 78
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-15 el Jefe de taller incluye todo lo del Técnico › mismo nivel o mayor en cada módulo del Técnico; nada de Cajera ni de Logística",
+   "estado": "passed",
+   "ms": 154
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-12 «Ver como…» solo del Desarrollador, auditado › el Desarrollador entra como el Técnico y queda auditado",
+   "estado": "passed",
+   "ms": 94
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-12 «Ver como…» solo del Desarrollador, auditado › el Superadministrador y el Administrador no pueden usarlo, ni forzando la cabecera",
+   "estado": "passed",
+   "ms": 171
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-18 el rol Desarrollador es exclusivo de la plataforma › el Superadministrador no ve el rol Desarrollador en la lista de roles",
+   "estado": "passed",
+   "ms": 84
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "CA-S1-18 el rol Desarrollador es exclusivo de la plataforma › el Desarrollador sí lo ve",
+   "estado": "passed",
+   "ms": 85
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "menú por rol (RF-002) › el Técnico recibe solo sus módulos, con etiqueta y grupo",
+   "estado": "passed",
+   "ms": 76
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "menú por rol (RF-002) › los módulos beta vienen en el grupo Beta",
+   "estado": "passed",
+   "ms": 79
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "lista de usuarios (RF-003, CA-S1-18) › el Técnico no puede listar usuarios (403)",
+   "estado": "passed",
+   "ms": 78
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "lista de usuarios (RF-003, CA-S1-18) › el Superadministrador no ve al Desarrollador en la lista",
+   "estado": "passed",
+   "ms": 80
+  },
+  {
+   "archivo": "apps/api/src/sesion/sesion.spec.ts",
+   "prueba": "lista de usuarios (RF-003, CA-S1-18) › el Desarrollador ve a todos",
+   "estado": "passed",
+   "ms": 79
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "la base hace cumplir sus reglas aunque se salte la API › documento de cliente único por empresa",
+   "estado": "passed",
+   "ms": 7
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "la base hace cumplir sus reglas aunque se salte la API › placa normalizada única por empresa",
+   "estado": "passed",
+   "ms": 6
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "la base hace cumplir sus reglas aunque se salte la API › código de ODS único por empresa",
+   "estado": "passed",
+   "ms": 45
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "la base hace cumplir sus reglas aunque se salte la API › no hay ítems, abonos ni evidencias sueltos: todos apuntan a una ODS que existe",
+   "estado": "passed",
+   "ms": 14
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "la base hace cumplir sus reglas aunque se salte la API › los montos se guardan exactos (decimales, no flotantes)",
+   "estado": "passed",
+   "ms": 86
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "coherencia entre tablas después de usar la API › crear una ODS con km deja la lectura del vehículo, la bitácora y la auditoría",
+   "estado": "passed",
+   "ms": 87
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "coherencia entre tablas después de usar la API › la ODS guarda el titular del vehículo al crearse",
+   "estado": "passed",
+   "ms": 1
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "coherencia entre tablas después de usar la API › el total que muestra la API coincide con la suma guardada de los ítems y lo pendiente con los abonos",
+   "estado": "passed",
+   "ms": 64
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "coherencia entre tablas después de usar la API › quitar ítems no deja filas viejas: se reemplazan en la misma transacción",
+   "estado": "passed",
+   "ms": 26
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "coherencia entre tablas después de usar la API › un error a la mitad no deja cambios a medias (total bajo lo abonado: nada se guarda)",
+   "estado": "passed",
+   "ms": 17
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "coherencia entre tablas después de usar la API › la evidencia guarda los bytes exactos del archivo",
+   "estado": "passed",
+   "ms": 22
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "coherencia entre tablas después de usar la API › la baja de una ODS es lógica: la fila sigue en la base con su motivo y su número no vuelve",
+   "estado": "passed",
+   "ms": 148
+  },
+  {
+   "archivo": "apps/api/test/base.spec.ts",
+   "prueba": "coherencia entre tablas después de usar la API › el texto con tildes, «→» y emojis se guarda y se lee igual (base UTF-8)",
+   "estado": "passed",
+   "ms": 20
+  },
+  {
+   "archivo": "apps/api/test/precarga.spec.ts",
+   "prueba": "precarga de maestros del prototipo (S2) › hay exactamente 6 marcas de vehículo, con sus modelos",
+   "estado": "passed",
+   "ms": 18
+  },
+  {
+   "archivo": "apps/api/test/precarga.spec.ts",
+   "prueba": "precarga de maestros del prototipo (S2) › «Clientes varios» (documento 0000) existe una sola vez y es genérico",
+   "estado": "passed",
+   "ms": 5
+  },
+  {
+   "archivo": "apps/api/test/precarga.spec.ts",
+   "prueba": "precarga de maestros del prototipo (S2) › el vehículo DEM-679 está una sola vez, con su titular y su kilometraje, y se encuentra por placa",
+   "estado": "passed",
+   "ms": 24
+  },
+  {
+   "archivo": "apps/api/src/maestros/maestros.reglas.spec.ts",
+   "prueba": "Reglas S5 › la rejilla de tiempos sube de 0,25 h hasta 1,5 h y luego de 0,5 h",
+   "estado": "passed",
+   "ms": 1
+  },
+  {
+   "archivo": "apps/api/src/maestros/maestros.reglas.spec.ts",
+   "prueba": "Reglas S5 › el tiempo estándar suma el margen del técnico",
+   "estado": "passed",
+   "ms": 1
+  },
+  {
+   "archivo": "apps/api/src/maestros/maestros.reglas.spec.ts",
+   "prueba": "Reglas S5 › sin grupo o con un grupo sin reglas se usa el estándar del servicio",
+   "estado": "passed",
+   "ms": 0
+  },
+  {
+   "archivo": "apps/api/src/maestros/maestros.reglas.spec.ts",
+   "prueba": "Reglas S5 › las reglas del grupo se acumulan en orden: servicio, grupo y todos los grupos (RN-09)",
+   "estado": "passed",
+   "ms": 1
+  },
+  {
+   "archivo": "apps/api/src/maestros/maestros.reglas.spec.ts",
+   "prueba": "Reglas S5 › una regla FIJAR del servicio funciona como excepción de precio",
+   "estado": "passed",
+   "ms": 0
+  },
+  {
+   "archivo": "apps/api/src/maestros/maestros.reglas.spec.ts",
+   "prueba": "Reglas S5 › valida montos múltiplos de 5 y tiempos de 0,25 h",
+   "estado": "passed",
+   "ms": 1
+  },
+  {
+   "archivo": "apps/api/src/maestros/maestros.reglas.spec.ts",
+   "prueba": "Reglas S5 › el grupo sale de la familia del motor; si no, de marca, modelo y año; si no, queda sin grupo",
+   "estado": "passed",
+   "ms": 0
+  },
+  {
+   "archivo": "apps/api/src/maestros/maestros.reglas.spec.ts",
+   "prueba": "Reglas S5 › el solapamiento da un solo descuento por línea, el del grupo o el estándar, sin pasar el total",
+   "estado": "passed",
+   "ms": 1
+  }
+ ]
+}

@@ -12,6 +12,7 @@
     "db:deploy": "pnpm --filter @posventa/database deploy",
     "db:seed": "pnpm --filter @posventa/database seed",
     "db:studio": "pnpm --filter @posventa/database studio",
+    "db:test-prep": "pnpm --filter @posventa/database test-prep",
     "dev": "node herramientas/dev.mjs",
     "test": "pnpm -r --if-present test"
   }

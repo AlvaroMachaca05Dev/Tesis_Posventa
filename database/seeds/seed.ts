@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { readFileSync } from 'node:fs';
 import { precargaMaestros } from './precarga-maestros';
+import { precargaS5 } from './precarga-s5';
 
 if (process.env.NODE_ENV === 'production') {
   console.error('Las semillas de demostración no se ejecutan en producción.');
@@ -145,6 +146,8 @@ async function main() {
 
   const maestros = await precargaMaestros(prisma, org.id);
   console.log(`Precarga de maestros: ${maestros.clientes} cliente, ${maestros.vehiculos} vehículo y ${maestros.marcas} marcas del prototipo.`);
+  const s5 = await precargaS5(prisma, org.id);
+  console.log(`Precarga S5: ${s5.grupos} grupos, ${s5.familias} familias de motor, ${s5.servicios} servicios, ${s5.reglas} reglas de precio, ${s5.solapamientos} solapamientos, ${s5.productos} productos y ${s5.proveedores} proveedores.`);
 
   console.log(
     `Semillas listas: ${matriz.roles.length} roles, ${Object.keys(permisos).length} permisos, ${enlaces} asignaciones, ${locales.length} locales, ${USUARIOS_DEMO.length} usuarios de demostración.`,

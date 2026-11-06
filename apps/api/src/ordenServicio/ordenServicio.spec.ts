@@ -29,7 +29,7 @@ beforeAll(async () => {
   const mod = await Test.createTestingModule({ imports: [AppModule] }).compile();
   app = mod.createNestApplication();
   await app.init();
-  clienteId = (await como(CAJERA, 'post', '/clientes', { tipoDocumento: 'DNI', documento: `ODS${sufijo}`, nombre: 'Cliente ODS Prueba' })).body.id;
+  clienteId = (await como(CAJERA, 'post', '/clientes', { tipoDocumento: 'DNI', documento: `6${sufijo.padStart(5, '0')}01`, nombre: 'Cliente ODS Prueba' })).body.id;
 });
 afterAll(async () => {
   // Sin el cliente de prueba no se borra nada: un filtro vacío borraría toda la base.
@@ -58,6 +58,29 @@ describe('crear ODS (RF-011, DEC-67, DEC-71)', () => {
     expect(r.body.codigo).toMatch(new RegExp(`^${hoy}\\d{5,}$`));
     expect(r.body).toMatchObject({ estado: 'Recepcion', decision: 'Pendiente de aprobación', tecnico: null, fechaCierre: null });
     expect(r.body.cliente.id).toBe(clienteId);
+  });
+  it('se puede crear directo en el estado y la decisión que corresponden, y queda en la bitácora', async () => {
+    const r = await nueva(await vehiculo(), { estado: 'EnProceso', decision: 'Aprobada para comprar' });
+    expect(r.status).toBe(201);
+    expect(r.body).toMatchObject({ estado: 'EnProceso', decision: 'Aprobada para comprar', fechaCierre: null });
+    const b = await prisma.bitacora.findFirst({ where: { ordenId: r.body.id } });
+    expect(b?.texto).toContain('En proceso');
+  });
+  it('crear ya cerrada solo si la decisión es «No aprobada», con fecha de cierre; estados y decisiones fuera de la lista se rechazan', async () => {
+    expect((await nueva(await vehiculo(), { estado: 'Cerrada', decision: 'Pendiente de aprobación' })).status).toBe(409);
+    const c = await nueva(await vehiculo(), { estado: 'Cerrada', decision: 'No aprobada' });
+    expect(c.status).toBe(201);
+    expect(c.body.fechaCierre).not.toBeNull();
+    expect((await nueva(await vehiculo(), { estado: 'Inventado' })).status).toBe(400);
+    expect((await nueva(await vehiculo(), { decision: 'Quizás' })).status).toBe(400);
+  });
+  it('tipo de atención «Otro» exige el texto propio; al editarlo a otro tipo se olvida', async () => {
+    expect((await nueva(await vehiculo(), { tipoAtencion: 'Otro' })).status).toBe(400);
+    const o = await nueva(await vehiculo(), { tipoAtencion: 'Otro', tipoAtencionDetalle: 'Revisión de alarma' });
+    expect(o.status).toBe(201);
+    expect(o.body).toMatchObject({ tipoAtencion: 'Otro', tipoAtencionDetalle: 'Revisión de alarma' });
+    const editado = await como(CAJERA, 'patch', `/ordenes/${o.body.id}`, { tipoAtencion: 'Mantenimiento preventivo' });
+    expect(editado.body).toMatchObject({ tipoAtencion: 'Mantenimiento preventivo', tipoAtencionDetalle: null });
   });
   it('un número eliminado no se reutiliza: la siguiente ODS sigue el correlativo y la baja queda auditada', async () => {
     const a = (await nueva(await vehiculo())).body;
@@ -262,7 +285,18 @@ describe('ingreso, responsable y fechas (RF-015, 28/10)', () => {
     expect(ver.headers['content-type']).toContain('image/png');
     const txt = await request(app.getHttpServer()).post(`/ordenes/${o.id}/evidencias`).set('Authorization', `Bearer ${t}`).attach('archivo', Buffer.from('hola'), { filename: 'a.txt', contentType: 'text/plain' });
     expect(txt.status).toBe(400);
+    const mp4 = await request(app.getHttpServer()).post(`/ordenes/${o.id}/evidencias`).set('Authorization', `Bearer ${t}`).attach('archivo', Buffer.from('00'), { filename: 'v.mp4', contentType: 'video/mp4' });
+    expect(mp4.status).toBe(400);
     expect((await como(CAJERA, 'delete', `/ordenes/${o.id}/evidencias/${e.id}`)).body.evidencias).toHaveLength(0);
+  });
+  it('evidencias: son opcionales y como máximo 5 fotos por ODS', async () => {
+    const o = (await nueva(await vehiculo())).body;
+    expect(o.evidencias).toHaveLength(0);
+    const t = await tokenDe(CAJERA);
+    const png = Buffer.from('89504e470d0a1a0a', 'hex');
+    const subir = (i: number) => request(app.getHttpServer()).post(`/ordenes/${o.id}/evidencias`).set('Authorization', `Bearer ${t}`).attach('archivo', png, { filename: `f${i}.png`, contentType: 'image/png' });
+    for (let i = 0; i < 5; i++) expect((await subir(i)).status).toBe(201);
+    expect((await subir(5)).status).toBe(409);
   });
   it('responsable del ítem: debe ser técnico o jefe de taller de la empresa', async () => {
     const o = (await nueva(await vehiculo())).body;
@@ -272,6 +306,18 @@ describe('ingreso, responsable y fechas (RF-015, 28/10)', () => {
     expect(ok.body.detalles[0].tecnicoId).toBe(cat.tecnicos[0].id);
     const cajeraId = (await prisma.usuario.findFirstOrThrow({ where: { correo: CAJERA } })).id;
     expect((await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [{ ...item, tecnicoId: cajeraId }] })).status).toBe(400);
+  });
+  it('responsable de un producto: una cajera o un logístico; un técnico no sirve para productos ni un logístico para servicios', async () => {
+    const o = (await nueva(await vehiculo())).body;
+    const cat = (await como(CAJERA, 'get', '/ordenes/catalogos')).body;
+    expect(cat.logisticos.length).toBeGreaterThan(0);
+    const prod = { tipo: 'producto', descripcion: 'Repuesto externo palier', precio: 0 }, serv = { tipo: 'servicio', descripcion: 'Afinamiento', precio: 50 };
+    const ok = await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [{ ...prod, tecnicoId: cat.logisticos[0].id }] });
+    expect(ok.body.detalles[0].tecnicoId).toBe(cat.logisticos[0].id);
+    expect(cat.cajeras.length).toBeGreaterThan(0);
+    expect((await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [{ ...prod, tecnicoId: cat.cajeras[0].id }] })).status).toBe(200);
+    expect((await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [{ ...prod, tecnicoId: cat.tecnicos[0].id }] })).status).toBe(400);
+    expect((await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [{ ...serv, tecnicoId: cat.logisticos[0].id }] })).status).toBe(400);
   });
   it('fechas de inicio y cierre: solo el Superadministrador las corrige y queda en la bitácora', async () => {
     const o = (await nueva(await vehiculo())).body;

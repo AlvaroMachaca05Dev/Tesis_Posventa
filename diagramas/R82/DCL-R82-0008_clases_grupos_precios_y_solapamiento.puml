@@ -1,0 +1,63 @@
+@startuml
+!include _estilo.iuml
+hide empty members
+skinparam classAttributeIconSize 0
+title Clases de grupos, precios por grupo y solapamiento (R8.2, implementado en el S5)
+left to right direction
+class GrupoVehicular {
+  codigo: N1 a N5
+  nombre
+  activo
+}
+class FamiliaMotor {
+  codigo: FM0001…
+  codigos de motor
+  combustible, litros, turbo
+}
+class Vehiculo {
+  marca, modelo, año
+  codigoMotor
+  grupoFuente: familia | modelo | manual
+}
+class Servicio {
+  codigo, categoria
+  horasEstandar: AutoData o 1 h
+  precioEstandar
+  externo, trabajoMayor
+}
+class ReglaPrecio {
+  nivel: servicio | grupo | todos
+  tipo: fijar | sumar | porcentaje
+  horas, precio, porcentaje
+  rango de precio
+}
+class Solapamiento {
+  modo: automático | opcional
+  descuento estándar y por grupo
+  horasCompartidas
+}
+class Proveedor {
+  documento único
+}
+class Producto {
+  codigo, unidad
+  precio, costo
+}
+class DetalleODS {
+  precio, precioGrupo
+  horas, trazaPrecio
+  descuentoMonto
+}
+GrupoVehicular "0..1" -- "0..*" Vehiculo
+GrupoVehicular "0..1" -- "0..*" FamiliaMotor
+GrupoVehicular "0..1" -- "0..*" ReglaPrecio
+ReglaPrecio "0..*" -- "0..*" Servicio : aplica a
+Servicio "1" -- "0..*" Solapamiento : base
+Servicio "1" -- "0..*" Solapamiento : con descuento
+Proveedor "0..1" -- "0..*" Servicio : externo
+Proveedor "0..1" -- "0..*" Producto
+Servicio "0..1" -- "0..*" DetalleODS
+Producto "0..1" -- "0..*" DetalleODS
+Solapamiento "0..1" -- "0..*" DetalleODS : descuento
+note bottom of ReglaPrecio : RN-09: estándar, luego reglas del grupo\npara el servicio, generales del grupo\ny de todos los grupos
+@enduml

@@ -1,0 +1,5077 @@
+{
+ "fuente": "Referencia Autodata en combinación con datos del taller RSA (reunión de precios, 05/11/2026)",
+ "grupos": [
+  {
+   "codigo": "G1",
+   "nombre": "Gasolinero motor chico",
+   "descripcion": "Gasolina, motor de hasta 1.25 L (Tico, Spark, Picanto, i10, Alto)"
+  },
+  {
+   "codigo": "G2",
+   "nombre": "Gasolinero motor mediano",
+   "descripcion": "Gasolina, motor de 1.3 a 1.6 L (Yaris, Gol 1.6, Sail, Rio, Accent)"
+  },
+  {
+   "codigo": "G3",
+   "nombre": "Gasolinero motor grande",
+   "descripcion": "Gasolina, motor de más de 1.6 L (Corolla 1.8, Sportage, Tucson, Santa Fe)"
+  },
+  {
+   "codigo": "G4",
+   "nombre": "Petrolero (diésel)",
+   "descripcion": "Todo motor diésel, de cualquier tamaño (Hilux, H-1, Frontier, L200)"
+  }
+ ],
+ "servicios": [
+  {
+   "codigo": "A01",
+   "nombre": "Bajada de culata · motor con cadena",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 650.0,
+    "G2": 750.0,
+    "G3": 1000.0,
+    "G4": 1400.0
+   },
+   "precioEstandar": 750.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A02",
+   "nombre": "Bajada de culata · motor con correa",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 500.0,
+    "G2": 650.0,
+    "G3": 900.0,
+    "G4": 1200.0
+   },
+   "precioEstandar": 650.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A03",
+   "nombre": "Bajada de motor",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": true,
+   "precios": {
+    "G1": 700.0,
+    "G2": 900.0,
+    "G3": 1200.0,
+    "G4": 1450.0
+   },
+   "precioEstandar": 900.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A04",
+   "nombre": "Calibracion de valvulas (regulacion de balancines)",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 90.0
+   },
+   "precioEstandar": 50.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A05",
+   "nombre": "Cambio de aceite de motor + filtro de aceite tipo rosca (metalico)",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 20.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": 0.5,
+   "horasGrupo": {
+    "G1": 0.4,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.65
+   },
+   "repuestos": []
+  },
+  {
+   "codigo": "A06",
+   "nombre": "Cambio de aceite de motor + filtro de aceite tipo elemento (cartucho)",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 20.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 35.0
+   },
+   "precioEstandar": 25.0,
+   "horas": 0.67,
+   "horasGrupo": {
+    "G1": 0.57,
+    "G2": 0.67,
+    "G3": 0.67,
+    "G4": 0.82
+   },
+   "repuestos": []
+  },
+  {
+   "codigo": "A07",
+   "nombre": "Cambio de anillos de motor",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": true,
+   "precios": {
+    "G1": 750.0,
+    "G2": 950.0,
+    "G3": 1250.0,
+    "G4": 1550.0
+   },
+   "precioEstandar": 950.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A08",
+   "nombre": "Cambio de cadena de distribución",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 190.0,
+    "G2": 250.0,
+    "G3": 330.0,
+    "G4": 400.0
+   },
+   "precioEstandar": 250.0,
+   "horas": 4.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Cadena de distribución",
+    "Junta de tapa de la cadena de distribución"
+   ]
+  },
+  {
+   "codigo": "A09",
+   "nombre": "Cambio de correa de accesorios (alternador)",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A10",
+   "nombre": "Cambio de correa de distribución",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 90.0,
+    "G2": 150.0,
+    "G3": 200.0,
+    "G4": 220.0
+   },
+   "precioEstandar": 150.0,
+   "horas": 3.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Correa de distribución"
+   ]
+  },
+  {
+   "codigo": "A11",
+   "nombre": "Cambio de empaque de carter de motor",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 65.0,
+    "G4": 100.0
+   },
+   "precioEstandar": 50.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A12",
+   "nombre": "Cambio de empaque de tapa de balancines",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 80.0
+   },
+   "precioEstandar": 40.0,
+   "horas": 1,
+   "horasGrupo": null,
+   "repuestos": [
+    "Junta de la tapa de válvulas/árbol de levas"
+   ]
+  },
+  {
+   "codigo": "A13",
+   "nombre": "Cambio de reten de arbol de levas",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 60.0,
+    "G2": 80.0,
+    "G3": 100.0,
+    "G4": 100.0
+   },
+   "precioEstandar": 80.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A14",
+   "nombre": "Cambio de reten delantero de ciguenal",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 50.0,
+    "G2": 60.0,
+    "G3": 70.0,
+    "G4": 90.0
+   },
+   "precioEstandar": 60.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A15",
+   "nombre": "Cambio de reten posterior de ciguenal (con bajada de caja) (caja mecanica o automatica)",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 145.0,
+    "G2": 185.0,
+    "G3": 280.0,
+    "G4": 400.0
+   },
+   "precioEstandar": 185.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A16",
+   "nombre": "Cambio de soporte de motor (especificar cual)",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": 50.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A17",
+   "nombre": "Prueba de compresion del motor",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": 1,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "A18",
+   "nombre": "Reparación de motor (sin tornería) · motor con cadena",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": true,
+   "precios": {
+    "G1": 1400.0,
+    "G2": 1800.0,
+    "G3": 1900.0,
+    "G4": 2700.0
+   },
+   "precioEstandar": 1800.0,
+   "horas": 26,
+   "horasGrupo": null,
+   "repuestos": [
+    "Kit de reparación del motor"
+   ]
+  },
+  {
+   "codigo": "A19",
+   "nombre": "Reparación de motor (sin tornería) · motor con correa",
+   "categoria": "MOTOR",
+   "externo": false,
+   "trabajoMayor": true,
+   "precios": {
+    "G1": 1200.0,
+    "G2": 1500.0,
+    "G3": 2100.0,
+    "G4": 2500.0
+   },
+   "precioEstandar": 1500.0,
+   "horas": 26,
+   "horasGrupo": null,
+   "repuestos": [
+    "Kit de reparación del motor"
+   ]
+  },
+  {
+   "codigo": "B01",
+   "nombre": "Afinamiento completo de motor (obturador - inyeccion)",
+   "categoria": "GESTIÓN DEL MOTOR - ENCENDIDO",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 130.0,
+    "G2": 140.0,
+    "G3": 150.0,
+    "G4": null
+   },
+   "precioEstandar": 140.0,
+   "horas": 3.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Bujía de encendido",
+    "Elemento del filtro de aire",
+    "Filtro de combustible"
+   ]
+  },
+  {
+   "codigo": "B02",
+   "nombre": "Afinamiento completo de motor (carburado)",
+   "categoria": "GESTIÓN DEL MOTOR - ENCENDIDO",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 165.0,
+    "G2": 190.0,
+    "G3": 210.0,
+    "G4": null
+   },
+   "precioEstandar": 190.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "B03",
+   "nombre": "Cambio de bobina de encendido de motor",
+   "categoria": "GESTIÓN DEL MOTOR - ENCENDIDO",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": null
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "B04",
+   "nombre": "Cambio de bujias de motor",
+   "categoria": "GESTIÓN DEL MOTOR - ENCENDIDO",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 15.0,
+    "G4": null
+   },
+   "precioEstandar": 15.0,
+   "horas": 0.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Bujía de encendido"
+   ]
+  },
+  {
+   "codigo": "B05",
+   "nombre": "Cambio de chicotes de bujias de motor",
+   "categoria": "GESTIÓN DEL MOTOR - ENCENDIDO",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": null
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "B06",
+   "nombre": "Limpieza de bujias de motor",
+   "categoria": "GESTIÓN DEL MOTOR - ENCENDIDO",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 15.0,
+    "G3": 20.0,
+    "G4": null
+   },
+   "precioEstandar": 15.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C01",
+   "nombre": "Bajada de tanque de combustible tipo gasolina",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 60.0,
+    "G2": 80.0,
+    "G3": 100.0,
+    "G4": null
+   },
+   "precioEstandar": 80.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C02",
+   "nombre": "Bajada de tanque de combustible tipo petroleo/diesel",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 100.0
+   },
+   "precioEstandar": 100.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C03",
+   "nombre": "Cambio de bomba de alta presion petroleo/diesel (common rail)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 110.0
+   },
+   "precioEstandar": 110.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C04",
+   "nombre": "Cambio de bomba de combustible tipo petroleo/diesel (alimentacion - baja presion)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 50.0
+   },
+   "precioEstandar": 50.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C05",
+   "nombre": "Cambio de bomba de combustible tipo gasolina (electrica - inyeccion)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": null
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C06",
+   "nombre": "Cambio de bomba de combustible tipo gasolina (de diafragma - carburado)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 15.0,
+    "G3": 25.0,
+    "G4": null
+   },
+   "precioEstandar": 15.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C07",
+   "nombre": "Cambio de bomba de inyeccion petroleo/diesel (lineal o rotativa)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 90.0
+   },
+   "precioEstandar": 90.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C08",
+   "nombre": "Cambio de empaque de multiple de admision",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 35.0,
+    "G2": 40.0,
+    "G3": 55.0,
+    "G4": 65.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C09",
+   "nombre": "Cambio de filtro de aire",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 10.0,
+    "G3": 15.0,
+    "G4": 15.0
+   },
+   "precioEstandar": 10.0,
+   "horas": 0.2,
+   "horasGrupo": {
+    "G1": 0.2,
+    "G2": 0.2,
+    "G3": 0.2,
+    "G4": 0.2
+   },
+   "repuestos": []
+  },
+  {
+   "codigo": "C10",
+   "nombre": "Cambio de filtro de combustible tipo gasolina (decantador en linea - fuera del tanque)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": null
+   },
+   "precioEstandar": 30.0,
+   "horas": 0.6,
+   "horasGrupo": {
+    "G1": 0.6,
+    "G2": 0.6,
+    "G3": 0.4
+   },
+   "repuestos": []
+  },
+  {
+   "codigo": "C11",
+   "nombre": "Cambio de filtro de combustible tipo gasolina (dentro del tanque)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": null
+   },
+   "precioEstandar": 30.0,
+   "horas": 0.6,
+   "horasGrupo": {
+    "G1": 0.6,
+    "G2": 0.6,
+    "G3": 0.5
+   },
+   "repuestos": []
+  },
+  {
+   "codigo": "C12",
+   "nombre": "Cambio de filtro de combustible tipo gasolina (en linea - fuera del tanque)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 15.0,
+    "G3": 20.0,
+    "G4": null
+   },
+   "precioEstandar": 15.0,
+   "horas": 0.3,
+   "horasGrupo": {
+    "G1": 0.3,
+    "G2": 0.3,
+    "G3": 0.3
+   },
+   "repuestos": []
+  },
+  {
+   "codigo": "C13",
+   "nombre": "Cambio de filtro de combustible tipo petroleo/diesel (en linea - fuera del tanque)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 25.0
+   },
+   "precioEstandar": 25.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C14",
+   "nombre": "Cambio de filtro de combustible tipo petroleo/diesel (decantador en linea - fuera del tanque)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 30.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C15",
+   "nombre": "Cambio de manguera de combustible tipo gasolina",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 20.0,
+    "G2": 20.0,
+    "G3": 20.0,
+    "G4": null
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C16",
+   "nombre": "Cambio de manguera de combustible tipo petroleo/diesel",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 20.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C17",
+   "nombre": "Limpieza y mantenimiento de carburador de motor",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 60.0,
+    "G2": 80.0,
+    "G3": 100.0,
+    "G4": null
+   },
+   "precioEstandar": 80.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C18",
+   "nombre": "Limpieza de inyectores de motor",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 45.0,
+    "G2": 60.0,
+    "G3": 80.0,
+    "G4": null
+   },
+   "precioEstandar": 60.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C19",
+   "nombre": "Limpieza de obturador / IAC de motor",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": null
+   },
+   "precioEstandar": 30.0,
+   "horas": 1.25,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "C20",
+   "nombre": "Regulacion de minimo - ralenti (motor)",
+   "categoria": "GESTIÓN DEL MOTOR - ALIMENTACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 10.0,
+    "G3": 15.0,
+    "G4": null
+   },
+   "precioEstandar": 10.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "D01",
+   "nombre": "Cambio de radiador (refrigeracion)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": 1.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Radiador"
+   ]
+  },
+  {
+   "codigo": "D02",
+   "nombre": "Cambio de bomba de agua (refrigeracion) (motor con cadena)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 80.0,
+    "G4": 85.0
+   },
+   "precioEstandar": 40.0,
+   "horas": 2,
+   "horasGrupo": null,
+   "repuestos": [
+    "Bomba de agua"
+   ]
+  },
+  {
+   "codigo": "D03",
+   "nombre": "Cambio de bomba de agua (refrigeracion) (motor con correa de distribucion)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 70.0,
+    "G2": 70.0,
+    "G3": 120.0,
+    "G4": 120.0
+   },
+   "precioEstandar": 70.0,
+   "horas": 2,
+   "horasGrupo": null,
+   "repuestos": [
+    "Bomba de agua"
+   ]
+  },
+  {
+   "codigo": "D04",
+   "nombre": "Cambio de brida de agua (refrigeracion)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "D05",
+   "nombre": "Cambio de manguera de agua (refrigeracion)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 20.0,
+    "G2": 20.0,
+    "G3": 20.0,
+    "G4": 20.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "D06",
+   "nombre": "Cambio de manguera de radiador inferior (refrigeracion)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 25.0
+   },
+   "precioEstandar": 25.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "D07",
+   "nombre": "Cambio de manguera de radiador superior (refrigeracion)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 20.0,
+    "G2": 20.0,
+    "G3": 20.0,
+    "G4": 20.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "D08",
+   "nombre": "Cambio de refrigerante y purgado (refrigeracion)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 10.0,
+    "G3": 15.0,
+    "G4": 15.0
+   },
+   "precioEstandar": 10.0,
+   "horas": 0.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Anticongelante/refrigerante del motor"
+   ]
+  },
+  {
+   "codigo": "D09",
+   "nombre": "Cambio de termostato (refrigeracion)",
+   "categoria": "SISTEMA DE REFRIGERACIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "F01",
+   "nombre": "Bajada de caja (kit de embrague) (caja mecanica) · 4x4",
+   "categoria": "EMBRAGUE Y MANDOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": 280.0,
+    "G4": 400.0
+   },
+   "precioEstandar": 280.0,
+   "horas": 4.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Plato y tapa de embrague y cojinete desembrague"
+   ]
+  },
+  {
+   "codigo": "F02",
+   "nombre": "Bajada de caja (kit de embrague) (caja mecanica) · tracción delantera",
+   "categoria": "EMBRAGUE Y MANDOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 145.0,
+    "G2": 185.0,
+    "G3": 280.0,
+    "G4": 450.0
+   },
+   "precioEstandar": 185.0,
+   "horas": 4.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Plato y tapa de embrague y cojinete desembrague"
+   ]
+  },
+  {
+   "codigo": "F03",
+   "nombre": "Bajada de caja (kit de embrague) (caja mecanica) · tracción trasera 4x2",
+   "categoria": "EMBRAGUE Y MANDOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": 280.0,
+    "G4": 300.0
+   },
+   "precioEstandar": 280.0,
+   "horas": 4.5,
+   "horasGrupo": null,
+   "repuestos": [
+    "Plato y tapa de embrague y cojinete desembrague"
+   ]
+  },
+  {
+   "codigo": "F04",
+   "nombre": "Cambio de bomba auxiliar de embrague - concentrica (con bajada de caja) (caja mecanica)",
+   "categoria": "EMBRAGUE Y MANDOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 145.0,
+    "G2": 185.0,
+    "G3": 280.0,
+    "G4": 400.0
+   },
+   "precioEstandar": 185.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "F05",
+   "nombre": "Cambio de bomba auxiliar de embrague - exterior (caja mecanica)",
+   "categoria": "EMBRAGUE Y MANDOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": 50.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "F06",
+   "nombre": "Cambio de bomba principal de embrague (caja mecanica)",
+   "categoria": "EMBRAGUE Y MANDOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "F07",
+   "nombre": "Cambio de cable de embrague (caja mecanica)",
+   "categoria": "EMBRAGUE Y MANDOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": 0.75,
+   "horasGrupo": null,
+   "repuestos": [
+    "Cable de desembrague"
+   ]
+  },
+  {
+   "codigo": "F08",
+   "nombre": "Regulacion de embrague / cable (caja mecanica)",
+   "categoria": "EMBRAGUE Y MANDOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 10.0,
+    "G3": 15.0,
+    "G4": 15.0
+   },
+   "precioEstandar": 10.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "G01",
+   "nombre": "Bajada de caja (collarín, retén u otros) (caja mecanica)",
+   "categoria": "CAMBIO MANUAL",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 115.0,
+    "G2": 150.0,
+    "G3": 200.0,
+    "G4": 240.0
+   },
+   "precioEstandar": 150.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "G02",
+   "nombre": "Cambio de aceite de caja (caja mecanica)",
+   "categoria": "CAMBIO MANUAL",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 15.0,
+    "G3": 20.0,
+    "G4": 25.0
+   },
+   "precioEstandar": 15.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "G03",
+   "nombre": "Cambio de empaque de carter de caja (caja mecanica)",
+   "categoria": "CAMBIO MANUAL",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 60.0,
+    "G2": 80.0,
+    "G3": 100.0,
+    "G4": 120.0
+   },
+   "precioEstandar": 80.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "G04",
+   "nombre": "Cambio de taco de caja (caja mecanica o automatica)",
+   "categoria": "CAMBIO MANUAL",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": 50.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "G05",
+   "nombre": "Cambio de varillaje o cables de cambios (caja mecanica o automatica)",
+   "categoria": "CAMBIO MANUAL",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "G06",
+   "nombre": "Regulacion de varillaje o cables de cambios (caja mecanica o automatica)",
+   "categoria": "CAMBIO MANUAL",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 15.0,
+    "G3": 20.0,
+    "G4": 25.0
+   },
+   "precioEstandar": 15.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "G07",
+   "nombre": "Reparacion de caja de cambios (caja mecanica)",
+   "categoria": "CAMBIO MANUAL",
+   "externo": false,
+   "trabajoMayor": true,
+   "precios": {
+    "G1": 270.0,
+    "G2": 350.0,
+    "G3": 460.0,
+    "G4": 550.0
+   },
+   "precioEstandar": 350.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "H01",
+   "nombre": "Cambio de caja automatica",
+   "categoria": "CAMBIO AUTOMÁTICO",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 145.0,
+    "G2": 165.0,
+    "G3": 240.0,
+    "G4": 360.0
+   },
+   "precioEstandar": 165.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "J01",
+   "nombre": "Cambio de poncho de palier (delantero / posterior) (especificar lado)",
+   "categoria": "PROPULSIÓN FINAL, ÁRBOL Y EJES",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 60.0,
+    "G4": 80.0
+   },
+   "precioEstandar": 50.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "J02",
+   "nombre": "Cambio de reten de palier - lado caja (delantero / posterior) (especificar lado) (caja mecanica o automatica)",
+   "categoria": "PROPULSIÓN FINAL, ÁRBOL Y EJES",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 35.0,
+    "G2": 45.0,
+    "G3": 55.0,
+    "G4": 75.0
+   },
+   "precioEstandar": 45.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "J03",
+   "nombre": "Cambio de rodaje de rueda · delantera (especificar lado)",
+   "categoria": "PROPULSIÓN FINAL, ÁRBOL Y EJES",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "J04",
+   "nombre": "Cambio de rodaje de rueda · posterior 4x2 (especificar lado)",
+   "categoria": "PROPULSIÓN FINAL, ÁRBOL Y EJES",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 25.0,
+    "G3": 30.0,
+    "G4": 70.0
+   },
+   "precioEstandar": 25.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "J05",
+   "nombre": "Cambio de rodaje de rueda · posterior 4x4 (especificar lado)",
+   "categoria": "PROPULSIÓN FINAL, ÁRBOL Y EJES",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": 40.0,
+    "G4": 90.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "J06",
+   "nombre": "Cambio de palier + engrasado (delantero / posterior) (especificar lado)",
+   "categoria": "PROPULSIÓN FINAL, ÁRBOL Y EJES",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 60.0,
+    "G4": 80.0
+   },
+   "precioEstandar": 50.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "J07",
+   "nombre": "Mantenimiento de palier - cambio de grasa (delantero / posterior) (especificar lado)",
+   "categoria": "PROPULSIÓN FINAL, ÁRBOL Y EJES",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 35.0,
+    "G3": 45.0,
+    "G4": 55.0
+   },
+   "precioEstandar": 35.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "K01",
+   "nombre": "Cambio de amortiguador (delantero / posterior) (especificar lado)",
+   "categoria": "SUSPENSIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "K02",
+   "nombre": "Cambio de bieletas (delantero / posterior) (especificar lado)",
+   "categoria": "SUSPENSIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "K03",
+   "nombre": "Cambio de jebes de barra estabilizadora (delanteros / posteriores)",
+   "categoria": "SUSPENSIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": 45.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "K04",
+   "nombre": "Cambio de rotula de suspension - inferior (delantera / posterior) (especificar lado)",
+   "categoria": "SUSPENSIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": 50.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "K05",
+   "nombre": "Cambio de trapecio (delantero / posterior) (especificar lado)",
+   "categoria": "SUSPENSIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "L01",
+   "nombre": "Cambio de aceite de hidrolina (direccion hidraulica)",
+   "categoria": "DIRECCIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "L02",
+   "nombre": "Cambio de axial de direccion - barra de acoplamiento (especificar lado)",
+   "categoria": "DIRECCIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 45.0,
+    "G2": 60.0,
+    "G3": 80.0,
+    "G4": 95.0
+   },
+   "precioEstandar": 60.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "L03",
+   "nombre": "Cambio de cremallera de direccion (direccion electrica)",
+   "categoria": "DIRECCIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 50.0,
+    "G2": 60.0,
+    "G3": 80.0,
+    "G4": 100.0
+   },
+   "precioEstandar": 60.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "L04",
+   "nombre": "Cambio de cremallera de direccion (direccion hidraulica)",
+   "categoria": "DIRECCIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 70.0,
+    "G2": 90.0,
+    "G3": 120.0,
+    "G4": 145.0
+   },
+   "precioEstandar": 90.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "L05",
+   "nombre": "Cambio de cremallera de direccion (direccion mecanica)",
+   "categoria": "DIRECCIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 50.0,
+    "G2": 60.0,
+    "G3": 80.0,
+    "G4": 100.0
+   },
+   "precioEstandar": 60.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "L06",
+   "nombre": "Cambio de manguera de hidrolina de alta presion (direccion hidraulica)",
+   "categoria": "DIRECCIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 30.0,
+    "G3": 30.0,
+    "G4": 50.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "L07",
+   "nombre": "Cambio de terminal de direccion (especificar lado)",
+   "categoria": "DIRECCIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 55.0,
+    "G4": 65.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M01",
+   "nombre": "Cambio de bomba principal de freno",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 55.0,
+    "G4": 65.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M02",
+   "nombre": "Cambio de bombin o caliper de freno (delantero / posterior) (especificar lado)",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": 50.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M03",
+   "nombre": "Cambio de cable de freno de mano",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M04",
+   "nombre": "Cambio de discos de freno (delanteros / posteriores) (ambos lados)",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 50.0,
+    "G2": 60.0,
+    "G3": 70.0,
+    "G4": 80.0
+   },
+   "precioEstandar": 60.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M05",
+   "nombre": "Cambio de fajas de freno (delanteras / posteriores) (ambos lados)",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 60.0,
+    "G4": 120.0
+   },
+   "precioEstandar": 50.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M06",
+   "nombre": "Cambio de pastillas de freno (delanteras / posteriores) (ambos lados)",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 60.0,
+    "G4": 40.0
+   },
+   "precioEstandar": 50.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M07",
+   "nombre": "Limpieza y cambio de seguros de pastillas de freno (ambos lados)",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 10.0,
+    "G3": 15.0,
+    "G4": 15.0
+   },
+   "precioEstandar": 10.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M08",
+   "nombre": "Mantenimiento de pastillas de freno - limpieza (delanteras / posteriores) (ambos lados)",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M09",
+   "nombre": "Purgado y cambio de liquido de frenos",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M10",
+   "nombre": "Regulacion de freno de mano",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 10.0,
+    "G3": 15.0,
+    "G4": 15.0
+   },
+   "precioEstandar": 10.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "M11",
+   "nombre": "Regulacion / mantenimiento de fajas de freno (ambos lados)",
+   "categoria": "FRENOS",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 15.0,
+    "G3": 20.0,
+    "G4": 25.0
+   },
+   "precioEstandar": 15.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N01",
+   "nombre": "Cambio de alternador",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 25.0,
+    "G2": 30.0,
+    "G3": 40.0,
+    "G4": 50.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N02",
+   "nombre": "Cambio de sensor (especificar cual) (acceso dificil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N03",
+   "nombre": "Cambio de sensor (especificar cual) (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N04",
+   "nombre": "Cambio de sensor ABS de rueda (delantero / posterior) (especificar lado) (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N05",
+   "nombre": "Cambio de sensor APP - pedal de acelerador (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N06",
+   "nombre": "Cambio de sensor CKP - posicion del ciguenal (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N07",
+   "nombre": "Cambio de sensor CMP - posicion del arbol de levas (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N08",
+   "nombre": "Cambio de sensor ECT - temperatura del refrigerante (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N09",
+   "nombre": "Cambio de sensor IAT - temperatura del aire de admision (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N10",
+   "nombre": "Cambio de sensor MAF - caudal de aire (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N11",
+   "nombre": "Cambio de sensor MAP - presion del colector (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N12",
+   "nombre": "Cambio de sensor TPS - posicion de la mariposa (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": null
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N13",
+   "nombre": "Cambio de sensor VSS - velocidad (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N14",
+   "nombre": "Cambio de sensor de agua en el combustible (acceso dificil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 60.0
+   },
+   "precioEstandar": 60.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N15",
+   "nombre": "Cambio de sensor de carrera del pedal de freno (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N16",
+   "nombre": "Cambio de sensor de contrapresion de gases de escape (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 30.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N17",
+   "nombre": "Cambio de sensor de detonacion - knock (acceso dificil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": null
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N18",
+   "nombre": "Cambio de sensor de luz solar del aire acondicionado (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N19",
+   "nombre": "Cambio de sensor de nivel de combustible - boya (acceso dificil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N20",
+   "nombre": "Cambio de sensor de oxigeno / sonda lambda (delantero / posterior) (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N21",
+   "nombre": "Cambio de sensor de presion de aceite - bulbo (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N22",
+   "nombre": "Cambio de sensor de presion de combustible (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N23",
+   "nombre": "Cambio de sensor de presion del aire acondicionado (acceso dificil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 40.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "precioEstandar": 40.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N24",
+   "nombre": "Cambio de sensor de presion del turbo (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N25",
+   "nombre": "Cambio de sensor de temperatura ambiente (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N26",
+   "nombre": "Cambio de sensor de temperatura de aceite (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N27",
+   "nombre": "Cambio de sensor de temperatura de combustible (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 30.0
+   },
+   "precioEstandar": 30.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "N28",
+   "nombre": "Cambio de sensor de temperatura del aire acondicionado (acceso facil)",
+   "categoria": "ELECTRICIDAD",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "P01",
+   "nombre": "Cambio de filtro de cabina (polen)",
+   "categoria": "AIRE ACONDICIONADO Y CALEFACCIÓN",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 10.0,
+    "G2": 10.0,
+    "G3": 15.0,
+    "G4": 15.0
+   },
+   "precioEstandar": 10.0,
+   "horas": 0.2,
+   "horasGrupo": {
+    "G1": 0.2,
+    "G2": 0.2,
+    "G3": 0.2,
+    "G4": 0.3
+   },
+   "repuestos": []
+  },
+  {
+   "codigo": "X01",
+   "nombre": "Torneria completo: culata + monoblock + ciguenal + lavado (paquete)",
+   "categoria": "SERVICIOS EXTERNOS",
+   "externo": true,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 1200.0,
+    "G2": 1320.0,
+    "G3": 1440.0,
+    "G4": 1680.0
+   },
+   "precioEstandar": 1320.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "X02",
+   "nombre": "Torneria culata + lavado (paquete)",
+   "categoria": "SERVICIOS EXTERNOS",
+   "externo": true,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 480.0,
+    "G2": 540.0,
+    "G3": 600.0,
+    "G4": 720.0
+   },
+   "precioEstandar": 540.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "X03",
+   "nombre": "Torneria monoblock + ciguenal + lavado (paquete)",
+   "categoria": "SERVICIOS EXTERNOS",
+   "externo": true,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 840.0,
+    "G2": 900.0,
+    "G3": 1020.0,
+    "G4": 1200.0
+   },
+   "precioEstandar": 900.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "X04",
+   "nombre": "Auxilio mecanico (grua o remolque)",
+   "categoria": "SERVICIOS EXTERNOS",
+   "externo": true,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 1.0,
+    "G2": 1.0,
+    "G3": 1.0,
+    "G4": 1.0
+   },
+   "precioEstandar": 1.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "R01",
+   "nombre": "Diagnóstico / revisión general",
+   "categoria": "REVISIÓN ADICIONAL",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 15.0,
+    "G2": 20.0,
+    "G3": 25.0,
+    "G4": 30.0
+   },
+   "precioEstandar": 20.0,
+   "horas": null,
+   "horasGrupo": null,
+   "repuestos": []
+  },
+  {
+   "codigo": "R02",
+   "nombre": "Escáner computarizado",
+   "categoria": "REVISIÓN ADICIONAL",
+   "externo": false,
+   "trabajoMayor": false,
+   "precios": {
+    "G1": 30.0,
+    "G2": 35.0,
+    "G3": 40.0,
+    "G4": 40.0
+   },
+   "precioEstandar": 35.0,
+   "horas": 0.75,
+   "horasGrupo": null,
+   "repuestos": []
+  }
+ ],
+ "solapamientos": [
+  {
+   "codigo": "SOL-01",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 35,
+    "G2": 35,
+    "G3": 60,
+    "G4": 60
+   },
+   "estandar": 35,
+   "alerta": "Correa de distribución y bomba de agua se hacen juntas (ahorra ~0.6 h). Puedes descontar hasta S/ {d} en la bomba, si deseas.",
+   "estado": "Decidido",
+   "nota": "Bomba hasta 50 %, sin bajar de S/ 30",
+   "tipo": "PAR",
+   "base": [
+    "A10"
+   ],
+   "reducidos": [
+    "D03"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-02",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 30,
+    "G2": 30,
+    "G3": 30,
+    "G4": 95
+   },
+   "estandar": 30,
+   "alerta": "Pastillas y fajas se hacen en la misma subida del auto. Se descontó S/ {d} en las fajas.",
+   "estado": "Decidido",
+   "nota": "Fajas hasta S/ 10 / 20 / 30 / 25",
+   "tipo": "PAR",
+   "base": [
+    "M06"
+   ],
+   "reducidos": [
+    "M05"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-03",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 30,
+    "G2": 40,
+    "G3": 40,
+    "G4": 80
+   },
+   "estandar": 40,
+   "alerta": "La bajada de culata ya incluye la tapa de balancines. Se descontó el 100 % de la tapa (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de la tapa (dejar la línea con descuento)",
+   "tipo": "PAR",
+   "base": [
+    "A01",
+    "A02"
+   ],
+   "reducidos": [
+    "A12"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-04",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 40,
+    "G2": 50,
+    "G3": 60,
+    "G4": 80
+   },
+   "estandar": 50,
+   "alerta": "Palier y poncho del mismo lado son prácticamente el mismo trabajo. Se descontó el 100 % del poncho (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del poncho del mismo lado",
+   "tipo": "PAR",
+   "base": [
+    "J06"
+   ],
+   "reducidos": [
+    "J01"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-05",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 115,
+    "G2": 150,
+    "G3": 200,
+    "G4": 240
+   },
+   "estandar": 150,
+   "alerta": "El kit de embrague ya incluye collarín, plato y disco. Se descontó el 100 % de la segunda bajada de caja (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del segundo: el kit ya incluye collarín, plato y disco",
+   "tipo": "PAR",
+   "base": [
+    "F01",
+    "F02",
+    "F03"
+   ],
+   "reducidos": [
+    "G01"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-06",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 25,
+    "G2": 45,
+    "G3": 60,
+    "G4": 65
+   },
+   "estandar": 45,
+   "alerta": "Culata y correa de distribución comparten desmontajes. Se descontó S/ {d} en la correa.",
+   "estado": "Decidido",
+   "nota": "30 % de la correa, redondeado a 5",
+   "tipo": "PAR",
+   "base": [
+    "A02"
+   ],
+   "reducidos": [
+    "A10"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-07",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 5,
+    "G2": 5,
+    "G3": 5,
+    "G4": 10
+   },
+   "estandar": 5,
+   "alerta": "Amortiguador y trapecio del mismo lado comparten desmontajes. Puedes descontar S/ {d} en el trapecio, si deseas.",
+   "estado": "Decidido",
+   "nota": "15 % del trapecio, redondeado a 5",
+   "tipo": "PAR",
+   "base": [
+    "K01"
+   ],
+   "reducidos": [
+    "K05"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-08",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 20,
+    "G2": 25,
+    "G3": 35,
+    "G4": 40
+   },
+   "estandar": 25,
+   "alerta": "Axial y terminal del mismo lado se cambian juntos (rueda, desarme y alineación una sola vez). Se descontó S/ {d} en el terminal.",
+   "estado": "Propuesto",
+   "nota": "60 % del terminal, redondeado a 5",
+   "tipo": "PAR",
+   "base": [
+    "L02"
+   ],
+   "reducidos": [
+    "L07"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-09",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 5,
+    "G2": 10,
+    "G3": 10,
+    "G4": 15
+   },
+   "estandar": 10,
+   "alerta": "Cremallera y terminal comparten la alineación final. Puedes descontar S/ {d} en el terminal, si deseas.",
+   "estado": "Propuesto",
+   "nota": "20 % del terminal, redondeado a 5",
+   "tipo": "PAR",
+   "base": [
+    "L03",
+    "L04",
+    "L05"
+   ],
+   "reducidos": [
+    "L07"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-10",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 5,
+    "G2": 5,
+    "G3": 10,
+    "G4": 10
+   },
+   "estandar": 5,
+   "alerta": "Cremallera y axial comparten la alineación final. Puedes descontar S/ {d} en el axial, si deseas.",
+   "estado": "Propuesto",
+   "nota": "10 % del axial, redondeado a 5",
+   "tipo": "PAR",
+   "base": [
+    "L03",
+    "L04",
+    "L05"
+   ],
+   "reducidos": [
+    "L02"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-11",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 10,
+    "G2": 10,
+    "G3": 15,
+    "G4": 15
+   },
+   "estandar": 10,
+   "alerta": "Los seguros se cambian al cambiar las pastillas. Se descontó el 100 % de los seguros (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de los seguros",
+   "tipo": "PAR",
+   "base": [
+    "M06"
+   ],
+   "reducidos": [
+    "M07"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-12",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 15,
+    "G2": 20,
+    "G3": 25,
+    "G4": 30
+   },
+   "estandar": 20,
+   "alerta": "Cambiar las pastillas ya incluye su limpieza. Se descontó el 100 % del mantenimiento (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del mantenimiento",
+   "tipo": "PAR",
+   "base": [
+    "M06"
+   ],
+   "reducidos": [
+    "M08"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-13",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 30,
+    "G2": 40,
+    "G3": 50,
+    "G4": 30
+   },
+   "estandar": 40,
+   "alerta": "Al cambiar discos ya se sacan las pastillas (Autodata: discos con pastillas incluidas). Se descontó S/ {d} en las pastillas.",
+   "estado": "Propuesto",
+   "nota": "80 % de las pastillas",
+   "tipo": "PAR",
+   "base": [
+    "M04"
+   ],
+   "reducidos": [
+    "M06"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-14",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 40,
+    "G2": 50,
+    "G3": 55,
+    "G4": 70
+   },
+   "estandar": 50,
+   "alerta": "Con la correa fuera, el retén delantero del cigüeñal queda a la vista. Se descontó S/ {d} en el retén.",
+   "estado": "Propuesto",
+   "nota": "80 % del retén",
+   "tipo": "PAR",
+   "base": [
+    "A10"
+   ],
+   "reducidos": [
+    "A14"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-15",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 50,
+    "G2": 65,
+    "G3": 80,
+    "G4": 80
+   },
+   "estandar": 65,
+   "alerta": "Con la correa fuera, el retén del árbol de levas queda a la vista. Se descontó S/ {d} en el retén.",
+   "estado": "Propuesto",
+   "nota": "80 % del retén",
+   "tipo": "PAR",
+   "base": [
+    "A10"
+   ],
+   "reducidos": [
+    "A13"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-16",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 130,
+    "G2": 165,
+    "G3": 250,
+    "G4": 360
+   },
+   "estandar": 165,
+   "alerta": "Con la caja abajo, el retén posterior del cigüeñal queda a la vista. Se descontó S/ {d} en el retén.",
+   "estado": "Propuesto",
+   "nota": "90 % del retén",
+   "tipo": "PAR",
+   "base": [
+    "F01",
+    "F02",
+    "F03"
+   ],
+   "reducidos": [
+    "A15"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-17",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 30,
+    "G2": 40,
+    "G3": 40,
+    "G4": 80
+   },
+   "estandar": 40,
+   "alerta": "Para calibrar válvulas ya se saca la tapa de balancines. Se descontó el 100 % de la tapa (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % de la tapa",
+   "tipo": "PAR",
+   "base": [
+    "A04"
+   ],
+   "reducidos": [
+    "A12"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-18",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 30,
+    "G2": 35,
+    "G3": 45,
+    "G4": 60
+   },
+   "estandar": 35,
+   "alerta": "Con el palier fuera, el retén queda a la vista. Se descontó S/ {d} en el retén.",
+   "estado": "Propuesto",
+   "nota": "80 % del retén",
+   "tipo": "PAR",
+   "base": [
+    "J06"
+   ],
+   "reducidos": [
+    "J02"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-19",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 40,
+    "G2": 50,
+    "G3": 60,
+    "G4": 80
+   },
+   "estandar": 50,
+   "alerta": "El mantenimiento ya saca y engrasa el palier. Se descontó el 100 % del poncho del mismo lado (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del poncho",
+   "tipo": "PAR",
+   "base": [
+    "J07"
+   ],
+   "reducidos": [
+    "J01"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-20",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 30,
+    "G2": 35,
+    "G3": 45,
+    "G4": 55
+   },
+   "estandar": 35,
+   "alerta": "El cambio de palier ya incluye el engrasado. Se descontó el 100 % del mantenimiento (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del mantenimiento",
+   "tipo": "PAR",
+   "base": [
+    "J06"
+   ],
+   "reducidos": [
+    "J07"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-21",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 10,
+    "G2": 15,
+    "G3": 20
+   },
+   "estandar": 15,
+   "alerta": "Con el tanque abajo, la bomba, el filtro y la boya quedan a la mano. Puedes descontar hasta 50 % (ej. bomba S/ {d}), si deseas.",
+   "estado": "Propuesto",
+   "nota": "Hasta 50 % del segundo",
+   "tipo": "PAR",
+   "base": [
+    "C01",
+    "C02"
+   ],
+   "reducidos": [
+    "C05",
+    "C11",
+    "N19"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-22",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 10,
+    "G2": 15,
+    "G3": 20,
+    "G4": 25
+   },
+   "estandar": 15,
+   "alerta": "Trapecio y rótula del mismo lado comparten desmontaje. Puedes descontar S/ {d} en la rótula, si deseas.",
+   "estado": "Propuesto",
+   "nota": "50 % de la rótula",
+   "tipo": "PAR",
+   "base": [
+    "K05"
+   ],
+   "reducidos": [
+    "K04"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-23",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 15,
+    "G2": 20,
+    "G3": 25,
+    "G4": 30
+   },
+   "estandar": 20,
+   "alerta": "Si se cambió un bombín o caliper, el purgado ya va incluido (Autodata). Puedes descontar el purgado (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % del purgado (solo bombín / caliper)",
+   "tipo": "PAR",
+   "base": [
+    "M02"
+   ],
+   "reducidos": [
+    "M09"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-24",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 10,
+    "G2": 10,
+    "G3": 15,
+    "G4": 15
+   },
+   "estandar": 10,
+   "alerta": "Cambiar el radiador ya incluye vaciar y rellenar el refrigerante (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % del refrigerante",
+   "tipo": "PAR",
+   "base": [
+    "D01"
+   ],
+   "reducidos": [
+    "D08"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-25",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 10,
+    "G2": 10,
+    "G3": 15,
+    "G4": 15
+   },
+   "estandar": 10,
+   "alerta": "Bajar la culata ya incluye vaciar y rellenar el refrigerante (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % del refrigerante",
+   "tipo": "PAR",
+   "base": [
+    "A01",
+    "A02"
+   ],
+   "reducidos": [
+    "D08"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-26",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 10,
+    "G2": 10,
+    "G3": 15,
+    "G4": 15
+   },
+   "estandar": 10,
+   "alerta": "Cambiar la bomba de agua ya incluye vaciar y rellenar el refrigerante (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % del refrigerante",
+   "tipo": "PAR",
+   "base": [
+    "D02",
+    "D03"
+   ],
+   "reducidos": [
+    "D08"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-27",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 15,
+    "G2": 20,
+    "G3": 25,
+    "G4": 30
+   },
+   "estandar": 20,
+   "alerta": "Para cambiar la cadena ya se saca la correa de accesorios (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % de la correa de accesorios",
+   "tipo": "PAR",
+   "base": [
+    "A08"
+   ],
+   "reducidos": [
+    "A09"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-28",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 15,
+    "G2": 20,
+    "G3": 25,
+    "G4": 30
+   },
+   "estandar": 20,
+   "alerta": "Para cambiar la correa de distribución ya se saca la de accesorios (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % de la correa de accesorios",
+   "tipo": "PAR",
+   "base": [
+    "A10"
+   ],
+   "reducidos": [
+    "A09"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-29",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 15,
+    "G2": 20,
+    "G3": 25,
+    "G4": 30
+   },
+   "estandar": 20,
+   "alerta": "Para cambiar la bomba de agua ya se saca la correa de accesorios (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % de la correa de accesorios",
+   "tipo": "PAR",
+   "base": [
+    "D02",
+    "D03"
+   ],
+   "reducidos": [
+    "A09"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-30",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 30,
+    "G2": 40,
+    "G3": 40,
+    "G4": 80
+   },
+   "estandar": 40,
+   "alerta": "Para cambiar la cadena ya se saca la tapa de balancines (Autodata). Se descontó el 100 % de la tapa (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % de la tapa",
+   "tipo": "PAR",
+   "base": [
+    "A08"
+   ],
+   "reducidos": [
+    "A12"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-31",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 135,
+    "G2": 175,
+    "G3": 230,
+    "G4": 280
+   },
+   "estandar": 175,
+   "alerta": "Para bajar la culata ya se saca la cadena (Autodata: ~3 h compartidas). Se descontó S/ {d} en la cadena.",
+   "estado": "Propuesto",
+   "nota": "70 % de la cadena",
+   "tipo": "PAR",
+   "base": [
+    "A01"
+   ],
+   "reducidos": [
+    "A08"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-32",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 35,
+    "G2": 35,
+    "G3": 60,
+    "G4": 60
+   },
+   "estandar": 35,
+   "alerta": "Culata y bomba de agua comparten desmontajes (Autodata). Se descontó S/ {d} en la bomba de agua.",
+   "estado": "Propuesto",
+   "nota": "50 % de la bomba de agua",
+   "tipo": "PAR",
+   "base": [
+    "A01",
+    "A02"
+   ],
+   "reducidos": [
+    "D02",
+    "D03"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-33",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 10,
+    "G2": 15,
+    "G3": 15,
+    "G4": 20
+   },
+   "estandar": 15,
+   "alerta": "Bomba de agua y radiador comparten el vaciado del sistema (Autodata). Puedes descontar S/ {d} en el radiador, si deseas.",
+   "estado": "Propuesto",
+   "nota": "35 % del radiador",
+   "tipo": "PAR",
+   "base": [
+    "D02",
+    "D03"
+   ],
+   "reducidos": [
+    "D01"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-34",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 10,
+    "G2": 10,
+    "G3": 15,
+    "G4": 20
+   },
+   "estandar": 10,
+   "alerta": "Culata y radiador comparten el vaciado del sistema (Autodata). Puedes descontar S/ {d} en el radiador, si deseas.",
+   "estado": "Propuesto",
+   "nota": "30 % del radiador",
+   "tipo": "PAR",
+   "base": [
+    "A01",
+    "A02"
+   ],
+   "reducidos": [
+    "D01"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-35",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 10,
+    "G2": 10,
+    "G3": 20,
+    "G4": 20
+   },
+   "estandar": 10,
+   "alerta": "Cadena y bomba de agua comparten desmontajes (Autodata). Puedes descontar S/ {d} en la bomba, si deseas.",
+   "estado": "Propuesto",
+   "nota": "25 % de la bomba de agua",
+   "tipo": "PAR",
+   "base": [
+    "A08"
+   ],
+   "reducidos": [
+    "D02"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-36",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 5,
+    "G2": 10,
+    "G3": 10,
+    "G4": 15
+   },
+   "estandar": 10,
+   "alerta": "Amortiguador y rótula del mismo lado comparten desmontaje (Autodata). Puedes descontar S/ {d} en la rótula, si deseas.",
+   "estado": "Propuesto",
+   "nota": "30 % de la rótula",
+   "tipo": "PAR",
+   "base": [
+    "K01"
+   ],
+   "reducidos": [
+    "K04"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-37",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 5,
+    "G2": 5,
+    "G3": 10,
+    "G4": 10
+   },
+   "estandar": 5,
+   "alerta": "Varios trabajos en la misma rueda: la rueda se saca una sola vez (~0.2 h, Autodata). Puedes descontar S/ {d} en cada trabajo adicional, si deseas.",
+   "estado": "Propuesto",
+   "nota": "S/ 5 a 10 por cada trabajo adicional (la rueda se saca una vez)",
+   "tipo": "CONJUNTO",
+   "base": [],
+   "reducidos": [
+    "J01",
+    "J03",
+    "J04",
+    "J05",
+    "J06",
+    "K01",
+    "K02",
+    "K04",
+    "K05",
+    "L02",
+    "L03",
+    "L04",
+    "L05",
+    "L07",
+    "M02",
+    "M04",
+    "M06"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-38",
+   "modo": "OPCIONAL",
+   "descuentos": {
+    "G1": 20,
+    "G2": 25,
+    "G3": 35,
+    "G4": 40
+   },
+   "estandar": 25,
+   "alerta": "Varios trabajos que terminan en alineación: se alinea una sola vez (~0.6 h, Autodata). Puedes descontar S/ {d} en cada trabajo adicional, si deseas.",
+   "estado": "Propuesto",
+   "nota": "Alineación una sola vez (~0.6 h)",
+   "tipo": "CONJUNTO",
+   "base": [],
+   "reducidos": [
+    "J03",
+    "K01",
+    "K04",
+    "K05",
+    "L02",
+    "L03",
+    "L04",
+    "L05",
+    "L07"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-39",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 10,
+    "G2": 10,
+    "G3": 15,
+    "G4": 15
+   },
+   "estandar": 10,
+   "alerta": "Varios trabajos del sistema de refrigeración: se vacía y rellena una sola vez (Autodata). Se descontó S/ {d} en cada trabajo adicional.",
+   "estado": "Propuesto",
+   "nota": "Vaciar y rellenar una sola vez (~0.6 h)",
+   "tipo": "CONJUNTO",
+   "base": [],
+   "reducidos": [
+    "A01",
+    "A02",
+    "D01",
+    "D02",
+    "D03",
+    "D04",
+    "D06",
+    "D07",
+    "D09"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-40",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 15,
+    "G2": 15,
+    "G3": 15
+   },
+   "estandar": 15,
+   "alerta": "Ese servicio ya va dentro del afinamiento completo. Se descontó el 100 % (ej. bujías S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % del servicio repetido",
+   "tipo": "PAR",
+   "base": [
+    "B01",
+    "B02"
+   ],
+   "reducidos": [
+    "B04",
+    "B06",
+    "C09",
+    "C10",
+    "C11",
+    "C12",
+    "C18",
+    "C19",
+    "C20"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-41",
+   "modo": "AVISO",
+   "descuentos": {},
+   "estandar": 0,
+   "alerta": "Hay 3 o más servicios sueltos del afinamiento: conviene ofrecer el paquete Afinamiento completo (G1 S/ 130, G2 S/ 140, G3 S/ 150).",
+   "estado": "Propuesto",
+   "nota": "Si los sueltos suman igual o más que el paquete, cobrar el paquete",
+   "tipo": "CONJUNTO",
+   "base": [],
+   "reducidos": [
+    "B04",
+    "B06",
+    "C09",
+    "C10",
+    "C11",
+    "C12",
+    "C18",
+    "C19",
+    "C20"
+   ],
+   "minimo": 3
+  },
+  {
+   "codigo": "SOL-42",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 480,
+    "G2": 540,
+    "G3": 600,
+    "G4": 720
+   },
+   "estandar": 540,
+   "alerta": "El paquete parcial ya va dentro de la tornería completa. Se descontó el 100 % (ej. culata S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "100 % del paquete parcial (ya va dentro del completo)",
+   "tipo": "PAR",
+   "base": [
+    "X01"
+   ],
+   "reducidos": [
+    "X02",
+    "X03"
+   ],
+   "minimo": 2
+  },
+  {
+   "codigo": "SOL-43",
+   "modo": "AUTOMATICO",
+   "descuentos": {
+    "G1": 130,
+    "G2": 165,
+    "G3": 250,
+    "G4": 360
+   },
+   "estandar": 165,
+   "alerta": "Con la caja abajo por el embrague, la bomba concéntrica queda a la vista. Se descontó S/ {d} en la bomba.",
+   "estado": "Propuesto",
+   "nota": "90 % de la bomba concéntrica (la caja ya está abajo)",
+   "tipo": "PAR",
+   "base": [
+    "F01",
+    "F02",
+    "F03"
+   ],
+   "reducidos": [
+    "F04"
+   ],
+   "minimo": 2
+  }
+ ],
+ "familias": [
+  {
+   "codigo": "FM0001",
+   "codigos": [
+    "G3LA",
+    "G4LA"
+   ],
+   "combustible": "P",
+   "litros": "1.0 | 1.25",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0002",
+   "codigos": [
+    "G4LC"
+   ],
+   "combustible": "P",
+   "litros": "1.4",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0003",
+   "codigos": [
+    "G4HG",
+    "G4HE"
+   ],
+   "combustible": "P",
+   "litros": "1.0 | 1.1",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0004",
+   "codigos": [
+    "F8CV",
+    "B10S"
+   ],
+   "combustible": "P",
+   "litros": "0.8 | 1.0",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0005",
+   "codigos": [
+    "F8B"
+   ],
+   "combustible": "P",
+   "litros": "0.8",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0006",
+   "codigos": [
+    "G4FA",
+    "G4FC"
+   ],
+   "combustible": "P",
+   "litros": "1.4 | 1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0008",
+   "codigos": [
+    "1NR-FE"
+   ],
+   "combustible": "P",
+   "litros": "1.33",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0009",
+   "codigos": [
+    "G4FG"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0011",
+   "codigos": [
+    "HR16DE"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0012",
+   "codigos": [
+    "2NR-FKE"
+   ],
+   "combustible": "P",
+   "litros": "1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0013",
+   "codigos": [
+    "A08S3",
+    "B10S1"
+   ],
+   "combustible": "P",
+   "litros": "0.8 | 1.0",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0014",
+   "codigos": [
+    "K10B"
+   ],
+   "combustible": "P",
+   "litros": "1.0",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0015",
+   "codigos": [
+    "4G15",
+    "4G12",
+    "4G33"
+   ],
+   "combustible": "P",
+   "litros": "1.4 | 1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0016",
+   "codigos": [
+    "1KR-FE"
+   ],
+   "combustible": "P",
+   "litros": "1.0",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0018",
+   "codigos": [
+    "GA16DE",
+    "GA14DE"
+   ],
+   "combustible": "P",
+   "litros": "1.4 | 1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0019",
+   "codigos": [
+    "G4NA"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0020",
+   "codigos": [
+    "2NZ-FE",
+    "1NZ-FE"
+   ],
+   "combustible": "P",
+   "litros": "1.3 | 1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0021",
+   "codigos": [
+    "G4KE"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0022",
+   "codigos": [
+    "F16D3",
+    "F14D3"
+   ],
+   "combustible": "P",
+   "litros": "1.4 | 1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0024",
+   "codigos": [
+    "G4KD"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0026",
+   "codigos": [
+    "QG15DE"
+   ],
+   "combustible": "P",
+   "litros": "1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0027",
+   "codigos": [
+    "D4BH"
+   ],
+   "combustible": "D",
+   "litros": "2.5",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0028",
+   "codigos": [
+    "B12D1",
+    "B12D"
+   ],
+   "combustible": "P",
+   "litros": "1.2",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0029",
+   "codigos": [
+    "YD25DDTi"
+   ],
+   "combustible": "D",
+   "litros": "2.5",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0030",
+   "codigos": [
+    "G4EK"
+   ],
+   "combustible": "P",
+   "litros": "1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0032",
+   "codigos": [
+    "M16A"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0033",
+   "codigos": [
+    "1GD-FTV"
+   ],
+   "combustible": "D",
+   "litros": "2.8",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0035",
+   "codigos": [
+    "1KD-FTV"
+   ],
+   "combustible": "D",
+   "litros": "3.0",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0037",
+   "codigos": [
+    "E16i",
+    "E16S",
+    "E15S"
+   ],
+   "combustible": "P",
+   "litros": "1.5 | 1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0038",
+   "codigos": [
+    "J20A"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0039",
+   "codigos": [
+    "G4LF"
+   ],
+   "combustible": "P",
+   "litros": "1.2",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0042",
+   "codigos": [
+    "G4ED",
+    "G4GB"
+   ],
+   "combustible": "P",
+   "litros": "1.6 | 1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0043",
+   "codigos": [
+    "G4EE"
+   ],
+   "combustible": "P",
+   "litros": "1.4",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0044",
+   "codigos": [
+    "E15"
+   ],
+   "combustible": "P",
+   "litros": "1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0045",
+   "codigos": [
+    "D4CB"
+   ],
+   "combustible": "D",
+   "litros": "2.5",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0046",
+   "codigos": [
+    "4G13"
+   ],
+   "combustible": "P",
+   "litros": "1.3",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0047",
+   "codigos": [
+    "G4F"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0048",
+   "codigos": [
+    "3ZR-FAE"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0051",
+   "codigos": [
+    "G4EH"
+   ],
+   "combustible": "P",
+   "litros": "1.3",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0054",
+   "codigos": [
+    "F18D4"
+   ],
+   "combustible": "P",
+   "litros": "1.8",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0055",
+   "codigos": [
+    "M13A"
+   ],
+   "combustible": "P",
+   "litros": "1.3",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0056",
+   "codigos": [
+    "QG18DE"
+   ],
+   "combustible": "P",
+   "litros": "1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0057",
+   "codigos": [
+    "G4EA",
+    "G4EB",
+    "G4FK",
+    "G4EC"
+   ],
+   "combustible": "P",
+   "litros": "1.3 | 1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0058",
+   "codigos": [
+    "K7M 702/703",
+    "K7M 720",
+    "K7M 702",
+    "K7M 790"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0060",
+   "codigos": [
+    "4D56"
+   ],
+   "combustible": "D",
+   "litros": "2.5",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0062",
+   "codigos": [
+    "D15B2",
+    "D15B1/2",
+    "D15B3",
+    "D16A9",
+    "D15B4",
+    "D14A1",
+    "D16A6",
+    "D16A7",
+    "D16A8",
+    "D16Z5",
+    "EC",
+    "EW2",
+    "EW3"
+   ],
+   "combustible": "P",
+   "litros": "1.4 | 1.5 | 1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0068",
+   "codigos": [
+    "1ZR-FAE"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0070",
+   "codigos": [
+    "3ZZ-FE"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0071",
+   "codigos": [
+    "G4GC"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0073",
+   "codigos": [
+    "1SZ-FE"
+   ],
+   "combustible": "P",
+   "litros": "1.0",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0074",
+   "codigos": [
+    "4G18"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0075",
+   "codigos": [
+    "4G94"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0076",
+   "codigos": [
+    "R18A1",
+    "R16A1",
+    "R16A2"
+   ],
+   "combustible": "P",
+   "litros": "1.6 | 1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0078",
+   "codigos": [
+    "K12B"
+   ],
+   "combustible": "P",
+   "litros": "1.2",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0079",
+   "codigos": [
+    "2SZ-FE"
+   ],
+   "combustible": "P",
+   "litros": "1.3",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0081",
+   "codigos": [
+    "G4-N"
+   ],
+   "combustible": "P",
+   "litros": "1.55",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0082",
+   "codigos": [
+    "CZDA",
+    "CZCA",
+    "CHPA",
+    "CMBA",
+    "CXSA",
+    "CZEA"
+   ],
+   "combustible": "P",
+   "litros": "1.4",
+   "turbo": true,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0083",
+   "codigos": [
+    "CD17"
+   ],
+   "combustible": "D",
+   "litros": "1.7",
+   "turbo": false,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0084",
+   "codigos": [
+    "3A92",
+    "3A90"
+   ],
+   "combustible": "P",
+   "litros": "1.0 | 1.2",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0085",
+   "codigos": [
+    "G16B"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0087",
+   "codigos": [
+    "K7J 700"
+   ],
+   "combustible": "P",
+   "litros": "1.4",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0089",
+   "codigos": [
+    "2KD-FTV"
+   ],
+   "combustible": "D",
+   "litros": "2.5",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0093",
+   "codigos": [
+    "2GD-FTV"
+   ],
+   "combustible": "D",
+   "litros": "2.4",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0094",
+   "codigos": [
+    "4A91",
+    "4A92"
+   ],
+   "combustible": "P",
+   "litros": "1.5 | 1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0095",
+   "codigos": [
+    "A16DMS"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0096",
+   "codigos": [
+    "CA18"
+   ],
+   "combustible": "P",
+   "litros": "1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0097",
+   "codigos": [
+    "CNEA",
+    "CDCA",
+    "CNFA",
+    "CNFB",
+    "CSHA"
+   ],
+   "combustible": "D",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0098",
+   "codigos": [
+    "CR12"
+   ],
+   "combustible": "P",
+   "litros": "1.2",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0099",
+   "codigos": [
+    "G4-AJ"
+   ],
+   "combustible": "P",
+   "litros": "1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0100",
+   "codigos": [
+    "G6EA"
+   ],
+   "combustible": "P",
+   "litros": "2.7",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0101",
+   "codigos": [
+    "LE9"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0103",
+   "codigos": [
+    "QG16DE"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0104",
+   "codigos": [
+    "K24Z1",
+    "K24Z4"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0105",
+   "codigos": [
+    "G16A",
+    "G16A/B"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0106",
+   "codigos": [
+    "B3LA",
+    "F3LA"
+   ],
+   "combustible": "P",
+   "litros": "1.0",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0107",
+   "codigos": [
+    "4A-F",
+    "4A",
+    "4A-LC"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0113",
+   "codigos": [
+    "SR20DE"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0115",
+   "codigos": [
+    "G4KA"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0116",
+   "codigos": [
+    "4G69"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0118",
+   "codigos": [
+    "G6CU"
+   ],
+   "combustible": "P",
+   "litros": "3.5",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0122",
+   "codigos": [
+    "E13",
+    "E13S"
+   ],
+   "combustible": "P",
+   "litros": "1.3",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0124",
+   "codigos": [
+    "B4D 403"
+   ],
+   "combustible": "P",
+   "litros": "1.0",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0125",
+   "codigos": [
+    "VG33E"
+   ],
+   "combustible": "P",
+   "litros": "3.3",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0130",
+   "codigos": [
+    "G6BA"
+   ],
+   "combustible": "P",
+   "litros": "2.7",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0131",
+   "codigos": [
+    "18R",
+    "4Y",
+    "4Y-E"
+   ],
+   "combustible": "P",
+   "litros": "2.0 | 2.2",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0133",
+   "codigos": [
+    "3SZ-VE"
+   ],
+   "combustible": "P",
+   "litros": "1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0134",
+   "codigos": [
+    "4G63"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0135",
+   "codigos": [
+    "4M41"
+   ],
+   "combustible": "D",
+   "litros": "3.2",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0136",
+   "codigos": [
+    "4N15"
+   ],
+   "combustible": "D",
+   "litros": "2.4",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0137",
+   "codigos": [
+    "A5D",
+    "A3E"
+   ],
+   "combustible": "P",
+   "litros": "1.3 | 1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0138",
+   "codigos": [
+    "BAH"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0139",
+   "codigos": [
+    "BPY"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0140",
+   "codigos": [
+    "BYD"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0141",
+   "codigos": [
+    "BZB"
+   ],
+   "combustible": "P",
+   "litros": "1.8",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0142",
+   "codigos": [
+    "F10A"
+   ],
+   "combustible": "P",
+   "litros": "1.0",
+   "turbo": false,
+   "grupo": "G1"
+  },
+  {
+   "codigo": "FM0143",
+   "codigos": [
+    "FB20"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0145",
+   "codigos": [
+    "K15B"
+   ],
+   "combustible": "P",
+   "litros": "1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0146",
+   "codigos": [
+    "L1E",
+    "L1H",
+    "L1K",
+    "RDA",
+    "RKC",
+    "RQB"
+   ],
+   "combustible": "P",
+   "litros": "1.6 | 1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0148",
+   "codigos": [
+    "M15A"
+   ],
+   "combustible": "P",
+   "litros": "1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0150",
+   "codigos": [
+    "QR20DE"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0151",
+   "codigos": [
+    "QR25DE"
+   ],
+   "combustible": "P",
+   "litros": "2.5",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0152",
+   "codigos": [
+    "ZD3 200/202"
+   ],
+   "combustible": "D",
+   "litros": "3.0",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0153",
+   "codigos": [
+    "G4GF",
+    "G4GM",
+    "G4DM/GM"
+   ],
+   "combustible": "P",
+   "litros": "1.8 | 2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0154",
+   "codigos": [
+    "4G93"
+   ],
+   "combustible": "P",
+   "litros": "1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0165",
+   "codigos": [
+    "LD20",
+    "LD20T"
+   ],
+   "combustible": "D",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0171",
+   "codigos": [
+    "CCZC",
+    "CAWA",
+    "CCZD"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0175",
+   "codigos": [
+    "AEH"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0179",
+   "codigos": [
+    "G13BB"
+   ],
+   "combustible": "P",
+   "litros": "1.3",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0181",
+   "codigos": [
+    "AQN"
+   ],
+   "combustible": "P",
+   "litros": "2.3",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0186",
+   "codigos": [
+    "KA24DE"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0187",
+   "codigos": [
+    "K20A1",
+    "K20A3"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0189",
+   "codigos": [
+    "1ZZ-FE"
+   ],
+   "combustible": "P",
+   "litros": "1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0190",
+   "codigos": [
+    "MR20DD"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0193",
+   "codigos": [
+    "AEE"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0194",
+   "codigos": [
+    "YD22DDT"
+   ],
+   "combustible": "D",
+   "litros": "2.2",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0195",
+   "codigos": [
+    "BBG",
+    "AMX",
+    "ATQ",
+    "ATX"
+   ],
+   "combustible": "P",
+   "litros": "2.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0207",
+   "codigos": [
+    "22R"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0208",
+   "codigos": [
+    "270.910"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": true,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0209",
+   "codigos": [
+    "271.948"
+   ],
+   "combustible": "P",
+   "litros": "1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0210",
+   "codigos": [
+    "2AZ-FE"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0212",
+   "codigos": [
+    "4B11"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0213",
+   "codigos": [
+    "4B12"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0214",
+   "codigos": [
+    "4D68T"
+   ],
+   "combustible": "D",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0215",
+   "codigos": [
+    "4EE1-T"
+   ],
+   "combustible": "D",
+   "litros": "1.7",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0216",
+   "codigos": [
+    "ALM"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0217",
+   "codigos": [
+    "B20B3",
+    "B20B1"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0218",
+   "codigos": [
+    "B230F"
+   ],
+   "combustible": "P",
+   "litros": "2.3",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0219",
+   "codigos": [
+    "BGP"
+   ],
+   "combustible": "P",
+   "litros": "2.5",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0220",
+   "codigos": [
+    "BSF",
+    "BSE",
+    "CCSA"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0221",
+   "codigos": [
+    "BVZ",
+    "BLR",
+    "BLY",
+    "BVY"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0222",
+   "codigos": [
+    "BWA"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0223",
+   "codigos": [
+    "C20LE"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0224",
+   "codigos": [
+    "C20SED"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0225",
+   "codigos": [
+    "D13B2",
+    "D15Z1"
+   ],
+   "combustible": "P",
+   "litros": "1.3 | 1.5",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0227",
+   "codigos": [
+    "D4BA",
+    "D4BX"
+   ],
+   "combustible": "D",
+   "litros": "2.5",
+   "turbo": false,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0228",
+   "codigos": [
+    "D4BB"
+   ],
+   "combustible": "D",
+   "litros": "2.6",
+   "turbo": false,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0229",
+   "codigos": [
+    "DDXC",
+    "DDXA",
+    "DDXB",
+    "DDXD"
+   ],
+   "combustible": "D",
+   "litros": "3.0",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0230",
+   "codigos": [
+    "EJ20",
+    "EJ18"
+   ],
+   "combustible": "P",
+   "litros": "1.8 | 2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0231",
+   "codigos": [
+    "EN1/2",
+    "D12B1",
+    "D13B1",
+    "EN2",
+    "EN4",
+    "EV2",
+    "ZA2"
+   ],
+   "combustible": "P",
+   "litros": "1.2 | 1.3",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0232",
+   "codigos": [
+    "FA20"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0234",
+   "codigos": [
+    "G4KM"
+   ],
+   "combustible": "P",
+   "litros": "2.5",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0235",
+   "codigos": [
+    "G6AT"
+   ],
+   "combustible": "P",
+   "litros": "3.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0236",
+   "codigos": [
+    "H22A2"
+   ],
+   "combustible": "P",
+   "litros": "2.2",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0237",
+   "codigos": [
+    "J24B"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0238",
+   "codigos": [
+    "L13A7",
+    "L13Z1"
+   ],
+   "combustible": "P",
+   "litros": "1.4",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0246",
+   "codigos": [
+    "Z20"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0257",
+   "codigos": [
+    "CCZA"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0298",
+   "codigos": [
+    "4G64"
+   ],
+   "combustible": "P",
+   "litros": "2.4",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0302",
+   "codigos": [
+    "M20A-FKS"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0363",
+   "codigos": [
+    "H4M 440"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0388",
+   "codigos": [
+    "LF1"
+   ],
+   "combustible": "P",
+   "litros": "3.0",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0528",
+   "codigos": [
+    "K4M 690"
+   ],
+   "combustible": "P",
+   "litros": "1.6",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM0646",
+   "codigos": [
+    "1KZ-T"
+   ],
+   "combustible": "D",
+   "litros": "3.0",
+   "turbo": true,
+   "grupo": "G4"
+  },
+  {
+   "codigo": "FM0655",
+   "codigos": [
+    "2AR-FXE"
+   ],
+   "combustible": "P",
+   "litros": "2.5",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0659",
+   "codigos": [
+    "2TR 700",
+    "2TR 702",
+    "2TR 703"
+   ],
+   "combustible": "P",
+   "litros": "2.5",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0662",
+   "codigos": [
+    "2ZR-FAE"
+   ],
+   "combustible": "P",
+   "litros": "1.8",
+   "turbo": false,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0850",
+   "codigos": [
+    "CZPA",
+    "DKTA"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": true,
+   "grupo": "G3"
+  },
+  {
+   "codigo": "FM0999",
+   "codigos": [
+    "G6A",
+    "GUE/GUD",
+    "J6B",
+    "JBC"
+   ],
+   "combustible": "P",
+   "litros": "1.1 | 1.3",
+   "turbo": false,
+   "grupo": "G2"
+  },
+  {
+   "codigo": "FM1091",
+   "codigos": [
+    "M4R 700",
+    "M4R 701"
+   ],
+   "combustible": "P",
+   "litros": "2.0",
+   "turbo": false,
+   "grupo": "G3"
+  }
+ ]
+}

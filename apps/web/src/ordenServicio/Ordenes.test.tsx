@@ -17,7 +17,7 @@ const orden = {
   detalles: [{ id: 'd1', tipo: 'producto', descripcion: 'Aceite 5W-30', referencia: 'AMO-102', cantidad: 1, costo: 10, rentabilidadPct: 20, precio: 12, descuentoPct: 0, impuesto: 'IGV', total: 12 }],
   total: 12, abonos: [], totalAbonos: 0, pendiente: 12, comprobantes: [], conComprobante: false, ultimaBitacora: { texto: 'ODS creada', fecha: '2026-10-28T10:00:00.000Z', actor: 'Cajera Demo' }, bitacora: [],
 };
-const catalogos = { tiposAtencion: ['Mantenimiento preventivo', 'Garantía'], decisiones: ['Pendiente de aprobación', 'Aprobada para cotizar', 'Aprobada para comprar', 'No aprobada'], estados: [{ id: 'Recepcion', nombre: 'Recepción' }, { id: 'EnProceso', nombre: 'En proceso' }, { id: 'Entrega', nombre: 'Entrega' }, { id: 'Cerrada', nombre: 'Cerrado' }], metodosPago: ['Efectivo', 'Yape'], tecnicos: [{ id: 't1', nombre: 'Técnico Demo 1' }], jefes: [{ id: 'j1', nombre: 'Jefe de Taller Demo' }] };
+const catalogos = { tiposAtencion: ['Mantenimiento preventivo', 'Garantía'], decisiones: ['Pendiente de aprobación', 'Aprobada para cotizar', 'Aprobada para comprar', 'No aprobada'], estados: [{ id: 'Recepcion', nombre: 'Recepción' }, { id: 'EnProceso', nombre: 'En proceso' }, { id: 'Entrega', nombre: 'Entrega' }, { id: 'Cerrada', nombre: 'Cerrado' }], metodosPago: ['Efectivo', 'Yape'], tecnicos: [{ id: 't1', nombre: 'Técnico Demo 1' }], jefes: [{ id: 'j1', nombre: 'Jefe de Taller Demo' }], logisticos: [{ id: 'l1', nombre: 'Logístico Demo' }], cajeras: [{ id: 'cj1', nombre: 'Cajera Uno' }] };
 
 const me = (nivel: 'A' | 'E' | 'V') => ({
   usuario: { id: 'u', nombre: 'Cajera Demo', correo: 'cajera@demo.local', organizacionId: 'o' },
@@ -30,7 +30,7 @@ function simular(nivel: 'A' | 'E' | 'V' = 'E') {
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     const metodo = (init?.method ?? 'GET').toUpperCase();
     const u = new URL(url);
-    const cuerpo = init?.body ? JSON.parse(String(init.body)) : undefined;
+    const cuerpo = typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body;
     llamadas.push({ metodo, ruta: u.pathname, consulta: u.search, cuerpo });
     const r = respuestas[`${metodo} ${u.pathname}`];
     if (r) return { ok: (r.status ?? 200) < 400, status: r.status ?? 200, json: async () => r.cuerpo };
@@ -81,7 +81,7 @@ it('Editar: una sola pantalla con «Datos del comprobante», ítems, solo el TOT
   const d = await screen.findByRole('dialog');
   expect(within(d).getByText('Datos del comprobante')).toBeInTheDocument();
   expect(within(d).getByLabelText('Técnico')).toBeInTheDocument();
-  expect(within(d).getByLabelText('Jefe de taller (opcional)')).toBeInTheDocument();
+  expect(within(d).queryByLabelText('Jefe de taller (opcional)')).not.toBeInTheDocument();
   expect(within(d).getByDisplayValue('AMO-102')).toBeInTheDocument();
   expect(within(d).getByText('TOTAL')).toBeInTheDocument();
   expect(within(d).getByText('Abonos / pagos')).toBeInTheDocument();
@@ -166,9 +166,57 @@ it('Nueva orden: pide cliente, vehículo y tipo de atención y la crea', async (
   expect(within(d).getAllByLabelText('Detalle')).toHaveLength(1);
   expect(within(d).getByText('Evidencias de ingreso')).toBeInTheDocument();
   expect(within(d).getByText('Abonos / pagos')).toBeInTheDocument();
+  expect(within(d).getByLabelText(/cotización previa/)).toBeInTheDocument();
+  await userEvent.selectOptions(within(d).getByLabelText('Estado'), 'EnProceso');
+  // La «Decisión del cliente» ya no se elige en pantalla: queda en su valor por defecto salvo que la ODS se cierre sin nota de venta.
+  expect(within(d).queryByLabelText('Decisión del cliente')).not.toBeInTheDocument();
   await userEvent.click(within(d).getByRole('button', { name: 'Crear orden' }));
   await waitFor(() => expect(llamadas.some((l) => l.metodo === 'POST' && l.ruta === '/ordenes')).toBe(true));
-  expect(llamadas.find((l) => l.metodo === 'POST' && l.ruta === '/ordenes')!.cuerpo).toMatchObject({ vehiculoId: 'v1', tipoAtencion: 'Garantía' });
+  expect(llamadas.find((l) => l.metodo === 'POST' && l.ruta === '/ordenes')!.cuerpo).toMatchObject({ vehiculoId: 'v1', tipoAtencion: 'Garantía', estado: 'EnProceso', decision: 'Pendiente de aprobación' });
+});
+
+it('Nueva orden: fotos de ingreso opcionales, como máximo 5, que se suben al crear la orden', async () => {
+  simular();
+  vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: () => 'blob:foto', revokeObjectURL: () => undefined }));
+  render(<App />);
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nueva orden' }));
+  const d = await screen.findByRole('dialog');
+  expect(within(d).getByRole('button', { name: /Cargar fotos/ })).toBeEnabled();
+  expect(within(d).getByRole('button', { name: /Tomar foto/ })).toBeEnabled();
+  expect(within(d).queryByText(/video/i)).toBeNull();
+  const fotos = Array.from({ length: 6 }, (_, i) => new File(['x'], `f${i}.jpg`, { type: 'image/jpeg' }));
+  await userEvent.upload(within(d).getByLabelText('Cargar fotos'), fotos);
+  expect(await within(d).findByText('Máximo 5 fotos por orden.')).toBeInTheDocument();
+  expect(within(d).getAllByRole('button', { name: /^Quitar f\d\.jpg$/ })).toHaveLength(5);
+  expect(within(d).getByRole('button', { name: /Cargar fotos/ })).toBeDisabled();
+  await userEvent.selectOptions(within(d).getByLabelText('Vehículo'), 'v1');
+  await userEvent.click(within(d).getByRole('button', { name: 'Crear orden' }));
+  await waitFor(() => expect(llamadas.filter((l) => l.metodo === 'POST' && l.ruta === '/ordenes/o1/evidencias')).toHaveLength(5));
+});
+
+it('Editar: el responsable de un producto es una cajera o un logístico y el de un servicio, un técnico o el jefe', async () => {
+  simular();
+  render(<App />);
+  await userEvent.click(within((await screen.findByText('#2026102800001')).closest('article')!).getByRole('button', { name: 'Editar' }));
+  const d = await screen.findByRole('dialog');
+  const opciones = () => [...(within(d).getAllByLabelText('Responsable')[0] as HTMLSelectElement).options].map((o) => o.text);
+  expect(opciones()).toEqual(['—', 'Cajera Uno', 'Logístico Demo']);
+  await userEvent.selectOptions(within(d).getAllByLabelText('Tipo')[0], 'servicio');
+  expect(opciones()).toEqual(['—', 'Técnico Demo 1']);
+});
+
+it('Nueva orden: el servicio toma por defecto el técnico de la ODS y el producto, la cajera', async () => {
+  simular();
+  render(<App />);
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nueva orden' }));
+  const d = await screen.findByRole('dialog');
+  await userEvent.selectOptions(within(d).getByLabelText('Técnico'), 't1');
+  const resp = () => within(d).getAllByLabelText('Responsable').map((s) => (s as HTMLSelectElement).value);
+  expect(resp()).toEqual(['t1']);
+  await userEvent.click(within(d).getByRole('button', { name: '+ Agregar ítem' }));
+  expect(resp()).toEqual(['t1', 't1']);
+  await userEvent.selectOptions(within(d).getAllByLabelText('Tipo')[1], 'producto');
+  expect(resp()).toEqual(['t1', 'cj1']);
 });
 
 it('Editar: el precio con coma decimal («12,50») se entiende y lo que no es número se ignora', async () => {

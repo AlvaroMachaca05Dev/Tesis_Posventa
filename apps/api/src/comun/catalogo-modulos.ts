@@ -65,7 +65,7 @@ export const CATALOGO_MODULOS: ModuloCatalogo[] = [
   {
     "id": "series",
     "label": "Series de comprobantes",
-    "grupo": "Maestros"
+    "grupo": "Beta"
   },
   {
     "id": "cajasm",
@@ -190,7 +190,7 @@ export const CATALOGO_MODULOS: ModuloCatalogo[] = [
   {
     "id": "rep_igv",
     "label": "IGV y detracciones",
-    "grupo": "Reportes"
+    "grupo": "Beta"
   },
   {
     "id": "rep_tec",
@@ -205,7 +205,7 @@ export const CATALOGO_MODULOS: ModuloCatalogo[] = [
   {
     "id": "automatizaciones",
     "label": "Automatizaciones",
-    "grupo": "Configuración"
+    "grupo": "Beta"
   },
   {
     "id": "usuarios",
@@ -220,7 +220,7 @@ export const CATALOGO_MODULOS: ModuloCatalogo[] = [
   {
     "id": "importar",
     "label": "Carga masiva",
-    "grupo": "Configuración"
+    "grupo": "Beta"
   },
   {
     "id": "estados",

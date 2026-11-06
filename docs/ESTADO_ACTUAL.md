@@ -1,47 +1,33 @@
-# Estado actual del proyecto (31/10/2026)
+# Estado actual del proyecto (05/11/2026)
+
+> **Revisión posterior de Codex (05/11/2026):** tras los últimos cambios de S5, la interfaz pasa 48/48; la API registra 56 aprobadas y 82 fallidas (138 en total). Se observan datos de prueba incompatibles con la nueva validación documental y una base `posventa_test` sin la columna `preciosGrupo`. Los resultados 135/135 citados abajo corresponden a la ejecución anterior y no certifican el código actual. S5 requiere cerrar esta verificación. Detalle y relevo: [revisión de continuidad](revision/2026-11-05-revision-continuidad.md).
 
 Este documento manda sobre cualquier otro texto del repositorio que describa el estado. Si un archivo dice que el sistema «no existe» o que la pila está «propuesta», es histórico.
 
 ## Qué existe
 - **El sistema real**, en un monorepo pnpm: `apps/api` (NestJS), `apps/web` (React + TypeScript + Vite) y `database` (Prisma con PostgreSQL). Pila aceptada el 20/10/2026 (`docs/decisiones/ADR-001-pila-tecnologica.md`).
-- **Slices S1 a S3 terminados:** acceso, roles y menú por rol; clientes y vehículos con lecturas de km; órdenes de servicio completas (ítems, estados, abonos, evidencias de ingreso, estado del vehículo, cierre y eliminación).
-- **14 requisitos implementados y probados:** RF-001 a RF-007 y RF-011 a RF-017. El avance de cada RF vive en `docs/requisitos/ESTADO_IMPLEMENTACION.csv`.
-- **Pruebas:** 109 de la API (con la base real), 42 de la pantalla y 17 del prototipo R7.8.
+- **Slices S1 y S2 terminados y S3 en curso:** acceso, roles y menú por rol; clientes y vehículos con lecturas de km; órdenes de servicio (ítems, estados, abonos, evidencias de ingreso, estado del vehículo, cierre y eliminación). En S3 faltan RF-018 y los ajustes R8.2.
+- **Requisitos R8.2 (05/11/2026):** bajaron de 99 a 49. Implementados: RF-001 a 005, 007, 008 a 010, 011, 089 y 100 a 102 (S5); parciales: RF-015, 016, 060, 063 y 071. Fuente: `docs/requisitos/R82/` (requisitos, criterios, reglas de negocio, RNF, HU, casos de prueba y trazabilidad), generada junto con el anexo Excel de la tesis.
+- **Pruebas:** 135 de la API (en la base de pruebas `posventa_test`) y 48 de la pantalla, ejecutadas el 05/11/2026 sin fallos; la tesis las presenta por sprint (`docs/requisitos/R82/ejecucion/`), y 17 del prototipo R7.8.
 - **Prototipo HTML R7.8** (`prototipo/`): guía visual. Si el sistema real se aparta del prototipo, manda el sistema real.
 
 ## Qué falta
-- Slices S4 a S11 (carga masiva, planes, línea de tiempo y reajuste, tareas, citas y agenda, bitácora, posventa y reportes).
+- Cerrar S3 y los slices S4 a S14 (migración interna, maestros y precios por grupo, planes, línea de tiempo, tareas y vistas, citas, bitácora, comercial, inventario, posventa y reportes).
 - Entorno de pruebas en internet (staging), copias de seguridad y CI.
 - Aceptación de usuarios del taller y del profesor.
 
 ## Fuentes vigentes
 | Tema | Vigente | Histórico |
 |---|---|---|
-| Requisitos | `docs/requisitos/REQUISITOS_FUNCIONALES_FINALES_R81.*` (99 RF) | R77 a R80 y `CLASIFICACION_RF.csv` (numeración antigua de 117 RF) |
-| Trazabilidad | `docs/requisitos/MATRIZ_TRAZABILIDAD_R81.csv` y `ESTADO_IMPLEMENTACION.csv` | R78 a R80 |
-| Diagramas | `diagramas/R81_consolidados/` | R8, R77 y R78 (ver `diagramas/LEEME.md`) |
+| Requisitos | `docs/requisitos/R82/` (49 RF, 18 RN, 12 RNF, 15 HU, 58 CP) | R81 (99 RF), R77 a R80 y `CLASIFICACION_RF.csv` |
+| Trazabilidad | `docs/requisitos/R82/MATRIZ_TRAZABILIDAD_R82.csv` | R81 (`MATRIZ_TRAZABILIDAD_R81.csv`, `ESTADO_IMPLEMENTACION.csv`) y R78 a R80 |
+| Diagramas | `diagramas/R82/` y `diagramas/R81_consolidados/` | R8, R77 y R78 (ver `diagramas/LEEME.md`) |
 | Plan de desarrollo | `docs/plan/SLICES_NUCLEO.md` | `PLAN_DESARROLLO.md` por incrementos INC |
 | Especificaciones | `specs/S1-base-del-sistema.md` y los slices | `specs/INC-01-*.md` a `specs/INC-07-*.md` y `specs/R7.7-*.md` |
 | Reglas de trabajo | `AGENTS.md` | — |
 
-## Slices e incrementos
-Se desarrolla **por slices**. Los incrementos INC son la agrupación de la tesis; la equivalencia es por tema:
-
-| Slice | Funcionalidad | RF (R81) | INC | Estado |
-|---|---|---|---|---|
-| S1 | Acceso, roles y menú por rol | 001–003 | INC-01 | Terminado |
-| S2 | Clientes y vehículos con lecturas de km | 004–007 | INC-01 | Terminado |
-| S3 | Órdenes de servicio | 011–017 | INC-01 | Terminado |
-| S4 | Carga masiva diaria | 019–023 | INC-02 | Siguiente |
-| S5 | Planes preventivos | 026–030 | INC-04 | Pendiente |
-| S6 | Línea de tiempo y reajuste | 031–035 | INC-04 y INC-05 | Pendiente |
-| S7 | Tareas | 036–040 | INC-03 | Pendiente |
-| S8 | Citas, llegada y agenda | 053–056 | INC-03 y INC-06 | Pendiente |
-| S9 | Bitácora | 059, 060, 063, 064 | INC-01 y INC-03 | Pendiente |
-| S10 | Posventa y encuesta | 093–095, 097, 098 | INC-06 | Pendiente |
-| S11 | Reportes y configuración mínima | 066–068, 071 | INC-06 | Pendiente |
-
-INC-07 (productos y logística) queda como extensión opcional.
+## Slices
+Se desarrolla **por slices**; el plan vigente (S1 a S14, R8.2) está en `docs/plan/SLICES_NUCLEO.md`. S1, S2 y S5 están terminados, S3 en curso y S4 es la migración interna (sin requisitos), que va después del S5 porque también carga los maestros. El S5 usa el modelo de grupos, precios y solapamiento del paquete de integración (`database/seeds/precarga/s5/`, referencia Autodata en combinación con datos del taller RSA).
 
 ## Dónde está cada cosa
 | Carpeta | Qué es |

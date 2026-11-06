@@ -1,0 +1,50 @@
+﻿RF,Nombre,Estado,Modulo,CU,DCU,DCL,DMD,DSE,DES,DAC,Slice,BD,Backend,Front,Prueba,CP
+RF-001,Iniciar sesión,Implementado,"Acceso, usuarios y roles",CU-01,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,—,—,—,S1,Usuario (contraseña con bcrypt),"sesion/ AuthController, AutenticacionGuard",sesion/ Login; App,sesion.spec; App.test,CP-01
+RF-002,"Permisos por rol, módulo y local",Implementado,"Acceso, usuarios y roles",CU-01,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,—,—,—,S1,"Rol, Permiso, RolPermiso, UsuarioRol, ModuloHabilitado",comun/ PermisosGuard; sesion/ GET /me,comun/ Shell (menú por rol),sesion.spec; App.test,"CP-02, CP-03"
+RF-003,Usuarios y roles propios,Implementado,"Acceso, usuarios y roles",CU-02,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,—,—,—,S1,"Usuario, Rol, UsuarioRol, Auditoria",usuario/ UsuariosController,usuario/ Usuarios y Roles,usuario.spec; Usuarios.test,"CP-04, CP-05"
+RF-004,Clientes,Implementado,Clientes y vehículos,CU-03,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,—,—,DAC-R82-0004,S2,Cliente (documento único por empresa),cliente/ ClienteController,cliente/ Clientes,maestros.spec; Maestros.test,CP-06
+RF-005,Vehículos,Implementado,Clientes y vehículos,CU-03,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,—,—,DAC-R82-0004,S2,"Vehiculo (placa normalizada única), MarcaVehiculo",vehiculo/ VehiculoController,vehiculo/ Vehículos,maestros.spec; precarga.spec; Maestros.test,"CP-07, CP-08, CP-09"
+RF-007,Lecturas de kilometraje,Implementado,Clientes y vehículos,CU-03,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,—,—,DAC-R82-0004,S2,LecturaKm,vehiculo/ VehiculoController (lecturas),vehiculo/ Registrar km,maestros.spec; Maestros.test,CP-10
+RF-008,Proveedores,Implementado,"Maestros de servicios, productos y proveedores",CU-04,DCU-R81-0002,DCL-R82-0008,DMD-R81-0002,—,—,—,S5,Proveedor (documento único por empresa),maestros/ MaestrosController (proveedores),maestros/ Proveedores,s5.spec,CP-19
+RF-009,Servicios con horas estándar,Implementado,"Maestros de servicios, productos y proveedores",CU-04,DCU-R81-0002,DCL-R82-0008,DMD-R81-0002,—,—,—,S5,"Servicio (horas y precio estándar, horasFuente)",maestros/ MaestrosController (servicios),maestros/ Catálogo (servicios),s5.spec,CP-20
+RF-010,Productos,Implementado,"Maestros de servicios, productos y proveedores",CU-04,DCU-R81-0002,DCL-R82-0008,DMD-R81-0002,—,—,—,S5,Producto; DetalleODS.productoId,maestros/ MaestrosController (productos),maestros/ Catálogo (productos); EditorOrden,s5.spec,CP-21
+RF-100,Grupos de vehículos,Implementado,"Maestros de servicios, productos y proveedores",CU-04,DCU-R81-0002,DCL-R82-0008,DMD-R81-0002,—,—,—,S5,"GrupoVehicular, FamiliaMotor, ReglaAsignacionModelo; Vehiculo.grupoId",maestros/ asignarGrupo; vehiculo/ VehiculoController,maestros/ Grupos; vehiculo/ Vehículos (grupo),s5.spec; maestros.reglas.spec,CP-22
+RF-101,Precios por grupo,Implementado,"Maestros de servicios, productos y proveedores",CU-04,DCU-R81-0002,DCL-R82-0008,DMD-R81-0002,—,—,—,S5,"ReglaPrecio; DetalleODS (horas, precioGrupo, trazaPrecio)",maestros/ calcularServicio; ordenServicio/ ítems,maestros/ Grupos (reglas y precios); EditorOrden,s5.spec; maestros.reglas.spec; S5.test,"CP-23, CP-59"
+RF-102,Solapamiento de servicios,Implementado,"Maestros de servicios, productos y proveedores",CU-04,DCU-R81-0002,DCL-R82-0008,DMD-R81-0002,—,—,—,S5,"Solapamiento; DetalleODS (descuentoMonto, solapamientoId)",maestros/ evaluarSolapamientos; ordenServicio/ ítems,maestros/ Solapamientos; EditorOrden (alerta),s5.spec; maestros.reglas.spec; S5.test,"CP-24, CP-60"
+RF-011,Crear y editar la ODS,Implementado,Órdenes de servicio,CU-05,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,DSE-R82-0002,DES-R81-0001,DAC-R82-0004 a 0007,S3,"OrdenServicio, CorrelativoODS, DetalleODS","ordenServicio/ OrdenesController (crear, editar, ítems)","ordenServicio/ Ordenes, EditorOrden",ordenServicio.spec; base.spec; Ordenes.test,"CP-11, CP-12, CP-13, CP-14, CP-25"
+RF-015,"Tipo de atención, garantía e ingreso",Parcial,Órdenes de servicio,CU-05,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,DSE-R82-0002,DES-R81-0001,DAC-R82-0004 a 0007,S3,"OrdenServicio (tipoAtencion, estadoVehiculo), EvidenciaIngreso",ordenServicio/ OrdenesController (evidencias),"ordenServicio/ Ingreso, Camara",ordenServicio.spec; Ordenes.test,CP-15
+RF-016,Estados y cierre de la ODS,Parcial,Órdenes de servicio,CU-05,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,DSE-R82-0002,DES-R81-0001,DAC-R82-0004 a 0007,S3,"OrdenServicio (estado, fechaCierre)",ordenServicio/ OrdenesController (estado),ordenServicio/ Estado de la orden,ordenServicio.spec; Ordenes.test,CP-16
+RF-018,Corregir o reabrir una ODS cerrada,Pendiente,Órdenes de servicio,CU-05,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,DSE-R82-0002,DES-R81-0001,DAC-R82-0004 a 0007,S3,—,—,—,—,CP-58
+RF-089,Abonos y saldo,Implementado,Órdenes de servicio,CU-05,DCU-R81-0001,DCL-R81-0001,DMD-R81-0001,DSE-R82-0002,DES-R81-0001,DAC-R82-0004 a 0007,S3,Abono,ordenServicio/ OrdenesController (abonos),ordenServicio/ Abonos,ordenServicio.spec; base.spec,"CP-17, CP-18"
+RF-026,Plantillas de mantenimiento,Pendiente,Planes y línea de tiempo,CU-06,DCU-R81-0001,DCL-R81-0003,DMD-R81-0002,DSE-R81-0003,—,DAC-R82-0001,S6,—,—,—,—,CP-26
+RF-028,Reglas por km y tiempo,Pendiente,Planes y línea de tiempo,CU-06,DCU-R81-0001,DCL-R81-0003,DMD-R81-0002,DSE-R81-0003,—,DAC-R82-0001,S6,—,—,—,—,CP-27
+RF-030,Asignar un plan al vehículo,Pendiente,Planes y línea de tiempo,CU-06,DCU-R81-0001,DCL-R81-0003,DMD-R81-0002,DSE-R81-0003,—,DAC-R82-0001,S6,—,—,—,—,CP-28
+RF-103,Sugerir un plan a vehículos sin plan,Pendiente,Planes y línea de tiempo,CU-06,DCU-R81-0001,DCL-R81-0003,DMD-R81-0002,DSE-R81-0003,—,DAC-R82-0001,S6,—,—,—,—,CP-29
+RF-031,Línea de tiempo del vehículo,Pendiente,Planes y línea de tiempo,CU-07,DCU-R81-0001,DCL-R81-0003,DMD-R81-0002,DSE-R81-0003,—,DAC-R82-0001,S7,—,—,—,—,CP-30
+RF-032,Reajuste de las proyecciones,Pendiente,Planes y línea de tiempo,CU-07,DCU-R81-0001,DCL-R81-0003,DMD-R81-0002,DSE-R81-0003,—,DAC-R82-0001,S7,—,—,—,—,CP-31
+RF-034,Recomendaciones,Pendiente,Planes y línea de tiempo,CU-07,DCU-R81-0001,DCL-R81-0003,DMD-R81-0002,DSE-R81-0003,—,DAC-R82-0001,S7,—,—,—,—,CP-32
+RF-067,Mantenimientos próximos y vencidos,Pendiente,Planes y línea de tiempo,CU-07,DCU-R81-0001,DCL-R81-0003,DMD-R81-0002,DSE-R81-0003,—,DAC-R82-0001,S7,—,—,—,—,CP-33
+RF-036,Tareas preventivas,Pendiente,Tareas y vistas,CU-08,DCU-R81-0001,DCL-R82-0004,DMD-R81-0002,DSE-R82-0002,DES-R81-0001,DAC-R82-0005,S8,—,—,—,—,CP-34
+RF-037,Tareas desde la ODS,Pendiente,Tareas y vistas,CU-08,DCU-R81-0001,DCL-R82-0004,DMD-R81-0002,DSE-R82-0002,DES-R81-0001,DAC-R82-0005,S8,—,—,—,—,CP-35
+RF-039,Estados y tiempos de la tarea,Pendiente,Tareas y vistas,CU-08,DCU-R81-0001,DCL-R82-0004,DMD-R81-0002,DSE-R82-0002,DES-R81-0001,DAC-R82-0005,S8,—,—,—,—,CP-36
+RF-055,"Vistas de lista, tablero y calendario",Pendiente,Tareas y vistas,CU-08,DCU-R81-0001,DCL-R82-0004,DMD-R81-0002,DSE-R82-0002,DES-R81-0001,DAC-R82-0005,S8,—,—,—,—,CP-37
+RF-053,Citas,Pendiente,Citas,CU-09,DCU-R81-0001,DCL-R82-0004,DMD-R81-0002,DSE-R82-0002,DES-R82-0002,DAC-R82-0004,S9,—,—,—,—,CP-38
+RF-054,Atender la cita y crear la ODS,Pendiente,Citas,CU-09,DCU-R81-0001,DCL-R82-0004,DMD-R81-0002,DSE-R82-0002,DES-R82-0002,DAC-R82-0004,S9,—,—,—,—,CP-39
+RF-059,Comentarios de bitácora,Pendiente,Bitácora y auditoría,CU-10,DCU-R81-0001,DCL-R82-0004,DMD-R81-0001,—,—,DAC-R82-0007,S10,—,—,—,—,CP-41
+RF-060,Auditoría de cambios,Parcial,Bitácora y auditoría,CU-10,DCU-R81-0001,DCL-R82-0004,DMD-R81-0001,—,—,DAC-R82-0007,S10,Auditoria,comun/ auditoría en cada controlador,—,maestros.spec; usuario.spec,CP-40
+RF-063,Historial cronológico,Parcial,Bitácora y auditoría,CU-10,DCU-R81-0001,DCL-R82-0004,DMD-R81-0001,—,—,DAC-R82-0007,S10,Bitacora,ordenServicio/ OrdenesController (bitácora),ordenServicio/ Bitácora de la ODS,ordenServicio.spec,CP-42
+RF-087,Cotización,Pendiente,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-43
+RF-088,Nota de venta,Pendiente,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-44
+RF-090,Cuentas por cobrar y por pagar,Pendiente,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-46
+RF-091,Bancos y movimientos,Pendiente,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-47
+RF-078,Compras,Pendiente,Compras e inventario,CU-12,DCU-R81-0002,DCL-R81-0006,DMD-R81-0004,DSE-R81-0005,DES-R81-0003,—,S12,—,—,—,—,CP-48
+RF-092,Inventario y kárdex,Pendiente,Compras e inventario,CU-12,DCU-R81-0002,DCL-R81-0006,DMD-R81-0004,DSE-R81-0005,DES-R81-0003,—,S12,—,—,—,—,CP-49
+RF-094,Consulta de kilometraje,Pendiente,Posventa,CU-13,DCU-R81-0001,DCL-R81-0007,DMD-R81-0004,DSE-R81-0003,—,DAC-R81-0002,S13,—,—,—,—,CP-50
+RF-095,Encuesta con enlace,Pendiente,Posventa,CU-13,DCU-R81-0001,DCL-R81-0007,DMD-R81-0004,DSE-R81-0003,—,DAC-R81-0002,S13,—,—,—,—,CP-51
+RF-097,Seguimiento a los cinco días,Pendiente,Posventa,CU-13,DCU-R81-0001,DCL-R81-0007,DMD-R81-0004,DSE-R81-0003,—,DAC-R81-0002,S13,—,—,—,—,CP-52
+RF-065,Reporte de técnicos,Pendiente,Reportes y métricas,CU-14,DCU-R81-0002,DCL-R81-0007,DMD-R81-0004,DSE-R81-0006,—,—,S14,—,—,—,—,CP-53
+RF-066,Reporte de ODS,Pendiente,Reportes y métricas,CU-14,DCU-R81-0002,DCL-R81-0007,DMD-R81-0004,DSE-R81-0006,—,—,S14,—,—,—,—,CP-54
+RF-096,Métricas,Pendiente,Reportes y métricas,CU-14,DCU-R81-0002,DCL-R81-0007,DMD-R81-0004,DSE-R81-0006,—,—,S14,—,—,—,—,CP-55
+RF-098,Reporte de posventa,Pendiente,Reportes y métricas,CU-14,DCU-R81-0002,DCL-R81-0007,DMD-R81-0004,DSE-R81-0006,—,—,S14,—,—,—,—,CP-56
+RF-071,Organización y locales,Parcial,Configuración,CU-02,DCU-R81-0001,DCL-R81-0006,DMD-R81-0001,—,—,—,S14,"Organizacion, Local",usuario/ UsuariosController (locales),usuario/ Usuarios (local),usuario.spec,CP-45
+RF-085,"Empresa, logotipos y formatos",Pendiente,Configuración,CU-15,DCU-R81-0001,DCL-R81-0006,DMD-R81-0001,—,—,—,S14,—,—,—,—,CP-57

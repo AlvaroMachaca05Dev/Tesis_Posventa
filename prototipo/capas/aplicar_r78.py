@@ -7,7 +7,7 @@ def rep(old, new, count=1):
     global s
     n = s.count(old); assert n == count, (old[:80], n); s = s.replace(old, new)
 rep("</style></head>", open(os.path.join(d, 'estilos.css'), encoding='utf-8').read() + "</style></head>")
-layer = '\n'.join(open(os.path.join(d, f), encoding='utf-8').read() for f in ['a_maestros.js', 'b_ods.js'])
+layer = '\n'.join(open(os.path.join(d, f), encoding='utf-8').read() for f in ['a_maestros.js', 'b_ods.js', 'c_nota.js', 'd_kardex.js', 'e_responsables.js', 'f_reportes.js', 'g_espacio.js', 'h_s5.js'])
 i = s.rindex("\nrender();\n</script>"); s = s[:i] + "\n" + layer + s[i:]
 # La fecha de salida de la ODS pasa a llamarse fecha de cierre y la de ingreso, fecha de inicio (DEC-61).
 # Solo textos que se ven en pantalla; los encabezados de exportación e importación no se tocan.

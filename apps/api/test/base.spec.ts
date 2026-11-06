@@ -30,7 +30,7 @@ beforeAll(async () => {
   app = mod.createNestApplication();
   await app.init();
   organizacionId = (await prisma.organizacion.findFirstOrThrow({ where: { nombre: 'Taller Demo' } })).id;
-  clienteId = (await como(CAJERA, 'post', '/clientes', { tipoDocumento: 'DNI', documento: `BD${sufijo}`, nombre: 'Cliente Base Prueba' })).body.id;
+  clienteId = (await como(CAJERA, 'post', '/clientes', { tipoDocumento: 'DNI', documento: `5${sufijo.padStart(5, '0')}01`, nombre: 'Cliente Base Prueba' })).body.id;
   vehiculoId = (await como(CAJERA, 'post', '/vehiculos', { clienteId, placa: `BD-${sufijo}` })).body.id;
 });
 afterAll(async () => {
@@ -53,7 +53,7 @@ afterAll(async () => {
 
 describe('la base hace cumplir sus reglas aunque se salte la API', () => {
   it('documento de cliente único por empresa', async () => {
-    const e = await prisma.cliente.create({ data: { organizacionId, tipoDocumento: 'DNI', documento: `BD${sufijo}`, nombre: 'Duplicado' } }).catch((x) => x);
+    const e = await prisma.cliente.create({ data: { organizacionId, tipoDocumento: 'DNI', documento: `5${sufijo.padStart(5, '0')}01`, nombre: 'Duplicado' } }).catch((x) => x);
     expect(esUnico(e)).toBe(true);
   });
   it('placa normalizada única por empresa', async () => {
@@ -128,11 +128,11 @@ describe('coherencia entre tablas después de usar la API', () => {
   });
   it('la baja de una ODS es lógica: la fila sigue en la base con su motivo y su número no vuelve', async () => {
     const v3 = (await como(CAJERA, 'post', '/vehiculos', { clienteId, placa: `BF-${sufijo}` })).body.id;
-    const o = (await como(CAJERA, 'post', '/ordenes', { vehiculoId: v3, tipoAtencion: 'Otro' })).body;
+    const o = (await como(CAJERA, 'post', '/ordenes', { vehiculoId: v3, tipoAtencion: 'Otro', tipoAtencionDetalle: 'Revisión de prueba' })).body;
     expect((await como('admin@demo.local', 'delete', `/ordenes/${o.id}`, { motivo: 'Prueba de base' })).status).toBe(200);
     expect(await prisma.ordenServicio.findUnique({ where: { id: o.id } })).toMatchObject({ eliminada: true, motivoEliminacion: 'Prueba de base' });
     expect((await como(CAJERA, 'get', `/ordenes/${o.id}`)).status).toBe(404);
-    const otra = (await como(CAJERA, 'post', '/ordenes', { vehiculoId: v3, tipoAtencion: 'Otro' })).body;
+    const otra = (await como(CAJERA, 'post', '/ordenes', { vehiculoId: v3, tipoAtencion: 'Otro', tipoAtencionDetalle: 'Revisión de prueba' })).body;
     expect(otra.codigo).not.toBe(o.codigo);
   });
   it('el texto con tildes, «→» y emojis se guarda y se lee igual (base UTF-8)', async () => {

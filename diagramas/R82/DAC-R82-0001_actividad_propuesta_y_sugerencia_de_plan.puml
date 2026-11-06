@@ -1,0 +1,22 @@
+@startuml
+!include _estilo.iuml
+title Propuesta de plan y sugerencia a vehículos sin plan (R8.2)
+|Jefe de taller|
+start
+:Crear o versionar la plantilla del grupo;
+:Definir reglas por km y tiempo;
+|Sistema|
+:Evaluar si cada regla aplica al vehículo;
+:Buscar vehículos sin plan con la misma\nmarca, modelo, motor y año;
+:Sugerir el plan;
+|Jefe de taller|
+if (¿Acepta la sugerencia?) then (sí)
+  :Asignar el plan al vehículo;
+  |Sistema|
+  :Proyectar los mantenimientos;
+else (no)
+  |Jefe de taller|
+  :Descartar la sugerencia;
+endif
+stop
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+!include _estilo.iuml
+title Proceso de trabajo en el taller: En proceso (R8.2)
+|Jefe de taller|
+start
+:Revisar la ODS y asignar técnicos;
+:Pasar la ODS a En proceso;
+|Técnico|
+:Ver sus tareas en lista, tablero o calendario;
+:Trabajar cada servicio;
+if (¿Hace falta otro servicio o repuesto?) then (sí)
+  :Agregar el ítem a la ODS;
+  |Sistema|
+  :Poner precio del grupo y crear su tarea;
+  |Técnico|
+else (no)
+endif
+:Marcar sus tareas Completadas;
+|Sistema|
+:Sumar las horas de los servicios;
+:Registrar los cambios en la bitácora;
+|Jefe de taller|
+:Pasar la ODS a En entrega;
+stop
+@enduml

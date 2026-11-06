@@ -80,8 +80,9 @@ r72NewOrder=function(){db.orders=db.orders.filter(x=>!x.draft78);const n=r72Now(
   if(!R78.cierre){R78.cierre=true;$('modal').addEventListener('close',()=>{if(db.orders.some(x=>x.draft78)){db.orders=db.orders.filter(x=>!x.draft78);try{localStorage.setItem(KEY,JSON.stringify(db))}catch{}render()}})}
   r78Editor(o.id)};
 function r78Crear(id){const o=db.orders.find(x=>x.id===id);if(!o.vehicle)return toast('Elige el vehículo.');
+  if(o.state==='Archivada'&&o.approval!=='No aprobada')return toast('Para cerrar sin nota de venta, la decisión del cliente debe ser «No aprobada».');
   o.lines=o.lines.filter(l=>l.name);o.code=r72OrderCode();delete o.draft78;delete o.client78;
-  if(o.km!=null)vehicle(o.vehicle).km=Math.max(+vehicle(o.vehicle).km||0,o.km);save('ODS creada',o.code);closeModal();render()}
+  if(o.km!=null)vehicle(o.vehicle).km=Math.max(+vehicle(o.vehicle).km||0,o.km);if(o.state==='Archivada')o.closedAt=new Date().toISOString();r7Log(o.id,'ODS',`ODS ${o.code} creada en ${R77_TABL[o.state]||o.state}, ${o.approval}.`);save('ODS creada',o.code);closeModal();render()}
 function r78Editor(id){const o=db.orders.find(x=>x.id===id),nueva=!!o.draft78,v=o.vehicle?vehicle(o.vehicle):{},c=v.client?client(v.client):{},lock=o.state==='Archivada'&&!o.editGrant,dis=lock?'disabled':'',vc=R78.ui.cliente,dn=nueva?'disabled':'';
   const ro=(l,val)=>`<label>${l}<input value="${esc(val??'')}" disabled></label>`;
   const set=(f)=>`onchange="r78Set('${id}','${f}',this.value)"`;
@@ -93,16 +94,16 @@ function r78Editor(id){const o=db.orders.find(x=>x.id===id),nueva=!!o.draft78,v=
     <td><input class="r78-largo" value="${esc(l.name||'')}" ${dis} onchange="r78Item('${id}',${i},'name',this.value)"></td>
     ${vc?'':`<td><input class="r78-medio" value="${esc(l.code||l.ref||'')}" ${dis} onchange="r78Item('${id}',${i},'code',this.value)"></td><td>${n(i,'cost',l.cost)}</td><td>${n(i,'rent',rent)}</td>`}
     <td>${n(i,'price',l.price)}</td><td>${n(i,'discPct',l.discPct||0)}</td>
-    ${vc?'':`<td><select ${dis} onchange="r78Item('${id}',${i},'tech',this.value)">${r72Opt(resp,l.tech,'—')}</select></td>`}
+    ${vc?'':`<td><select ${dis} onchange="r78Item('${id}',${i},'${l.type==='servicio'?'tech':'logistic'}',this.value)">${l.type==='servicio'?r72Opt(r78RespServ(),l.tech,'—'):r72Opt(r78RespProd(),l.logistic,'—')}</select></td>`}
     <td>${n(i,'qty',l.qty??1)}</td><td class="r78-der">${money(r78Linea(l))}</td>
     <td>${lock?'':`<button type="button" class="r78-mini" title="Quitar ítem" onclick="r78Quitar('${id}',${i})">🗑</button>`}</td></tr>`}).join('');
   const ev=o.evidence||[],est=o.estadoVehiculo||{},llenos=Object.values(est).filter(x=>Array.isArray(x)?x.length:x&&x!=='Sin registrar').length;
   $('modal').classList.remove('r78-chico');$('modal').classList.add('r78-ancho');
   modal(`<div class="r78-ods">
   <div class="r78-cab"><h2>${nueva?'Nueva orden de servicio':'Orden de servicio '+esc(o.code)}</h2>
-    ${nueva?'':`<label class="r78-cot">¿Deseas enlazar una cotización previa?<select ${dis} onchange="r78Set('${id}','quote',this.value)">${r72Opt((db.r72quotes||[]).filter(q=>!q.order||q.order===id).map(q=>[q.id,q.code||q.id]),o.quote,'Sin cotización')}</select></label>
-    <label>Estado<select onchange="r7SetOrderState('${id}',this.value);r78Editor('${id}')">${states.map(s=>`<option value="${s}" ${o.state===s?'selected':''}>${esc(R77_TABL[s]||s)}</option>`).join('')}</select></label>
-    <label>Decisión del cliente<select ${set('approval')}>${R78_DECISIONES.map(d=>`<option ${(o.approval||'Pendiente de aprobación')===d?'selected':''}>${d}</option>`).join('')}</select></label>`}
+    <label class="r78-cot">¿Deseas enlazar una cotización previa?<select ${dis} onchange="r78Set('${id}','quote',this.value)">${r72Opt((db.r72quotes||[]).filter(q=>!q.order||q.order===id).map(q=>[q.id,q.code||q.id]),o.quote,'Sin cotización')}</select></label>
+    <label>Estado<select onchange="${nueva?`r78Set('${id}','state',this.value)`:`r7SetOrderState('${id}',this.value);r78Editor('${id}')`}">${states.map(s=>`<option value="${s}" ${o.state===s?'selected':''}>${esc(R77_TABL[s]||s)}</option>`).join('')}</select></label>
+    <label>Decisión del cliente<select ${set('approval')}>${R78_DECISIONES.map(d=>`<option ${(o.approval||'Pendiente de aprobación')===d?'selected':''}>${d}</option>`).join('')}</select></label>
     <button type="button" onclick="closeModal()">Salir</button></div>
   <section class="r78-comprobante ${R78.ui.plegado?'cerrado':''}"><h3><button type="button" class="r78-plegar" onclick="R78.ui.plegado=!R78.ui.plegado;r78Editor('${id}')">${R78.ui.plegado?'▸':'▾'} Datos del comprobante</button></h3>
   ${R78.ui.plegado?'':`<div class="r78-rejilla">
@@ -122,9 +123,9 @@ function r78Editor(id){const o=db.orders.find(x=>x.id===id),nueva=!!o.draft78,v=
   <div class="r78-fila"><h3>Detalle</h3><button type="button" onclick="R78.ui.cliente=!R78.ui.cliente;r78Editor('${id}')">👁 ${vc?'Ver costos (vista interna)':'Vista del cliente (ocultar costos)'}</button></div>
   <div class="r78-items"><table><thead><tr><th>#</th><th>Tipo</th><th>Detalle</th>${vc?'':'<th>Referencia</th><th>Costo</th><th>Rent. (%)</th>'}<th>Precio unit.</th><th>Desc. (%)</th>${vc?'':'<th>Responsable</th>'}<th>Cant./H-H</th><th class="r78-der">Total</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>
   ${lock?'':`<button type="button" class="r78-agregar" onclick="r78Agregar('${id}')">+ Agregar ítem</button>`}
-  <div class="r78-pie"><section><div class="r78-fila"><h3>Evidencias de ingreso</h3><button type="button" ${dn} onclick="r78EstadoVeh('${id}')">🚗 Estado del vehículo${llenos?' ('+llenos+')':''}</button></div>
-      ${lock||nueva?'':`<div class="r78-fila izq"><label class="r78-boton">📁 Cargar fotos o video<input type="file" accept="image/*,video/*" multiple hidden onchange="r78Subir('${id}',this.files)"></label><label class="r78-boton">📷 Tomar foto<input type="file" accept="image/*" capture="environment" hidden onchange="r78Subir('${id}',this.files)"></label></div>`}
-      <div class="r78-galeria">${ev.length?ev.map((e,i)=>`<figure>${/^data:video/.test(e.data)?`<video src="${e.data}" controls></video>`:`<img src="${e.data}" alt="${esc(e.name)}">`}<figcaption>${esc(e.name)}</figcaption>${lock?'':`<button type="button" class="r78-mini" onclick="r78QuitarEv('${id}',${i})">✕</button>`}</figure>`).join(''):'<p class="sub">Sin fotos ni videos todavía.</p>'}</div></section>
+  <div class="r78-pie"><section><div class="r78-fila"><h3>Evidencias de ingreso <span class="sub">(${(o.evidence||[]).length}/${R78_MAX_FOTOS})</span></h3><button type="button" ${dn} onclick="r78EstadoVeh('${id}')">🚗 Estado del vehículo${llenos?' ('+llenos+')':''}</button></div>
+      ${lock?'':`<div class="r78-fila izq"><label class="r78-boton">📁 Cargar fotos<input type="file" accept="image/*" multiple hidden ${(o.evidence||[]).length>=R78_MAX_FOTOS?'disabled':''} onchange="r78Subir('${id}',this.files)"></label><button type="button" class="r78-boton" ${(o.evidence||[]).length>=R78_MAX_FOTOS?'disabled':''} onclick="r78Camara('${id}')">📷 Tomar foto</button><input id="r78cam-${id}" type="file" accept="image/*" capture="environment" hidden onchange="r78Subir('${id}',this.files)"></div>`}
+      <div class="r78-galeria">${ev.length?ev.map((e,i)=>`<figure><img src="${e.data}" alt="${esc(e.name)}"><figcaption>${esc(e.name)}</figcaption>${lock?'':`<button type="button" class="r78-mini" onclick="r78QuitarEv('${id}',${i})">✕</button>`}</figure>`).join(''):'<p class="sub">Sin fotos todavía.</p>'}</div></section>
     <section class="r78-abonos"><div class="r78-total"><span>TOTAL</span><b>${money(tot)}</b></div>
       <div class="r78-fila"><h3>Abonos / pagos</h3>${lock?'':`<button type="button" class="r78-verde" ${dn} onclick="r72Pay('order','${id}',false)">$ Registrar abono</button>`}</div>
       <table><thead><tr><th>Fecha</th><th>Método</th><th>Concepto</th><th class="r78-der">Valor</th></tr></thead><tbody>${abonos.map(a=>`<tr><td>${esc(String(a.date||'').slice(0,16).replace('T',' '))}</td><td>${esc(a.method||'')}</td><td>${esc(a.concept||'')}</td><td class="r78-der">${money(a.amount)}</td></tr>`).join('')||'<tr><td colspan="4" class="sub r78-der">No hay abonos registrados</td></tr>'}</tbody></table>
@@ -140,7 +141,9 @@ function r78Agregar(id){const o=db.orders.find(x=>x.id===id);o.lines.push({id:ui
   if(!['Pendiente de aprobación','No aprobada'].includes(o.approval||'Pendiente de aprobación')){r7Log(id,'Decisión',`Decisión del cliente: ${o.approval} → Pendiente de aprobación (ítem nuevo)`);o.approval='Pendiente de aprobación'}save('Ítem agregado',o.code);r78Editor(id)}
 function r78Quitar(id,i){const o=db.orders.find(x=>x.id===id),[l]=o.lines.splice(i,1);r7Log(id,'Ítems',`Ítem quitado: ${l.name||'(sin detalle)'}`);save('Ítem quitado',o.code);r78Editor(id)}
 function r78DescTodos(id){const p=+String($('r78pct').value).replace(',','.');if(!Number.isFinite(p)||p<0||p>100)return toast('El descuento debe estar entre 0 y 100 %.');const o=db.orders.find(x=>x.id===id);o.lines.forEach(l=>{l.discPct=p});save('Descuento a todos los ítems',o.code);r78Editor(id)}
-function r78Subir(id,files){const o=db.orders.find(x=>x.id===id);o.evidence??=[];[...files].forEach(f=>{if(f.size>3e6)return toast(f.name+': en el prototipo cada archivo puede pesar hasta 3 MB.');const r=new FileReader();r.onload=()=>{o.evidence.push({name:f.name,data:r.result});r7Log(id,'Evidencia','Evidencia de ingreso agregada: '+f.name);save('Evidencia agregada',o.code);r78Editor(id)};r.readAsDataURL(f)})}
+const R78_MAX_FOTOS=5;
+function r78Subir(id,files){const o=db.orders.find(x=>x.id===id);o.evidence??=[];let lista=[...files];if(lista.some(f=>!/^image\//.test(f.type))){toast('Solo se aceptan fotos.');lista=lista.filter(f=>/^image\//.test(f.type))}
+  const libres=R78_MAX_FOTOS-o.evidence.length;if(lista.length>libres){toast(`Máximo ${R78_MAX_FOTOS} fotos por orden.`);lista=lista.slice(0,Math.max(0,libres))}lista.forEach(f=>{if(f.size>3e6)return toast(f.name+': en el prototipo cada archivo puede pesar hasta 3 MB.');const r=new FileReader();r.onload=()=>{o.evidence.push({name:f.name,data:r.result});if(!o.draft78){r7Log(id,'Evidencia','Evidencia de ingreso agregada: '+f.name);save('Evidencia agregada',o.code)}r78Editor(id)};r.readAsDataURL(f)})}
 function r78QuitarEv(id,i){const o=db.orders.find(x=>x.id===id);if(!confirm('¿Quitar '+o.evidence[i].name+'?'))return;const [e]=o.evidence.splice(i,1);r7Log(id,'Evidencia','Evidencia de ingreso quitada: '+e.name);save('Evidencia quitada',o.code);r78Editor(id)}
 /* Estado del vehículo: ventana compacta, casi cuadrada */
 function r78EstadoVeh(id){const o=db.orders.find(x=>x.id===id),e=o.estadoVehiculo||{},lock=o.state==='Archivada'&&!o.editGrant,dis=lock?'disabled':'';
@@ -181,3 +184,13 @@ views.vehiculos=()=>heading('Vehículos','La placa no se repite (se compara sin 
     return[r73Act(r73Btn('edit','Editar / traspasar',`editVehicle('${v.id}')`),r73Btn('del','Eliminar',`r73DelVehicle('${v.id}')`,'r73-red'),r73Btn('⏱','Registrar kilometraje',`r74KmConsult('${v.id}')`),r73Btn('↗','Línea temporal',`timelineVehicle='${v.id}';simKm=null;go('timeline')`)),
       `<b>${esc(v.plate)}</b>`,esc(v.brand),esc(v.model),esc(v.year),esc(v.color||'—'),`${esc(t.name||'—')}<br><small class="sub">${esc(r78TipoCorto(t.docType))} ${esc(t.doc||'—')}</small>`,
       v.group?`<span class="pill">${esc(v.group)}</span>`:'<span class="pill orange">Sin grupo</span>',v.plan?`<span class="pill">${esc(v.plan)}</span>`:'<span class="pill orange">Sin plan</span>',km!=null&&km!==''?(+km).toLocaleString('es-PE')+' km':'—',db.orders.filter(o=>o.vehicle===v.id).length,esc(r78Fecha(v.createdAt))]}))}</div>`;
+
+/* 03/11: «Tomar foto» abre la cámara del navegador (computadora, tablet o celular, con permiso); si no se puede, la del sistema. */
+function r78Camara(id){const nativa=()=>document.getElementById('r78cam-'+id)?.click();
+  if(!(window.isSecureContext&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))return nativa();
+  const capa=document.createElement('div');capa.className='r78-capa-camara';capa.innerHTML='<div class="r78-camara"><video playsinline muted></video><div class="r78-fila fin"><button type="button" data-a="no">Cancelar</button><button type="button" class="primary" data-a="si" disabled>📷 Capturar</button></div></div>';
+  document.body.appendChild(capa);const v=capa.querySelector('video'),si=capa.querySelector('[data-a=si]');let flujo=null;
+  const cerrar=()=>{flujo&&flujo.getTracks().forEach(x=>x.stop());capa.remove()};capa.querySelector('[data-a=no]').onclick=cerrar;
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(s=>{flujo=s;v.srcObject=s;v.play();si.disabled=false}).catch(()=>{cerrar();toast('No se pudo abrir la cámara. Revisa el permiso de cámara del navegador.')});
+  si.onclick=()=>{const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
+    c.toBlob(b=>{cerrar();if(b)r78Subir(id,[new File([b],'foto-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.jpg',{type:'image/jpeg'})])},'image/jpeg',.9)}}

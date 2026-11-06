@@ -40,9 +40,11 @@ describe('precarga de maestros del prototipo (S2)', () => {
     expect(c[0]).toMatchObject({ nombre: 'Clientes varios', esGenerico: true, activo: true });
   });
   it('el vehículo DEM-679 está una sola vez, con su titular y su kilometraje, y se encuentra por placa', async () => {
-    const v = await prisma.vehiculo.findMany({ where: { organizacionId, placaNorm: 'DEM679' }, include: { cliente: true, lecturas: true } });
+    const v = await prisma.vehiculo.findMany({ where: { organizacionId, placaNorm: 'DEM679' }, include: { cliente: true, lecturas: true, grupo: true } });
     expect(v).toHaveLength(1);
-    expect(v[0]).toMatchObject({ placa: 'DEM-679', marca: 'KIA', modelo: 'PICANTO', anio: 2017, nroMotor: 'G3LA', grupo: 'G2' });
+    expect(v[0]).toMatchObject({ placa: 'DEM-679', marca: 'KIA', modelo: 'PICANTO', anio: 2017, nroMotor: 'G3LA', codigoMotor: 'G3LA', grupoFuente: 'FAMILIA_MOTOR' });
+    // S5: el grupo sale de la familia de su motor (G3LA → FM0001 → N2)
+    expect(v[0].grupo?.codigo).toBe('G1');
     expect(v[0].cliente.documento).toBe('0000');
     expect(v[0].lecturas.filter((l) => l.fuente === 'precarga').map((l) => l.km)).toEqual([290200]);
     const r = await pedir('/vehiculos?q=dem679');

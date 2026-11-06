@@ -1,0 +1,28 @@
+@startuml
+!include _estilo.iuml
+title Estados de la cita y de la cotización (R8.2)
+state "Cita" as CI {
+  state "No concretada" as NoConcretada
+  [*] --> Pendiente
+  Pendiente --> Confirmada : el cliente confirma
+  Pendiente --> Reprogramada : cambia fecha u hora
+  Confirmada --> Reprogramada : cambia fecha u hora
+  Reprogramada --> Confirmada
+  Pendiente --> Atendida : llegó
+  Confirmada --> Atendida : llegó
+  Reprogramada --> Atendida : llegó
+  Pendiente --> NoConcretada : no llegó
+  Confirmada --> NoConcretada : no llegó
+  Reprogramada --> NoConcretada : no llegó
+  Atendida --> [*] : ¿crear ODS?
+  NoConcretada --> [*]
+}
+state "Cotización" as C {
+  [*] --> Borrador
+  Borrador --> Emitida : emitir
+  Emitida --> Enlazada : a cita u ODS
+  Enlazada --> [*]
+}
+CI -[hidden]-> C
+note right of CI : Colores: Pendiente gris, Confirmada azul,\nReprogramada ámbar, Atendida verde,\nNo concretada rojo. No se archivan:\nse ocultan con los filtros.
+@enduml

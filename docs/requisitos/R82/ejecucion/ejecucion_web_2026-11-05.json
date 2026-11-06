@@ -1,0 +1,296 @@
+{
+ "fecha": "2026-11-05",
+ "conjunto": "web",
+ "aprobadas": 48,
+ "total": 48,
+ "pruebas": [
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "modo demostración: avisa y deja escrita la cuenta del Desarrollador",
+   "estado": "passed",
+   "ms": 68.75210000000061
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "sin modo demostración no hay aviso ni datos escritos",
+   "estado": "passed",
+   "ms": 5.840799999999945
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "al ingresar, el menú muestra solo los módulos del rol, el nombre y la etiqueta del rol",
+   "estado": "passed",
+   "ms": 672.2794000000004
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "un módulo sin permiso muestra «Sin acceso», aunque se fuerce la dirección",
+   "estado": "passed",
+   "ms": 11.650499999999738
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "«Ver como…» aparece solo para el Desarrollador",
+   "estado": "passed",
+   "ms": 41.38539999999921
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "los módulos beta van al final y se pueden ocultar",
+   "estado": "passed",
+   "ms": 159.09550000000036
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "acordeón: al abrir una lista se cierran las demás",
+   "estado": "passed",
+   "ms": 186.14529999999922
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "la lista del módulo en que estás empieza abierta",
+   "estado": "passed",
+   "ms": 46.483900000000176
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "el botón ☰ oculta y vuelve a mostrar el menú, y lo recuerda",
+   "estado": "passed",
+   "ms": 135.04920000000038
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "el botón de pantalla completa la solicita",
+   "estado": "passed",
+   "ms": 62.44380000000001
+  },
+  {
+   "archivo": "apps/web/src/App.test.tsx",
+   "prueba": "en celular el menú es un cajón: empieza cerrado, se abre con ☰ y se cierra al elegir un módulo",
+   "estado": "passed",
+   "ms": 127.58470000000034
+  },
+  {
+   "archivo": "apps/web/src/maestros/S5.test.tsx",
+   "prueba": "Proveedores: tabla con filtros por columna y modal centrado de dos columnas para crear",
+   "estado": "passed",
+   "ms": 932.0892000000003
+  },
+  {
+   "archivo": "apps/web/src/maestros/S5.test.tsx",
+   "prueba": "Grupos: pestañas de grupos, reglas, precios por grupo y familias; la tabla muestra el precio de cada grupo",
+   "estado": "passed",
+   "ms": 128.35750000000007
+  },
+  {
+   "archivo": "apps/web/src/maestros/S5.test.tsx",
+   "prueba": "ODS: el servicio del catálogo toma el precio del grupo y el solapamiento opcional se aplica desde la alerta",
+   "estado": "passed",
+   "ms": 357.4926000000005
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Lista: tarjeta con consecutivo, «Sin comprobante», fechas, cliente, vehículo y botones de acción",
+   "estado": "passed",
+   "ms": 348.28579999999965
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Lista: la búsqueda rápida y el estado se envían al servidor",
+   "estado": "passed",
+   "ms": 297.6921000000002
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Editar: una sola pantalla con «Datos del comprobante», ítems, solo el TOTAL y los abonos; sin «Nuevos ítems» ni subtotales",
+   "estado": "passed",
+   "ms": 215.09819999999945
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Editar: «Datos del comprobante» se pliega y el estado del vehículo se guarda",
+   "estado": "passed",
+   "ms": 445.78249999999935
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Fechas: el botón está deshabilitado si no eres Superadministrador",
+   "estado": "passed",
+   "ms": 31.456600000000435
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Editar: «+ Agregar ítem» y «Guardar cambios» envían los ítems con su referencia",
+   "estado": "passed",
+   "ms": 520.2812000000004
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Editar: el ojo oculta costo, rentabilidad y referencia (vista del cliente)",
+   "estado": "passed",
+   "ms": 183.82430000000022
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Estado: cerrar sin nota de venta muestra el aviso del servidor",
+   "estado": "passed",
+   "ms": 173.46059999999943
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Nueva orden: pide cliente, vehículo y tipo de atención y la crea",
+   "estado": "passed",
+   "ms": 519.8939
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Nueva orden: fotos de ingreso opcionales, como máximo 5, que se suben al crear la orden",
+   "estado": "passed",
+   "ms": 314.259
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Editar: el responsable de un producto es una cajera o un logístico y el de un servicio, un técnico o el jefe",
+   "estado": "passed",
+   "ms": 159.83799999999974
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Nueva orden: el servicio toma por defecto el técnico de la ODS y el producto, la cajera",
+   "estado": "passed",
+   "ms": 293.122800000001
+  },
+  {
+   "archivo": "apps/web/src/ordenServicio/Ordenes.test.tsx",
+   "prueba": "Editar: el precio con coma decimal («12,50») se entiende y lo que no es número se ignora",
+   "estado": "passed",
+   "ms": 426.09619999999995
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Clientes: lista el documento, el nombre, el móvil con su prefijo y el estado",
+   "estado": "passed",
+   "ms": 159.92839999999978
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Clientes: sin buscador general; cada columna tiene su filtro y el embudo admite más condiciones",
+   "estado": "passed",
+   "ms": 709.3417999999992
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Clientes: «+ Cliente» y «Editar» abren un modal centrado, sin bajar la tabla",
+   "estado": "passed",
+   "ms": 117.6895999999997
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Clientes: «+ Cliente» propone Perú (+51), pide el móvil sin prefijo y envía los datos",
+   "estado": "passed",
+   "ms": 732.2170000000006
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Clientes: al elegir otro país cambia el prefijo del móvil",
+   "estado": "passed",
+   "ms": 154.04920000000038
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Clientes: el tipo de documento ofrece solo DNI, Carné de extranjería y RUC",
+   "estado": "passed",
+   "ms": 86.76829999999973
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Clientes: con permiso solo de ver no aparecen «+ Cliente» ni Editar",
+   "estado": "passed",
+   "ms": 39.69460000000072
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Clientes: eliminar pide confirmación y envía activo=false; «Clientes varios» no se puede eliminar",
+   "estado": "passed",
+   "ms": 79.03690000000006
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Vehículos: lista la placa, el vehículo, el titular con su documento y el kilometraje",
+   "estado": "passed",
+   "ms": 29.213999999999942
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Vehículos: al buscar el cliente por documento se ve su nombre y se envía su ID",
+   "estado": "passed",
+   "ms": 675.590000000001
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Vehículos: si la placa ya existe muestra el aviso del servidor con el titular",
+   "estado": "passed",
+   "ms": 547.8045000000002
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Vehículos: sin cliente elegido no se envía el formulario",
+   "estado": "passed",
+   "ms": 375.70700000000033
+  },
+  {
+   "archivo": "apps/web/src/test/Maestros.test.tsx",
+   "prueba": "Vehículos: «Registrar km» guarda la lectura del kilometraje",
+   "estado": "passed",
+   "ms": 234.3078999999998
+  },
+  {
+   "archivo": "apps/web/src/usuario/Usuarios.test.tsx",
+   "prueba": "lista los usuarios con su correo, sus roles y su estado",
+   "estado": "passed",
+   "ms": 133.21920000000046
+  },
+  {
+   "archivo": "apps/web/src/usuario/Usuarios.test.tsx",
+   "prueba": "«+ Usuario» crea un usuario con nombre, correo, contraseña, local y roles",
+   "estado": "passed",
+   "ms": 1271.2498000000005
+  },
+  {
+   "archivo": "apps/web/src/usuario/Usuarios.test.tsx",
+   "prueba": "solo ofrece los roles que puedes asignar (nivel inferior al tuyo)",
+   "estado": "passed",
+   "ms": 120.46929999999975
+  },
+  {
+   "archivo": "apps/web/src/usuario/Usuarios.test.tsx",
+   "prueba": "muestra el mensaje del servidor cuando algo falla (correo repetido)",
+   "estado": "passed",
+   "ms": 849.1888999999992
+  },
+  {
+   "archivo": "apps/web/src/usuario/Usuarios.test.tsx",
+   "prueba": "desactiva un usuario después de confirmar",
+   "estado": "passed",
+   "ms": 94.10870000000068
+  },
+  {
+   "archivo": "apps/web/src/usuario/Usuarios.test.tsx",
+   "prueba": "con nivel «solo ver» no hay botones para crear ni modificar",
+   "estado": "passed",
+   "ms": 29.725400000001173
+  },
+  {
+   "archivo": "apps/web/src/usuario/Usuarios.test.tsx",
+   "prueba": "Roles: el Superadministrador crea un rol propio eligiendo módulos y niveles",
+   "estado": "passed",
+   "ms": 692.9074
+  },
+  {
+   "archivo": "apps/web/src/usuario/Usuarios.test.tsx",
+   "prueba": "Roles: sin nivel «todo» sobre Usuarios no se puede crear roles",
+   "estado": "passed",
+   "ms": 94.00119999999879
+  }
+ ]
+}

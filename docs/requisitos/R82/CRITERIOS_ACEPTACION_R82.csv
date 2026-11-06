@@ -1,0 +1,105 @@
+﻿RF,Criterio,Descripcion,Origen
+RF-001,RF-001.CA-1,Con credenciales válidas entra y recibe su sesión con sus roles.,RF-001
+RF-001,RF-001.CA-2,"Con contraseña incorrecta, usuario inexistente o desactivado responde «no autorizado».",RF-001
+RF-002,RF-002.CA-1,El servidor rechaza un módulo sin permiso aunque la pantalla lo oculte.,RF-002
+RF-002,RF-002.CA-2,El menú muestra solo los módulos del rol; los beta van al final.,RF-002
+RF-002,RF-002.CA-3,"El Administrador ve todo lo de su empresa (bancos, cuentas y reportes de pagos incluidos).",RF-084
+RF-003,RF-003.CA-1,"Se crea un usuario con rol, entra con su clave y queda auditado.",RF-003
+RF-003,RF-003.CA-2,Se crea un rol propio con módulos y niveles; quien lo recibe ve exactamente eso.,RF-003
+RF-003,RF-003.CA-3,Cada empresa ve solo sus usuarios y roles.,RF-003
+RF-004,RF-004.CA-1,El documento no se repite (409).,RF-004
+RF-004,RF-004.CA-2,Cambiar el documento no desvincula sus vehículos y queda auditado.,RF-004
+RF-004,RF-004.CA-3,"Se busca por documento, nombre parcial o placa de su vehículo.",RF-006
+RF-005,RF-005.CA-1,La misma placa con otro formato ya existe (409 con el titular).,RF-005
+RF-005,RF-005.CA-2,"Corregir la placa o traspasar al titular conserva el vehículo, su ID y sus lecturas.",RF-005
+RF-005,RF-005.CA-3,"Se busca por placa con o sin guiones, VIN, nombre o documento del titular.",RF-006
+RF-007,RF-007.CA-1,Cada lectura se guarda y el kilometraje actual es el de la última.,RF-007
+RF-007,RF-007.CA-2,"Un kilometraje negativo, con decimales, gigante o con fecha futura se rechaza.",RF-007
+RF-008,RF-008.CA-1,"Se registra, edita y busca un proveedor con documento único.",RF-008
+RF-008,RF-008.CA-2,Un servicio externo o una compra se asocia a su proveedor.,RF-008
+RF-009,RF-009.CA-1,"Cada servicio tiene categoría, horas, precio base y marca «externo».",RF-009
+RF-009,RF-009.CA-2,"Sin tiempo de AutoData, el servicio toma 1 h.",RF-009
+RF-010,RF-010.CA-1,"Cada producto tiene código, unidad, precio y costo.",RF-010
+RF-010,RF-010.CA-2,"El producto se usa en la ODS, la cotización, la nota de venta y el kárdex.",RF-010
+RF-100,RF-100.CA-1,"Se crean, renombran o quitan grupos sin rehacer los datos.",Nuevo
+RF-100,RF-100.CA-2,Cada vehículo pertenece a un grupo; se puede reasignar.,Nuevo
+RF-101,RF-101.CA-1,"Al agregar un servicio a una ODS, cita o cotización se ponen el precio y las horas del grupo del vehículo (RN-09).",Nuevo
+RF-101,RF-101.CA-2,"Las reglas se aplican en orden: del grupo para el servicio, generales del grupo y de todos los grupos; una regla «Fijar» funciona como excepción.",Nuevo
+RF-101,RF-101.CA-3,Un precio cambiado en la línea queda marcado «precio modificado».,Nuevo
+RF-102,RF-102.CA-1,"Se registra el par de servicios, el modo (automático u opcional), el descuento estándar y por grupo, y las horas compartidas.",Nuevo
+RF-102,RF-102.CA-2,"Al juntarlos en una ODS, el automático se descuenta solo y el opcional muestra una alerta para aplicarlo o mantener los montos; las horas descuentan lo compartido.",Nuevo
+RF-011,RF-011.CA-1,"El código es AAAAMMDD + correlativo y nunca se repite, aunque se creen dos a la vez.",RF-011
+RF-011,RF-011.CA-2,"Se edita el encabezado: técnico, jefe de taller, observaciones y recomendaciones.",RF-012
+RF-011,RF-011.CA-3,Cada servicio tiene responsable y horas; la suma da el total de horas de la ODS.,RF-013
+RF-011,RF-011.CA-4,Servicios y productos conviven en la misma ODS; cada línea se redondea a 2 decimales.,RF-014
+RF-015,RF-015.CA-1,"Las fotos son opcionales, solo imágenes y como máximo 5.",RF-015
+RF-015,RF-015.CA-2,La ODS de garantía se enlaza a la ODS y a los servicios que cubre.,RF-015
+RF-015,RF-015.CA-3,Con tipo «Otro» se escribe un texto que se muestra en su lugar.,RF-073
+RF-016,RF-016.CA-1,Los estados se mueven libremente.,RF-016
+RF-016,RF-016.CA-2,Al cerrar se pone la fecha de cierre (RN-04); al reabrir se borra.,RF-017
+RF-016,RF-016.CA-3,Se puede cerrar sin nota de venta y la ODS queda marcada «Sin nota de venta» (RN-06).,RF-017
+RF-018,RF-018.CA-1,La corrección guarda el antes y el después con su responsable.,RF-018
+RF-018,RF-018.CA-2,Reabrir devuelve la ODS a un estado activo y queda en la bitácora.,RF-018
+RF-089,RF-089.CA-1,"Los abonos no superan lo pendiente y bajan el saldo, no el total.",RF-089
+RF-089,RF-089.CA-2,Dos abonos a la vez por todo lo pendiente: solo entra uno.,RF-089
+RF-026,RF-026.CA-1,Se crea una plantilla para un grupo o una compatibilidad.,RF-026
+RF-026,RF-026.CA-2,Una nueva versión no cambia lo ya realizado.,RF-027
+RF-028,RF-028.CA-1,"La regla indica km, meses o ambos, y el servicio.",RF-028
+RF-028,RF-028.CA-2,Solo aplica si coincide la marca o el modelo y los demás datos que pida.,RF-029
+RF-030,RF-030.CA-1,Un vehículo tiene a lo más un plan vigente.,RF-030
+RF-030,RF-030.CA-2,Cambiar el plan queda en la bitácora.,RF-030
+RF-103,RF-103.CA-1,"Al crear un plan, el sistema lista los vehículos sin plan compatibles.",Nuevo
+RF-103,RF-103.CA-2,La persona acepta o descarta cada sugerencia.,Nuevo
+RF-031,RF-031.CA-1,Se ven los servicios realizados y los próximos.,RF-031
+RF-031,RF-031.CA-2,Cada evento muestra de qué ODS o lectura viene y cuándo.,RF-033
+RF-032,RF-032.CA-1,Un servicio confirmado mueve solo las visitas futuras.,RF-032
+RF-032,RF-032.CA-2,"El reajuste guarda motivo, ODS de origen, fecha y responsable.",RF-032
+RF-034,RF-034.CA-1,Cada recomendación muestra por qué se propone.,RF-034
+RF-034,RF-034.CA-2,"Se acepta, posterga o rechaza, y queda registrado.",RF-035
+RF-067,RF-067.CA-1,"La lista muestra el vehículo, el servicio y si está próximo o vencido.",RF-067
+RF-067,RF-067.CA-2,Se filtra por local y se descarga.,RF-067
+RF-036,RF-036.CA-1,Un mantenimiento próximo crea su tarea «Llamar para agendar».,RF-036
+RF-037,RF-037.CA-1,Al crear la ODS se crea una tarea por ítem para su responsable.,RF-037
+RF-037,RF-037.CA-2,El responsable por defecto es el técnico de la ODS (servicio) o la cajera (producto).,RF-038
+RF-039,RF-039.CA-1,La tarea pasa por sus estados y queda en la bitácora.,RF-039
+RF-039,RF-039.CA-2,"Guarda fecha, hora y duración estimada y real.",RF-040
+RF-055,RF-055.CA-1,"Se crea una vista eligiendo lista, tablero o calendario.",RF-055
+RF-055,RF-055.CA-2,Los filtros de cada vista se guardan por persona.,RF-055
+RF-055,RF-055.CA-3,En el calendario se arrastra o estira un bloque de 15 en 15 minutos.,RF-057
+RF-053,RF-053.CA-1,"Estados: Pendiente, Confirmada, Reprogramada, Atendida y No concretada, cada uno con su color.",RF-053
+RF-053,RF-053.CA-2,Las observaciones son el título de la cita en el calendario.,RF-053
+RF-053,RF-053.CA-3,Se guarda el usuario que creó la cita.,RF-053
+RF-054,RF-054.CA-1,Al marcar Atendida pregunta «¿Deseas crear la orden de servicio?».,RF-054
+RF-054,RF-054.CA-2,La ODS creada así guarda de qué cita viene.,RF-054
+RF-059,RF-059.CA-1,El comentario se guarda con autor y fecha.,RF-059
+RF-059,RF-059.CA-2,Admite adjuntos.,RF-061
+RF-059,RF-059.CA-3,Mencionar a un usuario le avisa (RN-01).,RF-062
+RF-060,RF-060.CA-1,"Cada cambio de cliente, vehículo, usuario u ODS guarda quién, cuándo, antes y después.",RF-060
+RF-063,RF-063.CA-1,La bitácora de la ODS se lee en orden de fecha.,RF-063
+RF-087,RF-087.CA-1,La cotización toma el precio del grupo del vehículo.,RF-087
+RF-087,RF-087.CA-2,Se enlaza a una cita o a una ODS y carga sus ítems.,RF-087
+RF-088,RF-088.CA-1,La serie es la del local y el número es automático (RN-03).,RF-088
+RF-088,RF-088.CA-2,Cada ítem tiene su tipo de IGV y se propone la detracción (RN-15).,RF-099
+RF-090,RF-090.CA-1,Una venta a crédito aparece en cuentas por cobrar hasta pagarse.,RF-090
+RF-090,RF-090.CA-2,Una compra a crédito aparece en cuentas por pagar.,RF-090
+RF-091,RF-091.CA-1,Cada pago entra a una cuenta del local.,RF-091
+RF-091,RF-091.CA-2,Un traslado entre cuentas mueve el saldo de ambas.,RF-091
+RF-078,RF-078.CA-1,La compra suma al kárdex del local.,RF-078
+RF-078,RF-078.CA-2,Se puede enlazar a la ODS para su trazabilidad.,RF-078
+RF-092,RF-092.CA-1,La nota de venta descuenta lo vendido (RN-16).,RF-092
+RF-092,RF-092.CA-2,Un traslado registra la salida y el ingreso en ambos locales.,RF-092
+RF-094,RF-094.CA-1,La respuesta del cliente se guarda como lectura de km.,RF-094
+RF-094,RF-094.CA-2,El nuevo km recalcula las proyecciones (RN-04).,RF-094
+RF-095,RF-095.CA-1,El cliente responde desde el enlace sin entrar al sistema.,RF-095
+RF-095,RF-095.CA-2,La respuesta queda en la ODS.,RF-095
+RF-097,RF-097.CA-1,Al cerrar la ODS se programa la tarea de seguimiento (RN-04).,RF-097
+RF-097,RF-097.CA-2,La cajera registra el resultado.,RF-097
+RF-065,RF-065.CA-1,Se calcula por horas o por monto.,RF-065
+RF-065,RF-065.CA-2,"Cuenta al técnico del servicio, no al de la ODS.",RF-065
+RF-066,RF-066.CA-1,"Se filtra por local, fecha, técnico, vehículo y estado.",RF-068
+RF-066,RF-066.CA-2,El resultado se descarga en Excel.,RF-069
+RF-096,RF-096.CA-1,"16 métricas: vehículos atendidos, horas vendidas, ticket promedio, garantías, permanencia, ventas, utilidades, rentabilidad, NPS y citas.",RF-096
+RF-098,RF-098.CA-1,La tasa es citas que crearon una ODS entre citas.,RF-098
+RF-071,RF-071.CA-1,Cada usuario tiene su local.,RF-071
+RF-071,RF-071.CA-2,Una empresa puede tener varios talleres.,RF-071
+RF-085,RF-085.CA-1,La nota de venta y la cotización usan los datos y el logotipo de la empresa.,RF-085

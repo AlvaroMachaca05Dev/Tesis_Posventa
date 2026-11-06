@@ -1,0 +1,27 @@
+@startuml
+!include _estilo.iuml
+title Cita, cotización y creación de la ODS (R8.2)
+actor Cajera
+participant "Pantalla" as UI
+participant "API" as API
+database "Base de datos" as BD
+Cajera -> UI : Nueva cita (encabezado de ODS)
+UI -> API : POST /citas
+API -> BD : guardar cita (creadaPor, estado Pendiente)
+opt Cotización
+  Cajera -> UI : Asignar o crear cotización
+  UI -> API : POST /cotizaciones (precio por grupo, RN-09)
+  API -> BD : guardar y enlazar a la cita
+end
+Cajera -> UI : Marcar Atendida
+UI -> API : PATCH /citas/{id} estado=Atendida
+API --> UI : ¿Deseas crear la orden de servicio?
+alt Sí
+  UI -> API : POST /ordenes (desde la cita)
+  API -> BD : crear ODS con encabezado, cotización y citaOrigen
+  API -> BD : crear una tarea por ítem (RN-17)
+  API --> UI : ODS creada
+else No
+  API --> UI : cita atendida sin ODS
+end
+@enduml
