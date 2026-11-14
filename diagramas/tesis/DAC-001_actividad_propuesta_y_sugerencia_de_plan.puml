@@ -1,0 +1,27 @@
+@startuml
+!include _estilo.iuml
+title Propuesta de plan y sugerencia a vehículos sin plan
+|Jefe de taller|
+start
+:Crear o versionar la plantilla del grupo;
+:Definir reglas por km y tiempo;
+|Sistema|
+fork
+  :Evaluar si cada regla aplica al grupo;
+fork again
+  :Buscar vehículos sin plan con la misma\nmarca, modelo, motor y año;
+end fork
+:Sugerir el plan a cada vehículo hallado;
+|Jefe de taller|
+while (¿Quedan sugerencias por revisar?) is (sí)
+  if (¿Acepta la sugerencia?) then (sí)
+    :Asignar el plan al vehículo;
+    |Sistema|
+    :Proyectar los mantenimientos\ncon el último kilometraje;
+    |Jefe de taller|
+  else (no)
+    :Descartar la sugerencia;
+  endif
+endwhile (no)
+stop
+@enduml

@@ -2,7 +2,7 @@
 !include _estilo.iuml
 hide empty members
 skinparam classAttributeIconSize 0
-title Clases de grupos, precios por grupo y solapamiento (R8.2, implementado en el S5)
+title Clases de grupos, precios por grupo y solapamiento
 left to right direction
 class GrupoVehicular {
   codigo: N1 a N5

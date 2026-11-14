@@ -1,0 +1,67 @@
+@startuml
+!include _estilo.iuml
+skinparam MaxMessageSize 150
+skinparam ParticipantPadding 6
+autonumber
+title Cierre de ODS, reajuste del plan, consulta de km, seguimiento y encuesta
+actor "Cajera" as J
+actor Cliente
+boundary ":PantallaODS" as UI
+control ":OrdenesController" as A
+control ":Reajuste" as R
+control ":SeguimientoPosventa" as AU
+entity ":OrdenServicio" as O
+entity ":Encuesta" as E
+database "PostgreSQL" as DB
+J -> UI : cerrar(ordenId)
+activate UI
+UI -> A : PATCH /ordenes/{id} estado=Cerrada
+activate A
+critical transacción de cierre
+  A -> O : editar(estado=Cerrada)
+  A -> DB : UPDATE orden (fechaCierre, RN-04)
+  DB --> A : orden cerrada
+  A -> DB : INSERT auditoría y bitácora
+end
+alt hay servicio confirmado con vínculo a la ODS
+  A -> R : reajustarFuturo(vehículo, servicio)
+  activate R
+  loop por cada proyección futura del servicio
+    R -> DB : INSERT nueva proyección (motivo, orden de origen, responsable)
+  end
+  R --> A : proyecciones reajustadas
+  deactivate R
+else sin servicio confirmado
+  A -> A : no reajusta
+end
+A -> AU : ejecutar(evento ODS cerrada)
+activate AU
+AU -> DB : INSERT tarea de seguimiento a los 5 días hábiles
+AU -> E ** : <<create>>
+AU --> A : seguimiento programado
+deactivate AU
+A --> UI : 200 orden cerrada
+deactivate A
+UI --> J : ODS cerrada y seguimiento programado
+deactivate UI
+== Consulta de kilometraje ==
+J -> UI : registrarLectura(km, medio)
+UI -> A : POST /vehiculos/{id}/lecturas
+activate A
+A -> DB : INSERT lectura (fuente y fecha)
+A -> R : recalcular proyección
+R --> A : fechas estimadas
+A --> UI : 201 lectura
+deactivate A
+== Seguimiento ==
+opt el cliente abre el enlace
+  Cliente -> E : responder(puntaje, respuesta)
+  activate E
+  E -> DB : UPDATE encuesta y métrica de satisfacción
+  E --> Cliente : gracias
+  deactivate E
+  E -> AU : evento encuesta respondida
+  AU -> DB : UPDATE tarea de seguimiento (Completada)
+  destroy E
+end
+@enduml

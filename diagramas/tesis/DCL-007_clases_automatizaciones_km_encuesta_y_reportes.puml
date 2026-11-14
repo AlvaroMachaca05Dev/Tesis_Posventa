@@ -1,0 +1,75 @@
+@startuml
+!include _estilo.iuml
+title Clases de reglas automáticas, consulta de kilometraje, encuesta y reportes
+left to right direction
+interface ReglaAutomatica <<interface>> {
+  +aplica(in evento: Evento): Boolean
+  +ejecutar(in evento: Evento): void
+}
+class Evento {
+  -tipo: String
+  -registroId: String
+  -fecha: DateTime {readOnly}
+}
+class SeguimientoPosventa {
+  -diasHabiles: Integer = 5 {readOnly}
+  +aplica(in evento: Evento): Boolean
+  +ejecutar(in evento: Evento): void
+}
+class AvisoMantenimiento {
+  -kmAnticipacion: Integer
+  +aplica(in evento: Evento): Boolean
+  +ejecutar(in evento: Evento): void
+}
+class ConsultaKm {
+  -km: Integer
+  -fecha: DateTime
+  -medio: String
+}
+class Encuesta {
+  -enlace: String {unique}
+  -puntaje: Integer [0..1]
+  -respuesta: String [0..1]
+  -respondidaEn: DateTime [0..1]
+  +responder(in puntaje: Integer, in respuesta: String): void
+}
+class Metrica {
+  -nombre: String
+  -periodo: String
+  /-valor: Decimal
+}
+class ReporteOperativo {
+  -nombre: String
+  +generar(in f: Filtro): Indicador [1..*]
+  +exportar(in formato: String = "xlsx"): Bytes
+}
+class Indicador {
+  -nombre: String
+  -formula: String
+  /-valor: Decimal
+}
+class Filtro {
+  -localId: String [0..1]
+  -desde: DateTime [0..1]
+  -hasta: DateTime [0..1]
+  -tecnicoId: String [0..1]
+  -estado: String [0..1]
+}
+class Tarea
+class Vehiculo
+class OrdenServicio
+ReglaAutomatica <|.. SeguimientoPosventa
+ReglaAutomatica <|.. AvisoMantenimiento
+ReglaAutomatica ..> Evento
+SeguimientoPosventa ..> Tarea : <<create>>
+AvisoMantenimiento ..> Tarea : <<create>>
+OrdenServicio ..> Evento : <<create>>
+OrdenServicio "1" -- "0..1" Encuesta : al cerrar
+Vehiculo "1" *-- "0..*" ConsultaKm
+ConsultaKm ..> Evento : <<create>>
+Encuesta ..> Metrica : alimenta
+ReporteOperativo "1" *-- "1..*" Indicador
+ReporteOperativo ..> Filtro
+Indicador ..> Metrica
+note bottom of ReglaAutomatica : Reglas fijas del servidor (RN):\nno se configuran en pantalla.
+@enduml

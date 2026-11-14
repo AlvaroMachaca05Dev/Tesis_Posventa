@@ -1,0 +1,65 @@
+@startuml
+!include _estilo.iuml
+autonumber
+title Cita, cotización y creación de la ODS
+actor Cajera
+boundary ":PantallaCitas" as UI
+control ":PermisosGuard" as G
+control ":CitasController" as API
+control ":ReglasMaestros" as RM
+entity ":Cita" as C
+entity ":OrdenServicio" as O
+database "PostgreSQL" as BD
+Cajera -> UI : nuevaCita(datos)
+activate UI
+UI -> G : POST /citas
+activate G
+G -> G : canActivate(ctx)
+break sin permiso sobre el módulo Citas
+  G --> UI : 403 Acceso denegado
+end
+G -> API : crear(datos)
+deactivate G
+activate API
+API -> C ** : <<create>>
+API -> BD : INSERT cita (estado Pendiente, creadaPor)
+BD --> API : cita
+API --> UI : 201 cita
+deactivate API
+UI --> Cajera : cita en el calendario
+opt la cita lleva cotización
+  Cajera -> UI : asignarCotizacion(citaId)
+  UI -> API : POST /cotizaciones
+  activate API
+  loop por cada ítem de servicio
+    API -> RM : calcularServicio(servicio, grupo, reglas)
+    RM --> API : precio y horas (RN-09)
+  end
+  API -> BD : INSERT cotización enlazada a la cita
+  BD --> API : cotización
+  API --> UI : 201 cotización
+  deactivate API
+end
+Cajera -> UI : marcarAtendida(citaId)
+UI -> API : PATCH /citas/{id} estado=Atendida
+activate API
+API -> C : marcarAtendida()
+API -> BD : UPDATE cita
+API --> UI : 200 ¿Deseas crear la orden de servicio?
+deactivate API
+alt la cajera acepta
+  UI -> API : POST /ordenes (citaOrigen)
+  activate API
+  ref over API, O, BD : Crear ODS (código, precio por grupo y responsables)
+  API -> O ** : <<create>>
+  loop por cada ítem de la ODS
+    API -> BD : INSERT tarea (RN-17)
+  end
+  API --> UI : 201 ODS creada
+  deactivate API
+  UI --> Cajera : abre la ODS en Recepción
+else la cajera rechaza
+  UI --> Cajera : cita atendida sin ODS
+end
+deactivate UI
+@enduml

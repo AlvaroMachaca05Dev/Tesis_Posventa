@@ -1,0 +1,77 @@
+@startuml
+!include _estilo.iuml
+skinparam MaxMessageSize 150
+skinparam ParticipantPadding 6
+autonumber
+title Cotización, nota de venta, pago y movimientos de bancos
+actor Cajera
+actor Administrador
+boundary ":PantallaComercial" as UI
+control ":ComercialController" as A
+entity ":Cotizacion" as CO
+entity ":NotaVenta" as NV
+entity ":SerieComprobante" as SE
+entity ":CuentaBancaria" as CB
+database "PostgreSQL" as DB
+Cajera -> UI : crearCotizacion(cliente, vehículo, local, km)
+activate UI
+UI -> A : POST /cotizaciones
+activate A
+A -> CO ** : <<create>>
+loop por cada ítem
+  A -> CO : agregarItem(precio, descuento, impuesto)
+end
+A -> DB : INSERT cotización e ítems
+DB --> A : cotización
+A --> UI : 201 cotización
+deactivate A
+Cajera -> UI : emitir(cotizaciónId, formato)
+UI -> A : POST /cotizaciones/{id}/emitir
+activate A
+A -> CO : emitir()
+A -> DB : UPDATE estado=Emitida e INSERT bitácora
+A --> UI : 200 PDF o ticket
+deactivate A
+Cajera -> UI : emitirNotaVenta(ordenId, condición)
+UI -> A : POST /notas-venta
+activate A
+critical correlativo de la serie
+  A -> SE : siguiente()
+  SE --> A : número (RN-03)
+end
+A -> NV ** : <<create>>
+A -> DB : INSERT nota de venta
+alt condición crédito
+  A -> DB : UPDATE saldo en cuentas por cobrar
+else contado
+  ref over A, NV, CB, DB : Registrar pago
+end
+A --> UI : 201 nota de venta
+deactivate A
+opt pago posterior de una nota a crédito
+  Cajera -> UI : registrarPago(notaId, cuenta, método, importe)
+  UI -> A : POST /notas-venta/{id}/pagos
+  activate A
+  A -> NV : registrarPago(pago)
+  A -> CB : movimiento de ingreso
+  A -> DB : INSERT pago y movimiento; UPDATE saldos
+  A --> UI : 201 pago y saldo
+  deactivate A
+end
+deactivate UI
+== Bancos y proveedores ==
+Administrador -> UI : trasladar(origen, destino, importe)
+activate UI
+UI -> A : POST /bancos/traslados
+activate A
+par
+  A -> CB : movimiento de egreso (origen)
+else
+  A -> CB : movimiento de ingreso (destino)
+end
+A -> DB : INSERT dos movimientos en una transacción
+A --> UI : 201 traslado
+deactivate A
+UI --> Administrador : saldos actualizados
+deactivate UI
+@enduml

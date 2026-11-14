@@ -1,0 +1,55 @@
+@startuml
+!include _estilo.iuml
+title Arquitectura lógica y pila tecnológica (componentes)
+left to right direction
+component "Interfaz web\nReact + TypeScript + Vite" <<subsystem>> as WEB
+package "API REST · NestJS (monolito modular)" {
+  component "sesion" <<service>> as SES
+  component "usuario" <<service>> as USU
+  component "cliente" <<service>> as CLI
+  component "vehiculo" <<service>> as VEH
+  component "ordenServicio" <<service>> as ODS
+  component "maestros" <<service>> as MAE
+  component "comun\n(guardias, validación)" <<specification>> as COM
+  component "PrismaService" <<entity>> as PRI
+}
+database "PostgreSQL" <<entity>> as DB
+interface "IAutenticacion\nPOST /auth/login" as I1
+interface "IUsuarios\n/usuarios · /roles" as I2
+interface "IClientes\n/clientes" as I3
+interface "IVehiculos\n/vehiculos" as I4
+interface "IOrdenes\n/ordenes" as I5
+interface "IMaestros\n/servicios · /productos\n/grupos · /reglas-precio" as I6
+interface "IPermisos\ncanActivate()" as I7
+interface "IPersistencia\nPrismaClient" as I8
+interface "SQL\n:5432" as I9
+SES -up- I1
+USU -up- I2
+CLI -up- I3
+VEH -up- I4
+ODS -up- I5
+MAE -up- I6
+COM -up- I7
+PRI -up- I8
+DB -up- I9
+WEB ..> I1 : <<use>> HTTPS/JSON
+WEB ..> I2 : <<use>>
+WEB ..> I3 : <<use>>
+WEB ..> I4 : <<use>>
+WEB ..> I5 : <<use>>
+WEB ..> I6 : <<use>>
+USU --( I7
+CLI --( I7
+VEH --( I7
+ODS --( I7
+MAE --( I7
+SES --( I8
+USU --( I8
+CLI --( I8
+VEH --( I8
+ODS --( I8
+MAE --( I8
+ODS ..> I6 : <<use>> precio por grupo
+ODS ..> I4 : <<use>> lectura de km
+PRI --( I9
+@enduml

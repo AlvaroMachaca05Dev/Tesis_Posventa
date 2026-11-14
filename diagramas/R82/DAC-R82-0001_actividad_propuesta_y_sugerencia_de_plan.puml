@@ -1,6 +1,6 @@
 @startuml
 !include _estilo.iuml
-title Propuesta de plan y sugerencia a vehículos sin plan (R8.2)
+title Propuesta de plan y sugerencia a vehículos sin plan
 |Jefe de taller|
 start
 :Crear o versionar la plantilla del grupo;

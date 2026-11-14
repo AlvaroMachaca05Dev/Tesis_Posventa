@@ -1,6 +1,6 @@
 @startuml
 !include _estilo.iuml
-title Estados de la cita y de la cotización (R8.2)
+title Estados de la cita y de la cotización
 state "Cita" as CI {
   state "No concretada" as NoConcretada
   [*] --> Pendiente

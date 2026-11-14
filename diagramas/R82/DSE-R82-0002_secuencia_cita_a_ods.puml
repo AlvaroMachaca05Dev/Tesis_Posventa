@@ -1,6 +1,7 @@
 @startuml
 !include _estilo.iuml
-title Cita, cotización y creación de la ODS (R8.2)
+autonumber
+title Cita, cotización y creación de la ODS
 actor Cajera
 participant "Pantalla" as UI
 participant "API" as API

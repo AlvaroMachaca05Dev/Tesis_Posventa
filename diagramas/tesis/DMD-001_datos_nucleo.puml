@@ -1,0 +1,207 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 120
+skinparam roundCorner 8
+skinparam ArrowColor #44546a
+skinparam ClassBackgroundColor #f4f8fc
+skinparam ClassBorderColor #44546a
+skinparam PackageBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff8e1
+
+title Modelo de datos del núcleo: identidad, maestros, órdenes y bitácora
+hide circle
+left to right direction
+entity organizacion {
+  *id
+  nombre
+  ruc
+  activa
+}
+entity modulo_habilitado {
+  #organizacion_id
+  modulo
+}
+entity local {
+  *id
+  #organizacion_id
+  nombre
+  direccion
+}
+entity rol {
+  *id
+  #organizacion_id
+  nombre
+  ambito
+  es_base
+  nivel
+  asignable_a_servicios
+}
+entity permiso {
+  *id
+  modulo
+  accion
+}
+entity rol_permiso {
+  #rol_id
+  #permiso_id
+}
+entity usuario {
+  *id
+  #organizacion_id
+  #local_id
+  nombre
+  correo
+  password_hash
+  activo
+}
+entity usuario_rol {
+  #usuario_id
+  #rol_id
+}
+entity cliente {
+  *id
+  #organizacion_id
+  tipo_documento
+  documento
+  nombre
+  nombre_comercial
+  pais
+  movil
+  direccion_fiscal
+  email
+  ubigeo
+  comentario
+  es_generico
+  activo
+  creado_en
+}
+entity vehiculo {
+  *id
+  #organizacion_id
+  #cliente_id
+  placa
+  placa_norm
+  marca
+  modelo
+  anio
+  color
+  nro_serie
+  nro_vin
+  nro_motor
+  comentario
+  creado_en
+}
+entity marca_vehiculo {
+  *id
+  #organizacion_id
+  nombre
+  modelos
+}
+entity lectura_km {
+  *id
+  #vehiculo_id
+  km
+  fecha
+  fuente
+  observacion
+}
+entity orden_servicio {
+  *id
+  #organizacion_id
+  #vehiculo_id
+  #cliente_id
+  #local_id
+  #tecnico_id
+  #jefe_taller_id
+  #creado_por_id
+  codigo
+  correlativo
+  externa
+  estado
+  decision
+  tipo_atencion
+  fecha_inicio
+  fecha_cierre
+  km
+  observaciones
+  recomendaciones
+  eliminada
+  motivo_eliminacion
+}
+entity correlativo_ods {
+  *organizacion_id
+  ultimo
+}
+entity abono {
+  *id
+  #orden_id
+  #registrado_por_id
+  fecha
+  metodo
+  concepto
+  valor
+}
+entity detalle_ods {
+  *id
+  #orden_id
+  #tecnico_id
+  posicion
+  tipo
+  descripcion
+  referencia
+  cantidad
+  costo
+  rentabilidad_pct
+  precio
+  descuento_pct
+  impuesto
+  total
+}
+entity bitacora {
+  *id
+  #orden_id
+  #actor_id
+  texto
+  fecha
+}
+entity evidencia {
+  *id
+  #bitacora_id
+  archivo
+  tipo
+}
+entity auditoria {
+  *id
+  #organizacion_id
+  tabla
+  registro_id
+  actor
+  actuando_como
+  antes
+  despues
+  motivo
+  fecha
+}
+organizacion ||--o{ local
+organizacion ||--o{ modulo_habilitado
+organizacion ||--o{ rol
+organizacion ||--o{ usuario
+rol ||--o{ usuario_rol
+usuario ||--o{ usuario_rol
+rol ||--o{ rol_permiso
+permiso ||--o{ rol_permiso
+organizacion ||--o{ cliente
+organizacion ||--o{ marca_vehiculo
+cliente ||--o{ vehiculo
+vehiculo ||--o{ lectura_km
+vehiculo ||--o{ orden_servicio
+orden_servicio ||--o{ abono
+organizacion ||--|| correlativo_ods
+local ||--o{ orden_servicio
+orden_servicio ||--o{ detalle_ods
+orden_servicio ||--o{ bitacora
+bitacora ||--o{ evidencia
+usuario ||--o{ detalle_ods
+@enduml

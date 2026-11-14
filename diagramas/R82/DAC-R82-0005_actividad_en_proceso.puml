@@ -1,6 +1,6 @@
 @startuml
 !include _estilo.iuml
-title Proceso de trabajo en el taller: En proceso (R8.2)
+title Proceso de trabajo en el taller: En proceso
 |Jefe de taller|
 start
 :Revisar la ODS y asignar técnicos;

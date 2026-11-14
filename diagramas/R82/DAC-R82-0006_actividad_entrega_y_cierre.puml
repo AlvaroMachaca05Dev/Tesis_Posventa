@@ -1,6 +1,6 @@
 @startuml
 !include _estilo.iuml
-title Proceso de entrega y cierre (R8.2)
+title Proceso de entrega y cierre
 |Cajera|
 start
 :Revisar la ODS En entrega;

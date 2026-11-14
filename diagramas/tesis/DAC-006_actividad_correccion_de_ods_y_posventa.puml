@@ -1,0 +1,36 @@
+@startuml
+!include _estilo.iuml
+title Seguimiento de posventa después del cierre
+|Sistema|
+start
+:Recibir el evento «ODS cerrada»;
+fork
+  :Crear la tarea de seguimiento\na los 5 días hábiles;
+fork again
+  :Generar el enlace de la encuesta;
+end fork
+|Cajera|
+:Abrir la tarea de seguimiento en su fecha;
+repeat
+  :Llamar o abrir WhatsApp;
+repeat while (¿Atendió?) is (no, y es el primer intento) not (sí, o ya es el segundo)
+if (¿Atendió?) then (sí)
+  :Registrar el resultado y consultar el km;
+  :Enviar el enlace de la encuesta;
+  |Cliente|
+  if (¿Responde la encuesta?) then (sí)
+    :Calificar la atención;
+    |Sistema|
+    :Guardar la respuesta y\nactualizar la satisfacción;
+  else (no)
+  endif
+  |Sistema|
+  :Recalcular las proyecciones\ncon el km consultado;
+else (no)
+  |Cajera|
+  :Concluir sin contacto;
+endif
+|Sistema|
+:Completar la tarea de seguimiento;
+stop
+@enduml

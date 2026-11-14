@@ -1,0 +1,60 @@
+@startuml
+!include _estilo.iuml
+title Casos de uso comerciales, de inventario y de configuración
+left to right direction
+actor "Usuario" as US
+actor "Cajera" as CA
+actor "Logístico" as LO
+actor "Administrador" as AD
+actor "Superusuario" as SA
+US <|-- CA
+US <|-- LO
+US <|-- AD
+AD <|-- SA
+rectangle "Sistema de posventa" {
+  usecase "CU-04 Gestionar servicios,\nproductos, grupos y precios" as U4
+  usecase "CU-11 Cotizar,\nvender y cobrar" as U11
+  usecase "CU-12 Comprar y\nmover inventario" as U12
+  usecase "CU-14 Consultar\nreportes y métricas" as U14
+  usecase "CU-15 Configurar\nla empresa" as U15
+  usecase "Gestionar un maestro" as G0
+  usecase "Gestionar servicios" as G1
+  usecase "Gestionar productos" as G2
+  usecase "Gestionar grupos\ny reglas de precio" as G3
+  usecase "Definir solapamientos" as G4
+  usecase "Emitir cotización" as S1
+  usecase "Emitir nota de venta\n(serie del local, RN-03)" as S2
+  usecase "Registrar pago" as S3
+  usecase "Pasar el saldo a\ncuentas por cobrar" as S4
+  usecase "Registrar compra y\ncuenta por pagar" as S5
+  usecase "Aprobar requerimiento\nde inventario" as S6
+  usecase "Actualizar el kárdex" as S7
+  usecase "Registrar movimiento\nde bancos" as S8
+  usecase "Exportar el reporte" as S9
+  usecase "Auditar el cambio\n(RN-13)" as S10
+}
+AD --> U4
+CA --> U11
+AD --> U11
+LO --> U12
+AD --> U14
+SA --> U15
+CA --> S6
+U4 ..> G0 : <<include>>
+G0 <|-- G1
+G0 <|-- G2
+G0 <|-- G3
+G0 <|-- G4
+G0 ..> S10 : <<include>>
+U11 ..> S1 : <<include>>
+U11 ..> S2 : <<include>>
+S3 ..> S2 : <<extend>>
+S4 ..> S2 : <<extend>>
+S3 ..> S8 : <<include>>
+U12 ..> S5 : <<include>>
+U12 ..> S7 : <<include>>
+S6 ..> U12 : <<extend>>
+S6 ..> S7 : <<include>>
+S9 ..> U14 : <<extend>>
+note right of S4 : Punto de extensión:\ncondición crédito o\nqueda saldo.
+@enduml

@@ -1,0 +1,87 @@
+@startuml
+!include _estilo.iuml
+title Clases de cotización, nota de venta, cuentas y bancos
+left to right direction
+enum TipoMovimiento <<enumeration>> {
+  INGRESO
+  EGRESO
+  TRASLADO
+}
+abstract class DocumentoComercial {
+  #codigo: String {unique}
+  #fecha: DateTime
+  /#total: Decimal
+  +imprimir(in formato: String = "pdf"): Bytes
+}
+class Cotizacion {
+  -estado: String = "Borrador"
+  -km: Integer [0..1]
+  -vencimiento: DateTime [0..1]
+  +emitir(): void
+  +pasarAOrden(): OrdenServicio
+}
+class ItemCotizado {
+  -descripcion: String
+  -cantidad: Decimal = 1
+  -precio: Decimal
+  -descuentoPct: Decimal = 0
+  -impuesto: String = "IGV"
+}
+class NotaVenta {
+  -serie: String
+  -numero: Integer
+  -condicion: String = "Contado"
+  /-saldo: Decimal
+  +registrarPago(in p: Pago): void
+}
+class SerieComprobante {
+  -serie: String {unique}
+  -ultimoNumero: Integer = 0
+  +siguiente(): Integer
+}
+class FacturaCompra {
+  -numeroProveedor: String
+  /-saldo: Decimal
+}
+class Pago {
+  -fecha: DateTime
+  -importe: Decimal
+  -metodo: String
+  -observacion: String [0..1]
+}
+class CuentaBancaria {
+  -nombre: String
+  -tipo: String
+  /-saldo: Decimal
+  +trasladar(in destino: CuentaBancaria, in importe: Decimal): Movimiento [2]
+}
+class Movimiento {
+  -fecha: DateTime
+  -tipo: TipoMovimiento
+  -importe: Decimal
+}
+class Cliente
+class Proveedor
+class OrdenServicio
+class Local
+DocumentoComercial <|-- Cotizacion
+DocumentoComercial <|-- NotaVenta
+DocumentoComercial <|-- FacturaCompra
+note top of DocumentoComercial : {complete, disjoint}
+Cotizacion "1" *-- "1..*" ItemCotizado
+Cotizacion "0..*" --> "0..1" OrdenServicio
+Cotizacion "0..*" --> "0..1" Cliente
+NotaVenta "0..*" --> "1" Cliente
+NotaVenta "0..1" --> "0..1" OrdenServicio
+NotaVenta "0..*" --> "1" SerieComprobante
+SerieComprobante "0..*" --> "1" Local
+NotaVenta "1" *-- "0..*" Pago
+FacturaCompra "0..*" --> "1" Proveedor
+FacturaCompra "1" *-- "0..*" Pago : pagos a proveedor
+Pago "0..*" --> "1" CuentaBancaria
+CuentaBancaria "1" *-- "0..*" Movimiento
+CuentaBancaria "0..*" --> "1" Local
+Movimiento ..> TipoMovimiento
+Pago ..> Movimiento : <<create>>
+note bottom of NotaVenta : Documento interno,\nno es factura electrónica.
+@enduml

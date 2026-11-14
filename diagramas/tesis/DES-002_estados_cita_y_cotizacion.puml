@@ -1,0 +1,47 @@
+@startuml
+!include _estilo.iuml
+title Estados de la cita y de la cotización
+state "Cita" as CI {
+  state "Pendiente" as P
+  state "Confirmada" as CF
+  state "Reprogramada" as R
+  state "Atendida" as AT
+  state "No concretada" as NC
+  P : entry / mostrar en el calendario
+  CF : entry / registrar la confirmación
+  R : entry / guardar la nueva fecha y hora
+  AT : entry / preguntar si crea la ODS
+  NC : entry / registrar el motivo
+  [*] --> P : agendar
+  P --> CF : confirmar [el cliente confirma]
+  P --> R : reprogramar
+  CF --> R : reprogramar
+  R --> CF : confirmar
+  P --> AT : marcarAtendida [llegó]
+  CF --> AT : marcarAtendida [llegó]
+  R --> AT : marcarAtendida [llegó]
+  P --> NC : marcarNoConcretada [no llegó]
+  CF --> NC : marcarNoConcretada [no llegó]
+  R --> NC : marcarNoConcretada [no llegó]
+  AT --> [*] : crearODS [la cajera acepta] / crear ODS
+  AT --> [*] : [la cajera rechaza]
+  NC --> [*]
+}
+state "Cotización" as C {
+  state "Borrador" as B
+  state "Emitida" as E
+  state "Enlazada" as L
+  state "Vencida" as V
+  B : do / editar ítems y precios
+  E : entry / generar PDF o ticket
+  E : entry / anotar en la bitácora
+  L : entry / copiar ítems a la cita u ODS
+  [*] --> B : crear
+  B --> E : emitir [tiene al menos un ítem]
+  E --> L : enlazar [a cita u ODS]
+  E --> V : [pasó el vencimiento]
+  L --> [*]
+  V --> [*]
+}
+CI -[hidden]-> C
+@enduml

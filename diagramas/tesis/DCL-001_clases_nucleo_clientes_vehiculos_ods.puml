@@ -1,0 +1,191 @@
+@startuml
+!include _estilo.iuml
+title Clases del núcleo: identidad, maestros y órdenes de servicio
+interface CanActivate <<interface>> {
+  +canActivate(in ctx: ExecutionContext): Boolean
+}
+class AutenticacionGuard {
+  -jwt: JwtService
+  +canActivate(in ctx: ExecutionContext): Boolean
+}
+class PermisosGuard {
+  -reflector: Reflector
+  +canActivate(in ctx: ExecutionContext): Boolean
+}
+class PrismaClient <<library>>
+class PrismaService {
+  +onModuleDestroy(): void
+}
+enum TipoDocumento <<enumeration>> {
+  DNI
+  CARNET_EXTRANJERIA
+  RUC
+}
+class Organizacion {
+  -id: String {readOnly}
+  -nombre: String
+  -ruc: String [0..1]
+  -activa: Boolean = true
+  -paisPredeterminado: String = "PE"
+}
+class ModuloHabilitado {
+  -modulo: String
+}
+class Local {
+  -id: String {readOnly}
+  -nombre: String
+  -direccion: String [0..1]
+}
+class Usuario {
+  -id: String {readOnly}
+  -nombre: String
+  -correo: String {unique}
+  -passwordHash: String
+  -activo: Boolean = true
+  +login(in correo: String, in password: String): Sesion
+  +verComo(in usuarioId: String): Sesion
+  +crearUsuario(in datos: UsuarioDatos): Usuario
+  +editarUsuario(in id: String, in datos: UsuarioDatos): Usuario
+}
+class Rol {
+  -id: String {readOnly}
+  -nombre: String
+  -ambito: String = "empresa"
+  -esBase: Boolean = false
+  -nivel: Integer = 1
+  -asignableAServicios: Boolean = false
+  +crearRol(in nombre: String, in permisos: String [1..*]): Rol
+}
+class Permiso {
+  -modulo: String
+  -accion: String
+}
+class Cliente {
+  -id: String {readOnly}
+  -tipoDocumento: TipoDocumento = DNI
+  -documento: String {unique}
+  -nombre: String
+  -nombreComercial: String [0..1]
+  -pais: String = "PE"
+  -movil: String [0..1]
+  -direccionFiscal: String [0..1]
+  -email: String [0..1]
+  -ubigeo: String [0..1]
+  -esGenerico: Boolean = false
+  -activo: Boolean = true
+  -creadoEn: DateTime {readOnly}
+  +crearCliente(in datos: ClienteDatos): Cliente
+  +editarCliente(in id: String, in datos: ClienteDatos): Cliente
+}
+class Vehiculo {
+  -id: String {readOnly}
+  -placa: String
+  -placaNorm: String {unique}
+  -marca: String [0..1]
+  -modelo: String [0..1]
+  -anio: Integer [0..1]
+  -color: String [0..1]
+  -nroVin: String [0..1]
+  -nroMotor: String [0..1]
+  -codigoMotor: String [0..1]
+  -grupoFuente: String [0..1]
+  +crearVehiculo(in datos: VehiculoDatos): Vehiculo
+  +editarVehiculo(in id: String, in datos: VehiculoDatos): Vehiculo
+  +registrarLectura(in km: Integer, in fecha: DateTime): LecturaKm
+}
+class LecturaKm {
+  -km: Integer
+  -fecha: DateTime
+  -fuente: String
+  -observacion: String [0..1]
+}
+class OrdenServicio {
+  -id: String {readOnly}
+  -codigo: String {unique}
+  -correlativo: Integer [0..1]
+  -estado: String = "Recepcion"
+  -decision: String
+  -tipoAtencion: String
+  -fechaInicio: DateTime
+  -fechaCierre: DateTime [0..1]
+  -km: Integer [0..1]
+  -observaciones: String [0..1]
+  -recomendaciones: String [0..1]
+  -eliminada: Boolean = false
+  /-total: Decimal
+  /-saldo: Decimal
+  +crear(in datos: OrdenDatos): OrdenServicio
+  +editar(in id: String, in datos: OrdenDatos): OrdenServicio
+  +detalles(in id: String, in detalles: DetalleODS [0..*]): OrdenServicio
+  +abono(in id: String, in metodo: String, in valor: Decimal): Abono
+  +subirEvidencia(in id: String, in archivo: Bytes): EvidenciaIngreso
+  +eliminar(in id: String, in motivo: String): void
+}
+class DetalleODS {
+  -posicion: Integer = 0
+  -tipo: String = "servicio"
+  -descripcion: String
+  -cantidad: Decimal = 1
+  -costo: Decimal [0..1]
+  -precio: Decimal = 0
+  -descuentoPct: Decimal = 0
+  -impuesto: String = "IGV"
+  -horas: Decimal [0..1]
+  -precioGrupo: Decimal [0..1]
+  -descuentoMonto: Decimal = 0
+  /-total: Decimal
+}
+class Abono {
+  -fecha: DateTime
+  -metodo: String
+  -concepto: String [0..1]
+  -valor: Decimal
+}
+class EvidenciaIngreso {
+  -nombre: String
+  -tipo: String
+  -tamano: Integer
+  -datos: Bytes
+}
+class Bitacora {
+  -texto: String
+  -fecha: DateTime {readOnly}
+}
+class Auditoria {
+  -tabla: String
+  -registroId: String
+  -actor: String
+  -actuandoComo: String [0..1]
+  -antes: Json [0..1]
+  -despues: Json [0..1]
+  -motivo: String [0..1]
+  -fecha: DateTime {readOnly}
+}
+CanActivate <|.. AutenticacionGuard
+CanActivate <|.. PermisosGuard
+PrismaClient <|-- PrismaService
+PermisosGuard ..> Permiso : <<call>>
+AutenticacionGuard ..> Usuario : <<call>>
+Cliente ..> TipoDocumento
+Organizacion "1" *-- "0..*" Local
+Organizacion "1" *-- "0..*" ModuloHabilitado
+Organizacion "1" o-- "0..*" Rol
+Organizacion "1" o-- "0..*" Usuario
+Local "0..1" o-- "0..*" Usuario
+Usuario "0..*" -- "1..*" Rol : tiene >
+Rol "0..*" -- "0..*" Permiso : concede >
+Organizacion "1" o-- "0..*" Cliente
+Cliente "1" o-- "0..*" Vehiculo : titular >
+Vehiculo "1" *-- "0..*" LecturaKm
+Vehiculo "1" <-- "0..*" OrdenServicio
+Cliente "1" <-- "0..*" OrdenServicio
+Local "1" <-- "0..*" OrdenServicio
+OrdenServicio "1" *-- "0..*" DetalleODS
+OrdenServicio "1" *-- "0..*" Abono
+OrdenServicio "1" *-- "0..5" EvidenciaIngreso
+OrdenServicio "0..1" o-- "0..*" Bitacora
+OrdenServicio "0..*" --> "0..1" Usuario : técnico
+OrdenServicio "0..*" --> "0..1" Usuario : jefe de taller
+OrdenServicio ..> Auditoria : <<create>>
+Usuario "1" <-- "0..*" Bitacora : actor
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+!include _estilo.iuml
+title Módulos de la primera versión y módulos beta (paquetes)
+package "Núcleo" <<implementado>> {
+  component "Sesión, usuarios y roles" <<service>> as M1
+  component "Clientes y vehículos" <<service>> as M2
+  component "Órdenes de servicio" <<service>> as M3
+  component "Maestros: servicios, productos,\ngrupos, precios y solapamientos" <<service>> as M4
+}
+package "Operación técnica" <<pendiente>> {
+  component "Migración inicial" <<process>> as M5
+  component "Planes y reajuste" <<service>> as M6
+  component "Tareas y vistas" <<service>> as M7
+  component "Citas" <<service>> as M8
+}
+package "Posventa y reportes" <<pendiente>> {
+  component "Bitácora y auditoría" <<service>> as M9
+  component "Seguimiento y encuesta" <<service>> as M10
+  component "Reportes y métricas" <<service>> as M11
+}
+package "Comercial, bancos e inventario" <<pendiente>> {
+  component "Cotización y nota de venta" <<service>> as M12
+  component "Cuentas y bancos" <<service>> as M13
+  component "Compras e inventario" <<service>> as M14
+}
+package "Beta · al final del menú y ocultables" #fff8e1 {
+  component "Agenda de técnicos · Logística de productos\nCajas · Flujo de caja · Paquetes\nIntegraciones y API" as N1
+}
+M2 ..> M1 : <<import>>
+M3 ..> M2 : <<import>>
+M3 ..> M4 : <<import>>
+M6 ..> M3 : <<import>>
+M6 ..> M4 : <<import>>
+M7 ..> M3 : <<import>>
+M8 ..> M3 : <<import>>
+M5 ..> M2 : <<import>>
+M10 ..> M3 : <<import>>
+M10 ..> M6 : <<import>>
+M11 ..> M3 : <<import>>
+M9 ..> M3 : <<import>>
+M12 ..> M3 : <<import>>
+M13 ..> M12 : <<import>>
+M14 ..> M4 : <<import>>
+M14 ..> M13 : <<import>>
+@enduml

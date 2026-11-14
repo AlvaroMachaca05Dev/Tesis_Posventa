@@ -1,0 +1,35 @@
+@startuml
+!include _estilo.iuml
+title Proceso de trabajo en el taller: En proceso
+|Jefe de taller|
+start
+:Revisar la ODS y asignar técnicos;
+:Pasar la ODS a En proceso;
+|Técnico|
+:Ver sus tareas en lista, tablero o calendario;
+fork
+  :Trabajar los servicios\nde mecánica;
+fork again
+  :Trabajar los servicios\nde otra especialidad;
+end fork
+repeat
+  if (¿Hace falta otro servicio o repuesto?) then (sí)
+    :Agregar el ítem a la ODS;
+    |Sistema|
+    :Poner precio del grupo y crear su tarea;
+    |Técnico|
+    :Trabajar el ítem nuevo;
+  else (no)
+  endif
+repeat while (¿Quedan tareas sin completar?) is (sí) not (no)
+:Marcar sus tareas Completadas;
+|Sistema|
+fork
+  :Sumar las horas de los servicios;
+fork again
+  :Registrar los cambios en la bitácora;
+end fork
+|Jefe de taller|
+:Pasar la ODS a Entrega;
+stop
+@enduml

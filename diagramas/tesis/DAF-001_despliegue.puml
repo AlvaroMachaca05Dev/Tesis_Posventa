@@ -1,0 +1,39 @@
+@startuml
+!include _estilo.iuml
+title Despliegue propuesto (Docker Compose)
+node "Equipo del usuario" <<device>> as PC {
+  node "Navegador web" <<executionEnvironment>> as NAV {
+    artifact "index.html + assets\n(React compilado)" as A0
+  }
+}
+node "Servidor del taller o nube" <<device>> as SRV {
+  node "Docker Compose" <<executionEnvironment>> as DC {
+    node "web" <<container>> as C1 {
+      artifact "nginx.conf" as A1
+      artifact "dist/ (Vite)" as A2
+    }
+    node "api" <<container>> as C2 {
+      artifact "main.js (NestJS)" as A3
+      artifact "schema.prisma" as A4
+    }
+    node "postgres" <<container>> as C4 {
+      database "posventa\n(PostgreSQL)" as A6
+    }
+  }
+  folder "volumen pgdata" as V1
+}
+node "GitHub" <<device>> as GH {
+  artifact "Repositorio\nTesis_Posventa" as A7
+  artifact "ci.yml\n(GitHub Actions)" as A8
+}
+node "Almacenamiento de respaldo" <<device>> as BK {
+  artifact "posventa_AAAAMMDD.dump" as A9
+}
+NAV --> C1 : HTTPS :443
+C1 --> C2 : HTTP/REST + JSON :3000\n(JWT en Authorization)
+C2 --> C4 : TCP/IP :5432\n(protocolo PostgreSQL)
+C4 --> V1 : sistema de archivos
+GH ..> SRV : SSH\n(imágenes y migraciones)
+A8 ..> A7 : <<use>>
+C4 ..> BK : pg_dump diario\n(SFTP)
+@enduml

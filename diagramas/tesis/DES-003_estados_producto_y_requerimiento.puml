@@ -1,0 +1,34 @@
+@startuml
+!include _estilo.iuml
+title Estados del requerimiento de inventario y de la nota de venta
+state "Requerimiento de inventario" as R {
+  state "Pendiente" as RP
+  state "Aprobado" as RA
+  state "Rechazado" as RR
+  RP : do / editar ítems y cantidades
+  RA : entry / mover el stock de lo que tiene código
+  RA : entry / registrar en el kárdex
+  RR : entry / guardar el motivo
+  [*] --> RP : solicitar
+  RP --> RA : aprobar [hay stock en el origen]
+  RP --> RR : rechazar [con motivo]
+  RA --> [*]
+  RR --> [*]
+}
+state "Nota de venta" as N {
+  state "Emitida" as NE
+  state "Con saldo" as NS
+  state "Pagada" as NP
+  NE : entry / tomar serie y número (RN-03)
+  NS : entry / pasar a cuentas por cobrar
+  NS : do / recibir pagos
+  NP : entry / cerrar la cuenta por cobrar
+  [*] --> NE : emitir
+  NE --> NP : registrarPago [importe = total]
+  NE --> NS : [condición crédito o pago parcial]
+  NS --> NS : registrarPago [queda saldo]
+  NS --> NP : registrarPago [saldo = 0]
+  NP --> [*]
+}
+R -[hidden]-> N
+@enduml

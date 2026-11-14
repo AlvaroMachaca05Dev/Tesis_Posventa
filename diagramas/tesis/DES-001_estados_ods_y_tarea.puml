@@ -1,0 +1,49 @@
+@startuml
+!include _estilo.iuml
+title Estados de la ODS y de la tarea
+state "ODS" as O {
+  state "Recepción" as OR
+  state "En proceso" as OP
+  state "Entrega" as OE
+  state "Cerrada" as OC
+  OR : entry / asignar código y responsables
+  OR : do / registrar fotos y estado del vehículo
+  OP : entry / registrar en la bitácora
+  OP : do / sumar horas de los servicios
+  OE : do / cobrar y emitir nota de venta
+  OC : entry / poner fechaCierre (RN-04)
+  OC : entry / programar seguimiento
+  OC : exit / borrar fechaCierre
+  [*] --> OR : crear
+  OR --> OP : iniciar
+  OP --> OE : terminarServicios [todas las tareas completadas]
+  OE --> OC : cerrar / reajustar proyecciones
+  OR --> OC : cerrar [decisión No aprobada]
+  OE --> OP : devolver
+  OC --> OP : reabrir [autoriza el Administrador] / auditar
+  OR --> [*] : eliminar [con motivo] / auditar
+  OC --> [*] : eliminar [con motivo] / auditar
+}
+state "Tarea" as T {
+  state "Pendiente" as TN
+  state "En proceso" as TP
+  state "En espera" as TE
+  state "Completada" as TC
+  state "Archivada" as TA
+  TP : entry / registrar inicio
+  TP : do / acumular tiempo real
+  TC : entry / poner fechaCierre
+  TA : entry / ocultar del tablero
+  [*] --> TN : crear [por cada ítem de la ODS]
+  TN --> TP : iniciar
+  TP --> TE : pausar [falta repuesto]
+  TE --> TP : reanudar
+  TP --> TC : completar
+  TN --> TA : archivar
+  TP --> TA : archivar
+  TC --> TA : archivar
+  TA --> TN : reabrir / borrar fechaCierre
+  TA --> [*]
+}
+O -[hidden]-> T
+@enduml

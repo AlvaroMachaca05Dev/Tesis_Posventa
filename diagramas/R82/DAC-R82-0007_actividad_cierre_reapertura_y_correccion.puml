@@ -1,6 +1,6 @@
 @startuml
 !include _estilo.iuml
-title Cierre, reapertura y corrección de una ODS (R8.2)
+title Cierre, reapertura y corrección de una ODS
 |Jefe de taller|
 start
 :Detectar un error en una ODS cerrada;

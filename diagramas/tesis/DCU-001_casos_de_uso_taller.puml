@@ -1,0 +1,72 @@
+@startuml
+!include _estilo.iuml
+title Casos de uso del taller (núcleo)
+left to right direction
+actor "Usuario" as US
+actor "Cajera" as CA
+actor "Jefe de taller" as JT
+actor "Técnico" as TE
+actor "Administrador" as AD
+actor "Superusuario" as SA
+actor "Cliente" as CL
+US <|-- CA
+US <|-- JT
+US <|-- TE
+US <|-- AD
+AD <|-- SA
+rectangle "Sistema de posventa" {
+  usecase "CU-01 Ingresar y ver\nel menú por rol" as U1
+  usecase "CU-02 Gestionar usuarios,\nroles y locales" as U2
+  usecase "CU-03 Gestionar clientes\ny vehículos" as U3
+  usecase "CU-05 Registrar y\natender la ODS" as U5
+  usecase "CU-06 Gestionar planes\npreventivos" as U6
+  usecase "CU-07 Revisar la línea de\ntiempo y los reajustes" as U7
+  usecase "CU-08 Trabajar las tareas\nen sus vistas" as U8
+  usecase "CU-09 Agendar y\natender citas" as U9
+  usecase "CU-10 Registrar la\nbitácora y auditar" as U10
+  usecase "CU-13 Hacer la posventa" as U13
+  usecase "Registrar lectura\nde kilometraje" as S1
+  usecase "Calcular precio\npor grupo (RN-09)" as S2
+  usecase "Registrar abono" as S3
+  usecase "Crear ODS de garantía\nenlazada (RN-07)" as S4
+  usecase "Crear ODS\ndesde la cita" as S5
+  usecase "Cerrar la ODS" as S6
+  usecase "Cerrar con\nnota de venta" as S6a
+  usecase "Cerrar sin nota\nde venta (RN-06)" as S6b
+  usecase "Responder la encuesta\npor el enlace" as S7
+  usecase "Reajustar proyecciones\nfuturas" as S8
+}
+US --> U1
+US --> U10
+SA --> U2
+CA --> U3
+CA --> U5
+JT --> U5
+JT --> U6
+JT --> U7
+CA --> U7
+TE --> U8
+CA --> U8
+CA --> U9
+CA --> U13
+U13 <-- CL
+S7 <-- CL
+U3 ..> S1 : <<include>>
+U5 ..> S1 : <<include>>
+U5 ..> S2 : <<include>>
+U5 ..> S6 : <<include>>
+S3 ..> U5 : <<extend>>
+S4 ..> U5 : <<extend>>
+S5 ..> U9 : <<extend>>
+S7 ..> U13 : <<extend>>
+S6 ..> S8 : <<include>>
+U7 ..> S8 : <<include>>
+S6 <|-- S6a
+S6 <|-- S6b
+note right of S5 : Punto de extensión:\nla cita pasa a Atendida\ny la cajera acepta.
+note as N1
+  Jerarquía de roles: Superusuario >
+  Administrador > Jefe de taller >
+  Cajera, Técnico y Logístico
+end note
+@enduml

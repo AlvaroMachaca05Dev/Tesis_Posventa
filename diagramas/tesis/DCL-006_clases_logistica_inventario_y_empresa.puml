@@ -1,0 +1,68 @@
+@startuml
+!include _estilo.iuml
+title Clases de requerimientos, inventario y empresa
+left to right direction
+enum EstadoRequerimiento <<enumeration>> {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+class Requerimiento {
+  -codigo: String {unique}
+  -estado: EstadoRequerimiento = PENDIENTE
+  -fecha: DateTime
+  +aprobar(in usuario: Usuario): MovimientoInventario [0..*]
+  +rechazar(in motivo: String): void
+}
+class ItemRequerimiento {
+  -descripcion: String
+  -cantidad: Decimal
+}
+class MovimientoInventario {
+  -tipo: String
+  -entrada: Decimal = 0
+  -salida: Decimal = 0
+  -saldo: Decimal
+  -motivo: String [0..1]
+  -fecha: DateTime {readOnly}
+}
+class Producto {
+  -codigo: String {unique}
+  -nombre: String
+  -unidad: String = "UND"
+  -categoria: String [0..1]
+  -precio: Decimal
+  -costo: Decimal [0..1]
+  +ajustarStock(in localId: String, in cantidad: Decimal): MovimientoInventario
+}
+class StockProducto {
+  -cantidad: Decimal = 0
+}
+class Local {
+  -nombre: String
+  -direccion: String [0..1]
+}
+class FacturaCompra
+class Usuario
+class Organizacion {
+  -nombre: String
+  -ruc: String [0..1]
+  -logoOscuro: String [0..1]
+  -logoClaro: String [0..1]
+}
+Requerimiento "1" *-- "1..*" ItemRequerimiento
+Requerimiento "0..*" --> "1" Local : origen
+Requerimiento "0..*" --> "1" Local : destino
+Requerimiento "0..*" -- "0..*" FacturaCompra : comprobantes
+Requerimiento ..> MovimientoInventario : <<create>>
+Requerimiento ..> EstadoRequerimiento
+ItemRequerimiento "0..*" --> "0..1" Producto
+MovimientoInventario "0..*" --> "1" Producto
+MovimientoInventario "0..*" --> "1" Local
+MovimientoInventario "0..*" --> "1" Usuario : registró
+Producto "1" *-- "0..*" StockProducto
+StockProducto "0..*" --> "1" Local : almacén
+Organizacion "1" *-- "1..*" Local
+Organizacion "1" o-- "0..*" Producto
+note bottom of MovimientoInventario : El kárdex es la lista de movimientos\nde un producto en un local; el saldo\nqueda guardado en cada movimiento.
+@enduml

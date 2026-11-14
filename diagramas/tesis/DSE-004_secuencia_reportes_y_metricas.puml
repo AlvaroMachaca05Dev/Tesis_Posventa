@@ -1,0 +1,51 @@
+@startuml
+!include _estilo.iuml
+skinparam MaxMessageSize 150
+skinparam ParticipantPadding 6
+autonumber
+title Reportes operativos y métricas mensuales
+actor "Administrador" as J
+boundary ":PantallaReportes" as UI
+control ":PermisosGuard" as G
+control ":ReportesController" as A
+entity ":ReporteOperativo" as M
+database "PostgreSQL" as DB
+J -> UI : abrirReporte(local, fechas, técnico, estado)
+activate UI
+UI -> G : GET /reportes
+activate G
+G -> G : canActivate(ctx)
+break sin permiso sobre Reportes
+  G --> UI : 403 Acceso denegado
+end
+G -> A : generar(filtro)
+deactivate G
+activate A
+A -> M : generar(filtro)
+activate M
+loop por cada indicador del reporte
+  M -> DB : SELECT con el filtro por local
+  DB --> M : filas del periodo
+  M -> M : calcular valor
+end
+M --> A : indicadores
+deactivate M
+alt el rol puede ver costos
+  A --> UI : 200 indicadores con costos y márgenes
+else
+  A --> UI : 200 indicadores sin costos
+end
+deactivate A
+UI --> J : tabla y gráfico
+opt exportar
+  J -> UI : exportar(formato)
+  UI -> A : GET /reportes/exportar
+  activate A
+  A -> M : exportar(formato)
+  M --> A : archivo
+  A --> UI : 200 archivo
+  deactivate A
+  UI --> J : descarga
+end
+deactivate UI
+@enduml

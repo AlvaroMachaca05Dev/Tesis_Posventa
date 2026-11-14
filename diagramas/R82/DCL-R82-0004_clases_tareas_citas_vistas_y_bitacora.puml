@@ -2,7 +2,7 @@
 !include _estilo.iuml
 hide empty members
 skinparam classAttributeIconSize 0
-title Clases de tareas, citas, vistas y bitácora (R8.2)
+title Clases de tareas, citas, vistas y bitácora
 left to right direction
 class Tarea {
   tipo: servicio | producto | preventiva | seguimiento

@@ -1,0 +1,118 @@
+@startuml
+!include _estilo.iuml
+title Clases de grupos, precios por grupo y solapamiento
+left to right direction
+class GrupoVehicular {
+  -codigo: String {unique}
+  -nombre: String
+  -descripcion: String [0..1]
+  -activo: Boolean = true
+  +crearGrupo(in datos: GrupoDatos): GrupoVehicular
+  +editarGrupo(in id: String, in datos: GrupoDatos): GrupoVehicular
+}
+class FamiliaMotor {
+  -codigo: String {unique}
+  -combustible: String [0..1]
+  -litros: String [0..1]
+  -turbo: Boolean = false
+  -codigos: String [0..*]
+}
+class ReglaAsignacionModelo {
+  -marca: String
+  -modelo: String
+  -anioDesde: Integer
+  -anioHasta: Integer
+  -confianza: Integer
+  -automatica: Boolean
+}
+class Vehiculo {
+  -marca: String [0..1]
+  -modelo: String [0..1]
+  -anio: Integer [0..1]
+  -codigoMotor: String [0..1]
+  -grupoFuente: String [0..1]
+}
+class Servicio {
+  -codigo: String {unique}
+  -nombre: String
+  -categoria: String
+  -trabajoMayor: Boolean = false
+  -externo: Boolean = false
+  -horasEstandar: Decimal
+  -horasFuente: String = "AUTODATA"
+  -precioEstandar: Decimal
+  -preciosGrupo: Json [0..1]
+  -activo: Boolean = true
+  +crearServicio(in datos: ServicioDatos): Servicio
+  +precioServicio(in servicioId: String, in vehiculoId: String): Decimal
+}
+class ReglaPrecio {
+  -codigo: String {unique}
+  -nivel: String
+  -tipo: String
+  -servicios: String [0..*]
+  -horas: Decimal [0..1]
+  -precio: Decimal [0..1]
+  -porcentaje: Decimal [0..1]
+  -orden: Integer = 0
+  -activa: Boolean = true
+  +crearRegla(in datos: ReglaDatos): ReglaPrecio
+  +eliminarRegla(in id: String): void
+}
+class Solapamiento {
+  -codigo: String {unique}
+  -tipo: String = "PAR"
+  -serviciosBase: String [0..*]
+  -serviciosReducidos: String [0..*]
+  -minimo: Integer = 2
+  -modo: String = "OPCIONAL"
+  -descuentoEstandar: Decimal
+  -horasCompartidas: Decimal [0..1]
+  -activo: Boolean = true
+  +evaluar(in vehiculoId: String, in lineas: LineaSolape [1..*]): Hallazgo [0..*]
+}
+class ReglasMaestros <<utility>> {
+  {static} +asignarGrupo(in v: Vehiculo, in familias: Familia [0..*], in reglas: ReglaModelo [0..*]): String
+  {static} +calcularServicio(in s: ServicioBase, in grupo: String, in reglas: Regla [0..*]): Precio
+  {static} +evaluarSolapamientos(in lineas: LineaSolape [1..*], in reglas: ReglaSolape [0..*], in grupo: String): Hallazgo [0..*]
+  {static} +redondearTiempo(in horas: Float, in trabajoMayor: Boolean = false): Float
+  {static} +redondearPrecio(in p: Float): Float
+}
+class Proveedor {
+  -documento: String {unique}
+  -nombre: String
+  -rubro: String [0..1]
+  -activo: Boolean = true
+}
+class Producto {
+  -codigo: String {unique}
+  -nombre: String
+  -unidad: String = "UND"
+  -precio: Decimal
+  -costo: Decimal [0..1]
+  +ajustarStock(in localId: String, in cantidad: Decimal): MovimientoInventario
+}
+class DetalleODS {
+  -precio: Decimal
+  -precioGrupo: Decimal [0..1]
+  -horas: Decimal [0..1]
+  -trazaPrecio: Json [0..1]
+  -descuentoMonto: Decimal = 0
+}
+GrupoVehicular "0..1" o-- "0..*" Vehiculo
+GrupoVehicular "0..1" o-- "0..*" FamiliaMotor
+GrupoVehicular "1" *-- "0..*" ReglaAsignacionModelo
+GrupoVehicular "0..1" o-- "0..*" ReglaPrecio
+ReglaPrecio "0..*" -- "0..*" Servicio : aplica a >
+Servicio "1..*" -- "0..*" Solapamiento : base
+Servicio "1..*" -- "0..*" Solapamiento : reducido
+Proveedor "0..1" -- "0..*" Servicio : externo
+Proveedor "0..1" -- "0..*" Producto
+Servicio "0..1" <-- "0..*" DetalleODS
+Producto "0..1" <-- "0..*" DetalleODS
+Solapamiento "0..1" <-- "0..*" DetalleODS : descuento
+ReglasMaestros ..> ReglaPrecio : <<call>>
+ReglasMaestros ..> Solapamiento : <<call>>
+ReglasMaestros ..> FamiliaMotor : <<call>>
+note bottom of ReglaPrecio : RN-09: estándar, luego reglas del grupo\npara el servicio, generales del grupo\ny de todos los grupos
+@enduml

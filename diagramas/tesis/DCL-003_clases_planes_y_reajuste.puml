@@ -1,0 +1,79 @@
+@startuml
+!include _estilo.iuml
+title Clases de planes preventivos, línea de tiempo y reajuste
+left to right direction
+enum EstadoProyeccion <<enumeration>> {
+  PROXIMA
+  VENCIDA
+  REALIZADA
+  DESCARTADA
+}
+enum Decision <<enumeration>> {
+  ACEPTADA
+  POSTERGADA
+  RECHAZADA
+}
+class Plan {
+  -nombre: String
+  -vigente: Boolean = true
+  +versionar(): VersionPlan
+  +sugerirA(in grupo: GrupoVehicular): Vehiculo [0..*]
+}
+class VersionPlan {
+  -numero: Integer {readOnly}
+  -fecha: DateTime {readOnly}
+}
+class Regla {
+  -kmIntervalo: Integer [0..1]
+  -mesesIntervalo: Integer [0..1]
+  +aplicable(in v: Vehiculo): Boolean
+}
+class Asignacion {
+  -fechaInicio: DateTime
+  -estado: String
+  +proyectar(in kmActual: Integer): Proyeccion [0..*]
+}
+class Proyeccion {
+  -kmEstimado: Integer
+  -fechaEstimada: DateTime
+  -estado: EstadoProyeccion = PROXIMA
+  -origen: String
+}
+class Recomendacion {
+  -fundamento: String
+  -decision: Decision [0..1]
+  +decidir(in d: Decision, in motivo: String): void
+}
+class ServicioConfirmado {
+  -fecha: DateTime
+  -km: Integer
+}
+class Reajuste {
+  -motivo: String
+  -fecha: DateTime {readOnly}
+  +reajustarFuturo(in v: Vehiculo, in s: ServicioConfirmado): Proyeccion [0..*]
+}
+class GrupoVehicular
+class Servicio
+class Vehiculo
+class LecturaKm
+class OrdenServicio
+class Usuario
+Plan "1" *-- "1..*" VersionPlan
+VersionPlan "1" *-- "1..*" Regla
+Regla "0..*" --> "1" Servicio
+Plan "0..*" --> "1" GrupoVehicular : aplica a
+Vehiculo "1" o-- "0..*" Asignacion
+Asignacion "0..*" --> "1" VersionPlan
+Asignacion "1" *-- "0..*" Proyeccion
+Proyeccion "0..*" --> "1" Servicio
+Proyeccion "1" o-- "0..*" Recomendacion
+Vehiculo "1" *-- "0..*" LecturaKm
+ServicioConfirmado "0..*" --> "1" OrdenServicio : origen
+Reajuste "0..*" --> "1" ServicioConfirmado : motivado por
+Reajuste "0..*" --> "1" Usuario : responsable
+Reajuste ..> Proyeccion : <<create>>
+Proyeccion ..> EstadoProyeccion
+Recomendacion ..> Decision
+note right of Reajuste : Solo crea proyecciones futuras.\nEl historial realizado\nnunca se modifica.
+@enduml
