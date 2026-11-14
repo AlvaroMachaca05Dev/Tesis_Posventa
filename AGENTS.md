@@ -54,7 +54,9 @@ En Google Drive (`J:\Mi unidad\Trabajo RSA\Tesis sistema posventa\`), fuera del 
 3. La spec del slice en `specs/`.
 4. `docs/historial/R7/CLAUDE_RMotriz_tesis_contexto.md`: reglas de la línea B y pendientes de R7.7.
 
-## 6. Cómo se trabaja (Scrum + IA-ASE con SDD)
+## 6. Cómo se trabaja (Scrum + IA-ASE, vertical por módulo)
+> **Vigente desde el 12/11/2026 (DEC-87):** se desarrolla un módulo a la vez, de punta a punta: criterios de aceptación → base de datos → API → pantalla → pruebas → corrección, hasta que todo pasa. No hace falta una `specs/S<n>-*.md` por módulo: bastan los criterios de `docs/requisitos/R82/CRITERIOS_ACEPTACION_R82.csv` y las pruebas. Donde este archivo pida «especificación», se entiende «criterios de aceptación». Normas y criterio de salida: DEC-90.
+
 Metodología unificada y decidida el 19/10/2026: `docs/plan/METODOLOGIA_SCRUM_IA_ASE.md`. Herramienta de IA: Claude Code (no ChatGPT).
 
 Product Backlog → Sprint Planning → **especificación** → **pruebas primero** → implementación → revisión → evidencia → revisión humana. Detalle y mensajes listos en `docs/plan/FLUJO_DE_TRABAJO.md`.

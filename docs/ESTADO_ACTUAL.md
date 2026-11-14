@@ -1,4 +1,6 @@
-# Estado actual del proyecto (05/11/2026)
+# Estado actual del proyecto (12/11/2026)
+
+> **Actualización del 12/11/2026:** el 11/11/2026 pasaron las 145 pruebas de la API (84,9 % de cobertura de sentencias) y las 48 de la pantalla; la nota de Codex que sigue describe un estado anterior, ya reparado. Decisiones nuevas: DEC-86 a DEC-94 (`docs/decisiones/DECISIONES_CERRADAS.md` §13). Se desarrolla de forma vertical, módulo por módulo (DEC-87).
 
 > **Revisión posterior de Codex (05/11/2026):** tras los últimos cambios de S5, la interfaz pasa 48/48; la API registra 56 aprobadas y 82 fallidas (138 en total). Se observan datos de prueba incompatibles con la nueva validación documental y una base `posventa_test` sin la columna `preciosGrupo`. Los resultados 135/135 citados abajo corresponden a la ejecución anterior y no certifican el código actual. S5 requiere cerrar esta verificación. Detalle y relevo: [revisión de continuidad](revision/2026-11-05-revision-continuidad.md).
 
@@ -8,12 +10,13 @@ Este documento manda sobre cualquier otro texto del repositorio que describa el 
 - **El sistema real**, en un monorepo pnpm: `apps/api` (NestJS), `apps/web` (React + TypeScript + Vite) y `database` (Prisma con PostgreSQL). Pila aceptada el 20/10/2026 (`docs/decisiones/ADR-001-pila-tecnologica.md`).
 - **Slices S1 y S2 terminados y S3 en curso:** acceso, roles y menú por rol; clientes y vehículos con lecturas de km; órdenes de servicio (ítems, estados, abonos, evidencias de ingreso, estado del vehículo, cierre y eliminación). En S3 faltan RF-018 y los ajustes R8.2.
 - **Requisitos R8.2 (05/11/2026):** bajaron de 99 a 49. Implementados: RF-001 a 005, 007, 008 a 010, 011, 089 y 100 a 102 (S5); parciales: RF-015, 016, 060, 063 y 071. Fuente: `docs/requisitos/R82/` (requisitos, criterios, reglas de negocio, RNF, HU, casos de prueba y trazabilidad), generada junto con el anexo Excel de la tesis.
-- **Pruebas:** 135 de la API (en la base de pruebas `posventa_test`) y 48 de la pantalla, ejecutadas el 05/11/2026 sin fallos; la tesis las presenta por sprint (`docs/requisitos/R82/ejecucion/`), y 17 del prototipo R7.8.
+- **Pruebas (11/11/2026):** 145 de la API y 48 de la pantalla, todas aprobadas; cobertura de la API 84,9 % de sentencias (`test:cov`). Dato anterior: 135 de la API (en la base de pruebas `posventa_test`) y 48 de la pantalla, ejecutadas el 05/11/2026 sin fallos; la tesis las presenta por sprint (`docs/requisitos/R82/ejecucion/`), y 17 del prototipo R7.8.
 - **Prototipo HTML R7.8** (`prototipo/`): guía visual. Si el sistema real se aparta del prototipo, manda el sistema real.
 
 ## Qué falta
 - Cerrar S3 y los slices S4 a S14 (migración interna, maestros y precios por grupo, planes, línea de tiempo, tareas y vistas, citas, bitácora, comercial, inventario, posventa y reportes).
-- Entorno de pruebas en internet (staging), copias de seguridad y CI.
+- Entorno de pruebas en internet (staging) y copias de seguridad (la integración continua ya existe: `.github/workflows/ci.yml`).
+- Mediciones de la validación (30 vehículos, HE-1 a HE-4) y fichas de las entrevistas.
 - Aceptación de usuarios del taller y del profesor.
 
 ## Fuentes vigentes
@@ -21,9 +24,9 @@ Este documento manda sobre cualquier otro texto del repositorio que describa el 
 |---|---|---|
 | Requisitos | `docs/requisitos/R82/` (49 RF, 18 RN, 12 RNF, 15 HU, 58 CP) | R81 (99 RF), R77 a R80 y `CLASIFICACION_RF.csv` |
 | Trazabilidad | `docs/requisitos/R82/MATRIZ_TRAZABILIDAD_R82.csv` | R81 (`MATRIZ_TRAZABILIDAD_R81.csv`, `ESTADO_IMPLEMENTACION.csv`) y R78 a R80 |
-| Diagramas | `diagramas/R82/` y `diagramas/R81_consolidados/` | R8, R77 y R78 (ver `diagramas/LEEME.md`) |
+| Diagramas | `diagramas/tesis/` (29 diagramas, código sin versión, DEC-86) | `R82`, `R81_consolidados`, R8, R77 y R78 (ver `diagramas/LEEME.md`) |
 | Plan de desarrollo | `docs/plan/SLICES_NUCLEO.md` | `PLAN_DESARROLLO.md` por incrementos INC |
-| Especificaciones | `specs/S1-base-del-sistema.md` y los slices | `specs/INC-01-*.md` a `specs/INC-07-*.md` y `specs/R7.7-*.md` |
+| Criterios de aceptación | `docs/requisitos/R82/CRITERIOS_ACEPTACION_R82.csv` y las pruebas (DEC-87) | `specs/S1-base-del-sistema.md`, `specs/INC-01-*.md` a `specs/INC-07-*.md` y `specs/R7.7-*.md` |
 | Reglas de trabajo | `AGENTS.md` | — |
 
 ## Slices
