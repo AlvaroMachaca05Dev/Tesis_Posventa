@@ -50,6 +50,20 @@ describe('CA-S1-01 inicio de sesión (RF-001)', () => {
       await prisma.usuario.update({ where: { correo: 'cajera@demo.local' }, data: { activo: true } });
     }
   });
+  it('CP-61 al sexto intento fallido del mismo correo responde 429 (RNF-01)', async () => {
+    for (let i = 0; i < 5; i++) expect((await login('intruso@demo.local', 'x')).status).toBe(401);
+    const r = await login('intruso@demo.local', 'x');
+    expect(r.status).toBe(429);
+    expect(r.body.message).toMatch(/Demasiados intentos/);
+    expect((await login('admin@demo.local')).status).toBe(201);
+  });
+  it('CP-62 las respuestas llevan cabeceras de seguridad y no revelan el servidor (RNF-01)', async () => {
+    const r = await request(app.getHttpServer()).get('/me');
+    expect(r.headers['x-content-type-options']).toBe('nosniff');
+    expect(r.headers['x-frame-options']).toBe('DENY');
+    expect(r.headers['referrer-policy']).toBe('no-referrer');
+    expect(r.headers['x-powered-by']).toBeUndefined();
+  });
 });
 
 describe('CA-S1-03 y 04 permisos en el servidor (RF-002)', () => {

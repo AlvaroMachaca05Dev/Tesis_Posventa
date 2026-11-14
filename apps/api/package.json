@@ -5,7 +5,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "dotenv -e ../../.env -- node dist/src/main.js",
-    "test": "dotenv -e ../../.env -- jest --runInBand"
+    "test": "dotenv -e ../../.env -- jest --runInBand",
+    "test:cov": "dotenv -e ../../.env -- jest --runInBand --coverage --collectCoverageFrom=src/**/*.ts --coverageReporters=text-summary --coverageReporters=text",
+    "lint": "tsc --noEmit -p tsconfig.json"
   },
   "jest": {
     "preset": "ts-jest",

@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, UnauthorizedException, BadRequestException, NotFoundException, ForbiddenException, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, UnauthorizedException, BadRequestException, NotFoundException, ForbiddenException, HttpException, HttpStatus, Req } from '@nestjs/common';
+import { ControlIntentos } from './intentos';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import { Publico, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
@@ -7,15 +8,22 @@ import { PrismaService } from '../comun/prisma.service';
 
 @Controller('auth')
 export class AuthController {
+  private intentos = new ControlIntentos();
+
   constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
   @Publico()
   @Post('login')
   async login(@Body() body: { correo?: string; password?: string }) {
     const correo = String(body?.correo ?? '').trim().toLowerCase();
+    if (correo && this.intentos.bloqueado(correo)) throw new HttpException('Demasiados intentos fallidos. Espera 15 minutos y vuelve a intentar.', HttpStatus.TOO_MANY_REQUESTS);
     const u = correo ? await this.prisma.usuario.findUnique({ where: { correo }, include: { roles: { include: { rol: true } } } }) : null;
     // Mismo error si no existe, está desactivado o la contraseña no coincide.
-    if (!u || !u.activo || !(await bcrypt.compare(String(body?.password ?? ''), u.passwordHash))) throw new UnauthorizedException('Credenciales inválidas.');
+    if (!u || !u.activo || !(await bcrypt.compare(String(body?.password ?? ''), u.passwordHash))) {
+      if (correo) this.intentos.registrarFallo(correo);
+      throw new UnauthorizedException('Credenciales inválidas.');
+    }
+    this.intentos.limpiar(correo);
     const token = await this.jwt.signAsync({ sub: u.id });
     return { token, usuario: { id: u.id, nombre: u.nombre, roles: u.roles.map((r) => r.rol.nombre) } };
   }

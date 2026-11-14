@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { cabecerasSeguridad } from './comun/seguridad';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { AutenticacionGuard, PermisosGuard } from './comun/guardias';
@@ -28,4 +29,8 @@ import { MaestrosController } from './maestros/maestros.controller';
     { provide: APP_GUARD, useClass: PermisosGuard },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(cabecerasSeguridad).forRoutes('*');
+  }
+}
