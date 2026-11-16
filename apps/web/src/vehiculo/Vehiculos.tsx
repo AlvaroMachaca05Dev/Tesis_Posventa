@@ -1,5 +1,7 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { api, Cliente, Grupo, Marca, Vehiculo } from '../comun/api';
+import { api, Cliente, Grupo, Marca, Pais, Vehiculo } from '../comun/api';
+import { FormCliente } from '../cliente/Clientes';
+import { leerFiltro, olvidarFiltro } from '../comun/filtroPendiente';
 import { useColumnasRedimensionables } from '../comun/useColumnasRedimensionables';
 import { FilaFiltros, useFiltros } from '../comun/FiltrosColumna';
 import { MenuAcciones } from '../comun/TablaMaestro';
@@ -30,10 +32,13 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
   }, [cargar]);
 
   const COLUMNAS = ['Cliente', 'Número de documento', 'Placa', 'Marca', 'Modelo', 'Año', 'Color', 'Grupo', 'Nro. serie', 'Nro. VIN', 'Nro. motor', 'Último kilometraje', 'Registro'];
+  // Si se llegó desde «Vehículos» de un cliente, el filtro de Número de documento ya viene escrito.
+  const [filtroInicial] = useState(() => leerFiltro('vehiculos', COLUMNAS));
+  useEffect(() => { olvidarFiltro(); }, []);
   const { filtros, setFiltros, pasa } = useFiltros<Vehiculo>([
     (v) => v.cliente.nombre, (v) => v.cliente.documento, (v) => v.placa, (v) => v.marca ?? '', (v) => v.modelo ?? '', (v) => String(v.anio ?? ''), (v) => v.color ?? '', (v) => v.grupo ?? 'Sin grupo',
     (v) => v.nroSerie ?? '', (v) => v.nroVin ?? '', (v) => v.nroMotor ?? '', (v) => String(v.kmActual ?? ''), (v) => fecha(v.creadoEn),
-  ]);
+  ], filtroInicial);
   const filtrados = vehiculos.filter(pasa);
   const { visibles, pagina, setPagina, tam, setTam, total, totalPaginas, inicio, fin } = usePaginacion(filtrados);
   const { anchos, iniciarArrastre } = useColumnasRedimensionables('vehiculos');
@@ -59,10 +64,10 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
   return (
     <div className="panel ancho">
       <h1>Vehículos</h1>
-      {puedeEditar && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Vehículo</button></div>}
+      {puedeEditar && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Nuevo</button></div>}
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !editando && !lectura && <p className="error" role="alert">{error}</p>}
-      {editando && <FormVehiculo vehiculo={editando === 'nuevo' ? null : editando} marcas={marcas} grupos={grupos} error={error} alCancelar={cerrar} alGuardar={exito} alFallar={fallo} />}
+      {editando && <FormVehiculo vehiculo={editando === 'nuevo' ? null : editando} marcas={marcas} grupos={grupos} error={error} alCancelar={cerrar} alGuardar={exito} alFallar={fallo} alCrearMarca={(m) => setMarcas((x) => [...x, m].sort((a, b) => a.nombre.localeCompare(b.nombre)))} />}
       {lectura && <FormKm vehiculo={lectura} error={error} alCancelar={cerrar} alGuardar={exito} alFallar={fallo} />}
       <div className="tabla">
         <table>
@@ -122,8 +127,20 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
   );
 }
 
-export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; grupos: Grupo[]; error?: string; alCancelar: () => void; alGuardar: (m: string, vehiculo?: Vehiculo) => Promise<void>; alFallar: (m: string) => void }) {
+export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; grupos: Grupo[]; error?: string; alCancelar: () => void; alGuardar: (m: string, vehiculo?: Vehiculo) => Promise<void>; alFallar: (m: string) => void; alCrearMarca?: (m: Marca) => void }) {
   const v = p.vehiculo;
+  // Alta rápida desde este modal: «+» junto al cliente abre el formulario de cliente y «+» junto a la marca pide solo el nombre.
+  const [nuevoCliente, setNuevoCliente] = useState(false);
+  const [paises, setPaises] = useState<Pais[]>([]);
+  const [paisBase, setPaisBase] = useState('PE');
+  const [errorCliente, setErrorCliente] = useState('');
+  const [nuevaMarca, setNuevaMarca] = useState(false);
+  const [nombreMarca, setNombreMarca] = useState('');
+  const [errorMarca, setErrorMarca] = useState('');
+  const [marcasNuevas, setMarcasNuevas] = useState<Marca[]>([]);
+  const [consultandoPlaca, setConsultandoPlaca] = useState(false);
+  const [errorPlaca, setErrorPlaca] = useState('');
+  const marcas = [...p.marcas, ...marcasNuevas.filter((n) => !p.marcas.some((m) => m.id === n.id))];
   const [cliente, setCliente] = useState<{ id: string; nombre: string; documento: string } | null>(v ? v.cliente : null);
   const [busca, setBusca] = useState('');
   const [resultados, setResultados] = useState<Cliente[]>([]);
@@ -140,7 +157,7 @@ export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; gr
   const [codigoMotor, setCodigoMotor] = useState(v?.codigoMotor ?? '');
   // Grupo: «Automático» lo asigna el sistema por la familia del motor o por marca, modelo y año (RF-100).
   const [grupoId, setGrupoId] = useState(v?.grupoFuente === 'MANUAL' ? v.grupoId ?? '' : '');
-  const modelos = p.marcas.find((m) => m.nombre.toLowerCase() === marca.trim().toLowerCase())?.modelos ?? [];
+  const modelos = marcas.find((m) => m.nombre.toLowerCase() === marca.trim().toLowerCase())?.modelos ?? [];
 
   // Se busca al cliente por documento o nombre; se ve a quién está enlazado antes de elegirlo.
   useEffect(() => {
@@ -154,6 +171,47 @@ export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; gr
       if (n === ultima.current) setResultados(r.slice(0, 8));
     }).catch(() => setResultados([]));
   }, [busca]);
+
+  // «Consultar» trae de la consulta vehicular los datos de la placa y los escribe en el formulario (lo que no llega queda como estaba).
+  async function consultarPlaca() {
+    setErrorPlaca('');
+    setConsultandoPlaca(true);
+    try {
+      const r = await api.consultarPlaca(placa);
+      if (r.marca) { setMarca(r.marca); setModelo(''); }
+      if (r.modelo) setModelo(r.modelo);
+      if (r.anio) setAnio(String(r.anio));
+      if (r.color) setColor(r.color);
+      if (r.nroSerie) setSerie(r.nroSerie);
+      if (r.nroVin) setVin(r.nroVin);
+      if (r.nroMotor) setMotor(r.nroMotor);
+      if (r.codigoMotor) setCodigoMotor(r.codigoMotor);
+    } catch (e) {
+      setErrorPlaca((e as Error).message);
+    } finally {
+      setConsultandoPlaca(false);
+    }
+  }
+  function abrirNuevoCliente() {
+    setErrorCliente('');
+    setNuevoCliente(true);
+    if (paises.length === 0) api.config().then((c) => { setPaises(c.paises); setPaisBase(c.paisPredeterminado); }).catch((e) => setErrorCliente((e as Error).message));
+  }
+  async function crearMarca(e: FormEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const m = await api.crearMarcaVehiculo(nombreMarca);
+      setMarcasNuevas((x) => [...x, m]);
+      p.alCrearMarca?.(m);
+      setMarca(m.nombre);
+      setModelo('');
+      setNuevaMarca(false);
+      setNombreMarca('');
+    } catch (err) {
+      setErrorMarca((err as Error).message);
+    }
+  }
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
@@ -176,15 +234,19 @@ export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; gr
     <div className="campo"><label htmlFor={id}>{etiqueta}</label><input id={id} value={valor} onChange={(e) => cambiar(e.target.value)} {...extra} /></div>
   );
   return (
+    <>
     <div className="fondo-modal">
       <form className="modal-form" role="dialog" aria-modal="true" aria-label={v ? 'Editar vehículo' : 'Nuevo vehículo'} onSubmit={enviar}>
         <h2>{v ? 'Editar vehículo' : 'Nuevo vehículo'}</h2>
-        {p.error && <p className="error" role="alert">{p.error}</p>}
+        {(p.error || errorPlaca) && <p className="error" role="alert">{p.error || errorPlaca}</p>}
         <div className="dos-col">
           <div className="campo ancha"><label htmlFor="v-cliente">Cliente (documento o nombre)</label>
-            <input id="v-cliente" value={cliente && !busca ? `${cliente.documento} · ${cliente.nombre}` : busca} placeholder="Escribe el documento o el nombre"
-              onChange={(e) => { const t = e.target.value; if (cliente && !busca) { setCliente(null); setBusca(t.replace(`${cliente.documento} · ${cliente.nombre}`, '')); } else setBusca(t); }}
-              onFocus={(e) => e.target.select()} autoComplete="off" />
+            <div className="con-mas">
+              <input id="v-cliente" value={cliente && !busca ? `${cliente.documento} · ${cliente.nombre}` : busca} placeholder="Escribe el documento o el nombre"
+                onChange={(e) => { const t = e.target.value; if (cliente && !busca) { setCliente(null); setBusca(t.replace(`${cliente.documento} · ${cliente.nombre}`, '')); } else setBusca(t); }}
+                onFocus={(e) => e.target.select()} autoComplete="off" />
+              <button type="button" className="mas" aria-label="Crear cliente nuevo" title="Crear cliente nuevo" onClick={abrirNuevoCliente}>+</button>
+            </div>
             {resultados.length > 0 && (
               <div className="resultados">
                 {resultados.map((c) => (
@@ -195,13 +257,20 @@ export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; gr
               </div>
             )}
           </div>
-          {campo('v-placa', 'Placa', placa, setPlaca, { required: true })}
+          <div className="campo"><label htmlFor="v-placa">Placa</label>
+            <div className="con-mas">
+              <input id="v-placa" value={placa} required onChange={(e) => { setErrorPlaca(''); setPlaca(e.target.value); }} />
+              <button type="button" className="consultar" disabled={consultandoPlaca || placa.replace(/[^A-Za-z0-9]/g, '').length !== 6} onClick={() => void consultarPlaca()}>{consultandoPlaca ? 'Consultando…' : 'Consultar'}</button>
+            </div></div>
           <div className="campo"><label htmlFor="v-marca">Marca</label>
-            <select id="v-marca" value={marca} required onChange={(e) => { setMarca(e.target.value); setModelo(''); }}>
-              <option value="">Seleccionar…</option>
-              {p.marcas.map((m) => <option key={m.id} value={m.nombre}>{m.nombre}</option>)}
-              {marca && !p.marcas.some((m) => m.nombre === marca) && <option value={marca}>{marca}</option>}
-            </select></div>
+            <div className="con-mas">
+              <select id="v-marca" value={marca} required onChange={(e) => { setMarca(e.target.value); setModelo(''); }}>
+                <option value="">Seleccionar…</option>
+                {marcas.map((m) => <option key={m.id} value={m.nombre}>{m.nombre}</option>)}
+                {marca && !marcas.some((m) => m.nombre === marca) && <option value={marca}>{marca}</option>}
+              </select>
+              <button type="button" className="mas" aria-label="Crear marca nueva" title="Crear marca nueva" onClick={() => { setErrorMarca(''); setNombreMarca(''); setNuevaMarca(true); }}>+</button>
+            </div></div>
           <div className="campo"><label htmlFor="v-modelo">Modelo</label>
             <input id="v-modelo" list="lista-modelos" value={modelo} onChange={(e) => setModelo(e.target.value)} />
             <datalist id="lista-modelos">{modelos.map((m) => <option key={m} value={m} />)}</datalist></div>
@@ -225,6 +294,31 @@ export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; gr
         </div>
       </form>
     </div>
+    {nuevoCliente && (
+      <FormCliente cliente={null} paises={paises} paisBase={paisBase} error={errorCliente} alCancelar={() => setNuevoCliente(false)}
+        alGuardar={async (_m, c) => {
+          if (c) setCliente({ id: c.id, nombre: c.nombre, documento: c.documento });
+          setBusca('');
+          setResultados([]);
+          setNuevoCliente(false);
+        }}
+        alFallar={setErrorCliente} />
+    )}
+    {nuevaMarca && (
+      <div className="fondo-modal">
+        <form className="modal-form" role="dialog" aria-modal="true" aria-label="Nueva marca" onSubmit={crearMarca}>
+          <h2>Nueva marca</h2>
+          {errorMarca && <p className="error" role="alert">{errorMarca}</p>}
+          <div className="campo"><label htmlFor="m-nombre">Nombre de la marca</label>
+            <input id="m-nombre" value={nombreMarca} onChange={(e) => setNombreMarca(e.target.value)} maxLength={60} required autoFocus /></div>
+          <div className="fila fin">
+            <button type="button" onClick={() => setNuevaMarca(false)}>Cancelar</button>
+            <button type="submit" className="primario chico">Guardar</button>
+          </div>
+        </form>
+      </div>
+    )}
+    </>
   );
 }
 

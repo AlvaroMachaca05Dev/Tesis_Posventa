@@ -1,6 +1,6 @@
 ---
 name: generar-diagramas-tesis-rmotriz
-description: Crear, corregir o verificar diagramas PlantUML trazables al diseño de la tesis R Motriz, respetando las reglas del profesor.
+description: Crear, corregir o verificar diagramas PlantUML trazables al diseño de la tesis RMOTRIZ, respetando las reglas del profesor.
 ---
 
 **Entrada:** requisito/CU/spec y la vista solicitada. Lee `AGENTS.md`, `docs/historial/R7/DIAGNOSTICO_UML.md` y los diagramas existentes: los de R7.6 en `../fuentes-latex/diagramas/` y `../archivo/tesis-restante/uml_R76/`, y la **propuesta R8** en `diagramas/R8_propuesta/` (clases `DCL-R8-0001A/B/C`, estados `DES-R8-0001..0003`, secuencias `DSE-R8-0001..0006`). Busca la fuente original antes de reconstruir; si reconstruyes, indícalo.

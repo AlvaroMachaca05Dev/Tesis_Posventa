@@ -199,6 +199,22 @@ td.acc button.peligro { color:#ff9a9a; }
 .historial-pagos { width:100%; list-style:none; margin:0; padding:0; max-height:160px; overflow:auto; }
 .historial-pagos li { display:flex; gap:10px; padding:6px 2px; border-bottom:1px solid var(--borde); font-size:12.5px; align-items:center; }
 .historial-pagos li > :last-child { margin-left:auto; }
+/* Pagos recibidos: campos uno bajo otro, historia plegable y pie con Salir y Guardar */
+.modal-form.modal-pagos { width:min(460px,96vw); }
+.pagos { display:flex; flex-direction:column; gap:10px; }
+.pagos .campo { display:flex; flex-direction:column; gap:3px; } .pagos label { font-size:12px; color:var(--suave); }
+.pagos textarea { resize:vertical; }
+.pagos .historia { border:1px solid var(--borde); border-radius:10px; overflow:hidden; background:#101a30; }
+.modal-form .pagos .historia-cab { display:flex; justify-content:space-between; align-items:center; width:100%; background:#18233a; border:0; border-bottom:2px solid var(--primario, #c6f24e); border-radius:0; padding:10px 12px; cursor:pointer; color:var(--texto); }
+.pagos .historia > p { margin:0; padding:12px; }
+.pagos .historial-pagos { padding:8px; display:flex; flex-direction:column; gap:6px; max-height:200px; }
+.pagos .historial-pagos li { border:1px solid var(--borde); border-radius:8px; padding:8px 10px; background:#18233a; flex-wrap:wrap; }
+.pagos .chip-pago { background:#0f1830; border:1px solid var(--borde); border-radius:999px; padding:1px 8px; font-size:11px; }
+.pagos .concepto-pago { flex:1 1 100%; order:3; }
+.pagos .pie-pagos { margin-top:4px; }
+/* Vista previa de PDF dentro de un modal */
+.modal-form.modal-pdf { width:min(920px,96vw); gap:10px; }
+.modal-pdf .visor-pdf { width:100%; height:min(74vh,820px); border:0; border-radius:8px; background:#2b2b2b; }
 .ingreso .galeria { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
 .ingreso figure { position:relative; margin:0; width:110px; }
 .ingreso img, .ingreso video { width:110px; height:82px; object-fit:cover; border-radius:6px; border:1px solid var(--borde); display:block; }
@@ -230,6 +246,10 @@ td.acc button.peligro { color:#ff9a9a; }
 .modal-form button:not(.primario) { background:#18233a; color:var(--texto); border:1px solid var(--borde); border-radius:8px; padding:6px 12px; cursor:pointer; }
 .modal-form .resultados { position:absolute; top:100%; left:0; right:0; z-index:5; display:flex; flex-direction:column; background:#0f1830; border:1px solid var(--borde); border-radius:8px; }
 .modal-form .resultados button { text-align:left; border:0 !important; border-radius:0 !important; }
+.modal-form .con-mas { display:flex; gap:6px; align-items:stretch; } .modal-form .con-mas > input, .modal-form .con-mas > select { flex:1; min-width:0; }
+.modal-form button.consultar { flex:0 0 auto; width:auto; padding:0 12px; white-space:nowrap; } .modal-form button.consultar:disabled { opacity:.5; cursor:not-allowed; }
+.modal-form .nota-obligatorio { margin:0; font-size:12px; color:var(--suave); }
+.modal-form button.mas { flex:0 0 34px; width:34px; padding:0; display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1; border-radius:8px; }
 @media (max-width:560px) { .dos-col { grid-template-columns:1fr; } .dos-col .campo.ancha { grid-column:auto; } }
 /* Filtros por columna (como en el prototipo) */
 .fila-filtros th { padding:4px 6px; background:transparent; }
@@ -286,6 +306,8 @@ html:has(.fondo-modal) { overflow:hidden; }
 .col-redim { position: relative; }
 .col-redim .resizer { position: absolute; top: 0; right: -3px; width: 7px; height: 100%; cursor: col-resize; z-index: 5; }
 .col-redim .resizer:hover, .col-redim .resizer:active { background: var(--acento); opacity: .5; }
+body.arrastrando-columna { user-select: none; cursor: col-resize; }
+body.arrastrando-columna * { cursor: col-resize !important; }
 /* Datos del comprobante en 3 filas exactas (en vez de la cuadrícula que se desordenaba). */
 .comprobante .filas3 { display: flex; flex-direction: column; gap: 10px; }
 .comprobante .fila-cab { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; }
@@ -294,3 +316,9 @@ html:has(.fondo-modal) { overflow:hidden; }
 .comprobante .fila-cab > .descuento-der { margin-left: auto; flex: 0 0 auto; max-width: 220px; }
 .comprobante .campo-tipo { display: flex; flex-direction: column; gap: 3px; }
 .comprobante .campo-tipo input { margin-top: 2px; }
+/* Configuración de la empresa y formularios sueltos dentro de un modal */
+.form-config { display:flex; flex-direction:column; gap:12px; max-width:860px; }
+.form-config input, .form-config textarea, .tabla input.serie, .tabla td > input { background:#18233a; border:1px solid var(--borde); color:var(--texto); border-radius:8px; padding:7px 8px; font-family:inherit; width:100%; box-sizing:border-box; }
+.form-config input:disabled, .form-config textarea:disabled, .tabla td > input:disabled { opacity:.7; }
+.tabla input.serie { width:74px; text-transform:uppercase; }
+.modal-form > .campo { display:flex; flex-direction:column; gap:3px; } .modal-form > .campo > label { font-size:12px; color:var(--suave); }

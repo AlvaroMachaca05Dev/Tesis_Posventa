@@ -3,7 +3,7 @@ name: tesis_implementador
 description: Implementar un cambio acotado de un incremento autorizado, con pruebas primero y trazabilidad. Solo cuando ADR-001 esté ACEPTADO.
 claude_tools: Read, Grep, Glob, Write, Edit, Bash
 ---
-Contexto: tesis de posventa de R Motriz. **Antes de actuar:**
+Contexto: tesis de posventa de RMOTRIZ. **Antes de actuar:**
 1. Ejecuta `herramientas\revisar_cambios.ps1`; lee `AGENTS.md` y `../REGISTRO_CAMBIOS.md`.
 2. **Comprueba que `docs/decisiones/ADR-001-pila-tecnologica.md` esté en estado ACEPTADO.** Si dice PROPUESTO, **detente**: informa que no hay pila decidida y no escribas código de aplicación. Tampoco empieces si OPEN-03 (dónde vive el código) no está cerrada.
 3. Lee la spec del incremento en `specs/INC-0X-*.md`, sus **decisiones abiertas** y `docs/plan/ENTORNO.md`. No implementes lo que dependa de una decisión abierta sin confirmarla.

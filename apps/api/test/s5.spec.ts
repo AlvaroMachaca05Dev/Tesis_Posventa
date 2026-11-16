@@ -71,9 +71,27 @@ describe('CP-19 Proveedores (RF-008)', () => {
   it('crea, edita y lista un proveedor; el documento no se repite', async () => {
     const p = await como(ADMIN, 'post', '/proveedores', { tipoDocumento: 'RUC', documento: `20${sx.padStart(5, '0')}0010`, nombre: 'Proveedor Prueba', rubro: 'Filtros' });
     expect(p.status).toBe(201);
-    expect((await como(ADMIN, 'patch', `/proveedores/${p.body.id}`, { telefono: '999 111 222' })).body.telefono).toBe('999111222');
+    expect((await como(ADMIN, 'patch', `/proveedores/${p.body.id}`, { movil: '999 111 222' })).body.movil).toBe('999111222');
     expect((await como(CAJERA, 'get', '/proveedores')).body.some((x: { id: string }) => x.id === p.body.id)).toBe(true);
     expect((await como(ADMIN, 'post', '/proveedores', { tipoDocumento: 'RUC', documento: `20${sx.padStart(5, '0')}0010`, nombre: 'Otro' })).status).toBe(409);
+  });
+
+  it('guarda los mismos datos que un cliente: nombre comercial, país, móvil, dirección fiscal, correo, contacto y comentario', async () => {
+    const doc = `20${sx.padStart(5, '0')}0030`;
+    const p = await como(ADMIN, 'post', '/proveedores', { tipoDocumento: 'RUC', documento: doc, nombre: 'Proveedor Completo', nombreComercial: 'Completo SAC', pais: 'PE', movil: '987654321', direccionFiscal: 'Av. Prueba 123', email: 'compras@demo.test', contacto: 'Luis Torres', comentario: 'Entrega en 24 horas' });
+    expect(p.status).toBe(201);
+    expect(p.body).toMatchObject({ nombreComercial: 'Completo SAC', pais: 'PE', movil: '987654321', direccionFiscal: 'Av. Prueba 123', email: 'compras@demo.test', contacto: 'Luis Torres', comentario: 'Entrega en 24 horas' });
+    // Mismas reglas que el cliente: el móvil de Perú lleva 9 dígitos, el correo debe ser válido y el país debe existir.
+    expect((await como(ADMIN, 'patch', `/proveedores/${p.body.id}`, { movil: '12345' })).status).toBe(400);
+    expect((await como(ADMIN, 'patch', `/proveedores/${p.body.id}`, { email: 'sin-arroba' })).status).toBe(400);
+    expect((await como(ADMIN, 'patch', `/proveedores/${p.body.id}`, { pais: 'XX' })).status).toBe(400);
+    expect((await como(ADMIN, 'patch', `/proveedores/${p.body.id}`, { pais: 'CO', movil: '3001234567' })).body).toMatchObject({ pais: 'CO', movil: '3001234567' });
+  });
+
+  it('los países para el formulario los puede leer quien tiene proveedores aunque no tenga clientes', async () => {
+    const r = await como('logistico@demo.local', 'get', '/maestros/config');
+    expect(r.status).toBe(200);
+    expect(r.body.paises.length).toBeGreaterThan(1);
   });
 
   it('un servicio externo necesita su proveedor', async () => {

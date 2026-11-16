@@ -15,12 +15,16 @@ export type TipoDocumento = 'DNI' | 'CARNET_EXTRANJERIA' | 'RUC';
 export interface Pais { codigo: string; nombre: string; prefijo: string }
 export interface Cliente {
   id: string; tipoDocumento: TipoDocumento; documento: string; nombre: string; nombreComercial: string | null; pais: string; movil: string | null;
-  direccionFiscal: string | null; email: string | null; ubigeo: string | null; comentario: string | null; esGenerico: boolean; activo: boolean; creadoEn: string; vehiculos?: number;
+  direccionFiscal: string | null; email: string | null; contacto: string | null; ubigeo: string | null; comentario: string | null; esGenerico: boolean; activo: boolean; creadoEn: string; vehiculos?: number;
 }
 export interface Vehiculo {
   id: string; placa: string; marca: string | null; modelo: string | null; anio: number | null; color: string | null; nroSerie: string | null; nroVin: string | null; nroMotor: string | null;
   comentario: string | null; grupo: string | null; grupoId?: string | null; grupoFuente?: string | null; codigoMotor?: string | null; creadoEn: string; kmActual: number | null; cliente: { id: string; nombre: string; documento: string; tipoDocumento: TipoDocumento };
 }
+/** Respuesta de la consulta vehicular por placa. */
+export interface ConsultaVehicular { placa: string; marca: string | null; modelo: string | null; anio: number | null; color: string | null; nroSerie: string | null; nroVin: string | null; nroMotor: string | null; codigoMotor: string | null }
+/** Respuesta de la consulta de DNI (RENIEC) o RUC (SUNAT). */
+export interface ConsultaDocumento { tipoDocumento: 'DNI' | 'RUC'; documento: string; nombre: string; direccion: string | null; estado: string | null; condicion: string | null }
 export interface Marca { id: string; nombre: string; modelos: string[] }
 export interface Persona { id: string; nombre: string }
 export interface DetalleOds {
@@ -33,7 +37,7 @@ export interface Abono { id: string; fecha: string; metodo: string; concepto: st
 export interface Orden {
   id: string; codigo: string; externa: boolean; estado: string; decision: string; tipoAtencion: string; tipoAtencionDetalle: string | null; fechaInicio: string; fechaCierre: string | null; km: number | null;
   observaciones: string | null; recomendaciones: string | null;
-  cliente: { id: string; nombre: string; documento: string; tipoDocumento: TipoDocumento };
+  cliente: { id: string; nombre: string; documento: string; tipoDocumento: TipoDocumento; movil?: string | null; direccionFiscal?: string | null; pais?: string };
   vehiculo: { id: string; grupo?: string | null; placa: string; marca: string | null; modelo: string | null; anio: number | null; color: string | null; nroSerie: string | null; nroVin: string | null; nroMotor: string | null };
   tecnico: Persona | null; jefeTaller: Persona | null; creadoPor: Persona | null;
   detalles: DetalleOds[]; total: number; abonos: Abono[]; totalAbonos: number; pendiente: number; solapamientosMantenidos?: string[]; horas?: number;
@@ -42,10 +46,14 @@ export interface Orden {
 }
 export type EstadoVehiculo = Record<string, string | string[]>;
 export interface EvidenciaOds { id: string; nombre: string; tipo: string; tamano: number; fecha: string }
-export interface CatalogosOds { tiposAtencion: string[]; decisiones: string[]; estados: { id: string; nombre: string }[]; metodosPago: string[]; tecnicos: Persona[]; jefes: Persona[]; logisticos?: Persona[]; cajeras?: Persona[] }
+/** Datos de la empresa que salen en la cabecera y el pie de los PDF de la orden. */
+export interface Empresa { nombre: string; ruc: string | null; direccion: string | null; telefono: string | null; correo: string | null; lema: string | null; cuentasBancarias: string | null; terminosRecepcion: string | null; razonSocial?: string | null; pieTicket?: string | null; anchoTicketMm?: number }
+export interface LocalEmpresa { id: string; nombre: string; direccion: string | null; telefono: string | null; serieNotaVenta: string | null; serieBoleta: string | null; serieFactura: string | null }
+export interface ConfigEmpresa extends Empresa { locales: LocalEmpresa[] }
+export interface CatalogosOds { tiposAtencion: string[]; decisiones: string[]; estados: { id: string; nombre: string }[]; metodosPago: string[]; tecnicos: Persona[]; jefes: Persona[]; logisticos?: Persona[]; cajeras?: Persona[]; empresa?: Empresa }
 
 // ───── Slice S5: maestros ─────
-export interface Proveedor { id: string; tipoDocumento: TipoDocumento; documento: string; nombre: string; contacto: string | null; telefono: string | null; correo: string | null; direccion: string | null; rubro: string | null; activo: boolean; creadoEn: string }
+export interface Proveedor { id: string; tipoDocumento: TipoDocumento; documento: string; nombre: string; nombreComercial: string | null; pais: string; movil: string | null; direccionFiscal: string | null; email: string | null; contacto: string | null; comentario: string | null; rubro: string | null; activo: boolean; creadoEn: string }
 export interface Producto { id: string; codigo: string; nombre: string; referencia: string | null; unidad: string; categoria: string | null; marca: string | null; precio: number; costo: number | null; proveedorId: string | null; proveedor: string | null; activo: boolean; stock: Record<string, number>; stockTotal: number }
 export interface Servicio { id: string; codigo: string; nombre: string; categoria: string; descripcion: string | null; trabajoMayor: boolean; externo: boolean; proveedorId: string | null; proveedor: string | null; horasEstandar: number; horasFuente: string; precioEstandar: number; repuestos: string[]; activo: boolean; preciosGrupo: Record<string, number | null>; horasGrupo: Record<string, number> }
 export interface Grupo { id: string; codigo: string; nombre: string; descripcion: string | null; activo: boolean; vehiculos: number; reglas: number; familias: number }
@@ -108,6 +116,11 @@ export const api = {
   config: () => pedir<{ paisPredeterminado: string; paises: Pais[] }>('/maestros/config'),
   clientes: (q = '') => pedir<Cliente[]>('/clientes' + (q ? '?q=' + encodeURIComponent(q) : '')),
   cliente: (id: string) => pedir<Cliente & { vehiculos: { id: string; placa: string }[] }>('/clientes/' + id),
+  empresa: () => pedir<ConfigEmpresa>('/empresa'),
+  editarEmpresa: (d: Record<string, unknown>) => pedir<ConfigEmpresa>('/empresa', { method: 'PATCH', body: JSON.stringify(d) }),
+  editarLocalEmpresa: (id: string, d: Record<string, unknown>) => pedir<ConfigEmpresa>('/empresa/locales/' + id, { method: 'PATCH', body: JSON.stringify(d) }),
+  consultarPlaca: (placa: string) => pedir<ConsultaVehicular>(`/consulta-vehicular?placa=${encodeURIComponent(placa)}`),
+  consultarDocumento: (tipo: string, numero: string) => pedir<ConsultaDocumento>(`/consulta-documento?tipo=${encodeURIComponent(tipo)}&numero=${encodeURIComponent(numero)}`),
   crearCliente: (d: Record<string, unknown>) => pedir<Cliente>('/clientes', { method: 'POST', body: JSON.stringify(d) }),
   editarCliente: (id: string, d: Record<string, unknown>) => pedir<Cliente>('/clientes/' + id, { method: 'PATCH', body: JSON.stringify(d) }),
   vehiculos: (q = '') => pedir<Vehiculo[]>('/vehiculos' + (q ? '?q=' + encodeURIComponent(q) : '')),
@@ -116,6 +129,7 @@ export const api = {
   registrarKm: (id: string, km: number, observacion = '', fecha?: string, fuente?: string) =>
     pedir<{ id: string; km: number }>(`/vehiculos/${id}/lecturas`, { method: 'POST', body: JSON.stringify({ km, ...(observacion ? { observacion } : {}), ...(fecha ? { fecha } : {}), ...(fuente ? { fuente } : {}) }) }),
   marcasVehiculo: () => pedir<Marca[]>('/marcas-vehiculo'),
+  crearMarcaVehiculo: (nombre: string) => pedir<Marca>('/marcas-vehiculo', { method: 'POST', body: JSON.stringify({ nombre }) }),
   catalogosOds: () => pedir<CatalogosOds>('/ordenes/catalogos'),
   ordenes: (f: Record<string, string>) => pedir<Orden[]>('/ordenes?' + new URLSearchParams(Object.entries(f).filter(([, v]) => v)).toString()),
   orden: (id: string) => pedir<Orden>('/ordenes/' + id),

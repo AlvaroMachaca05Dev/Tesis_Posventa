@@ -1,4 +1,4 @@
-# Tesis de Álvaro Machaca — Sistema de posventa para R Motriz (Robert Service Automotriz)
+# Tesis de Álvaro Machaca — Sistema de posventa para RMOTRIZ (Robert Service Automotriz)
 
 Fuente única de instrucciones del proyecto para **Claude Code** (y Codex si el equipo lo usa) (`CLAUDE.md` solo importa este archivo). Actualizado el 31/10/2026. Si un archivo antiguo contradice este, prevalece este y las instrucciones explícitas del investigador.
 

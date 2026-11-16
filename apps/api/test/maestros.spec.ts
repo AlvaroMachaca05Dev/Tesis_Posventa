@@ -60,9 +60,9 @@ afterAll(async () => {
 
 describe('clientes (CA-S2-01)', () => {
   it('la Cajera crea un cliente con sus datos y la fecha de registro se pone sola', async () => {
-    const r = await como(CAJERA, 'post', '/clientes', clienteBase({ nombreComercial: 'Ana SAC', email: 'ana@demo.test', direccionFiscal: 'Av. Prueba 123', ubigeo: '150101', comentario: 'Cliente de prueba' }));
+    const r = await como(CAJERA, 'post', '/clientes', clienteBase({ nombreComercial: 'Ana SAC', email: 'ana@demo.test', direccionFiscal: 'Av. Prueba 123', contacto: 'Ana Contacto', ubigeo: '150101', comentario: 'Cliente de prueba' }));
     expect(r.status).toBe(201);
-    expect(r.body).toMatchObject({ tipoDocumento: 'DNI', nombre: 'Prueba Ana', nombreComercial: 'Ana SAC', pais: 'PE', movil: '987654321', ubigeo: '150101', activo: true, esGenerico: false });
+    expect(r.body).toMatchObject({ tipoDocumento: 'DNI', nombre: 'Prueba Ana', nombreComercial: 'Ana SAC', pais: 'PE', movil: '987654321', contacto: 'Ana Contacto', ubigeo: '150101', activo: true, esGenerico: false });
     expect(new Date(r.body.creadoEn).getTime()).toBeGreaterThan(Date.now() - 60_000);
   });
   it('el número de documento no se repite', async () => {
@@ -73,11 +73,13 @@ describe('clientes (CA-S2-01)', () => {
     // Un RUC tiene 11 dígitos y un DNI 8: el mismo valor no puede ser válido para los dos tipos, así que primero se rechaza el formato (400).
     expect((await como(CAJERA, 'post', '/clientes', clienteBase({ documento: c.documento, tipoDocumento: 'RUC' }))).status).toBe(400);
   });
-  it('solo se aceptan DNI, Carné de extranjería y RUC; el nombre y el documento son obligatorios (400)', async () => {
+  it('solo se aceptan DNI, Carné de extranjería y RUC; el tipo y el número de documento son obligatorios y el nombre no (sin nombre se guarda el documento)', async () => {
     expect((await como(CAJERA, 'post', '/clientes', clienteBase({ tipoDocumento: 'PASAPORTE' }))).status).toBe(400);
     expect((await como(CAJERA, 'post', '/clientes', clienteBase({ tipoDocumento: 'CARNET_EXTRANJERIA', documento: ce() }))).status).toBe(201);
     expect((await como(CAJERA, 'post', '/clientes', clienteBase({ tipoDocumento: 'RUC', documento: ruc(), nombre: 'Empresa Prueba SAC' }))).status).toBe(201);
-    expect((await como(CAJERA, 'post', '/clientes', clienteBase({ nombre: '  ' }))).status).toBe(400);
+    const sinNombre = await como(CAJERA, 'post', '/clientes', clienteBase({ nombre: '  ' }));
+    expect(sinNombre.status).toBe(201);
+    expect(sinNombre.body.nombre).toBe(sinNombre.body.documento);
     expect((await como(CAJERA, 'post', '/clientes', clienteBase({ documento: '' }))).status).toBe(400);
   });
   it('el Técnico puede ver clientes pero no crearlos ni editarlos (403)', async () => {
@@ -326,5 +328,110 @@ describe('intentos de romper los maestros (pruebas de ataque del 28/10)', () => 
     const c = await nuevoCliente();
     await como(CAJERA, 'patch', `/clientes/${c.id}`, { activo: false });
     expect((await como(CAJERA, 'post', '/vehiculos', { clienteId: c.id, placa: placa() })).status).toBe(409);
+  });
+});
+
+describe('marcas de vehículo desde el modal de vehículo', () => {
+  it('la Cajera crea una marca; no se repite aunque cambien las mayúsculas y queda auditada', async () => {
+    const nombre = `MARCA ${sufijo}`;
+    const r = await como(CAJERA, 'post', '/marcas-vehiculo', { nombre });
+    try {
+      expect(r.status).toBe(201);
+      expect(r.body).toMatchObject({ nombre, modelos: [] });
+      const repetida = await como(CAJERA, 'post', '/marcas-vehiculo', { nombre: nombre.toLowerCase() });
+      expect(repetida.status).toBe(409);
+      const lista = await como(CAJERA, 'get', '/marcas-vehiculo');
+      expect(lista.body.some((m: { nombre: string }) => m.nombre === nombre)).toBe(true);
+      expect(await prisma.auditoria.count({ where: { tabla: 'marcaVehiculo', registroId: r.body.id } })).toBe(1);
+    } finally {
+      if (r.body?.id) await prisma.marcaVehiculo.delete({ where: { id: r.body.id } });
+    }
+  });
+  it('el nombre es obligatorio (400) y el Técnico, que solo ve vehículos, no puede crear marcas (403)', async () => {
+    expect((await como(CAJERA, 'post', '/marcas-vehiculo', { nombre: '   ' })).status).toBe(400);
+    expect((await como(TECNICO, 'post', '/marcas-vehiculo', { nombre: `OTRA ${sufijo}` })).status).toBe(403);
+  });
+});
+
+describe('consulta de DNI y RUC', () => {
+  const guardado = { token: process.env.CONSULTA_DOC_TOKEN, dni: process.env.CONSULTA_DOC_URL_DNI, ruc: process.env.CONSULTA_DOC_URL_RUC };
+  afterEach(() => {
+    jest.restoreAllMocks();
+    for (const [k, v] of [['CONSULTA_DOC_TOKEN', guardado.token], ['CONSULTA_DOC_URL_DNI', guardado.dni], ['CONSULTA_DOC_URL_RUC', guardado.ruc]] as const) {
+      if (v === undefined) delete process.env[k]; else process.env[k] = v;
+    }
+  });
+  const responder = (status: number, cuerpo: unknown) => jest.spyOn(global, 'fetch').mockResolvedValue({ ok: status < 400, status, json: async () => cuerpo } as Response);
+
+  it('un DNI devuelve el nombre completo y un RUC, la razón social con su dirección; la clave va al proveedor y no a la pantalla', async () => {
+    process.env.CONSULTA_DOC_TOKEN = 'clave-de-prueba';
+    const f = responder(200, { nombres: 'Juan', apellidoPaterno: 'Pérez', apellidoMaterno: 'Núñez' });
+    const dni = await como(CAJERA, 'get', '/consulta-documento?tipo=DNI&numero=12345678');
+    expect(dni.status).toBe(200);
+    expect(dni.body).toMatchObject({ tipoDocumento: 'DNI', documento: '12345678', nombre: 'JUAN PÉREZ NÚÑEZ' });
+    expect(String(f.mock.calls[0][0])).toContain('numero=12345678');
+    expect((f.mock.calls[0][1] as RequestInit).headers).toMatchObject({ Authorization: 'Bearer clave-de-prueba' });
+    expect(JSON.stringify(dni.body)).not.toContain('clave-de-prueba');
+    responder(200, { razonSocial: 'Empresa Prueba SAC', direccion: 'Av. Prueba 123', estado: 'ACTIVO', condicion: 'HABIDO' });
+    const ruc = await como(CAJERA, 'get', '/consulta-documento?tipo=RUC&numero=20123456789');
+    expect(ruc.body).toMatchObject({ nombre: 'EMPRESA PRUEBA SAC', direccion: 'Av. Prueba 123', estado: 'ACTIVO', condicion: 'HABIDO' });
+  });
+  it('pide el tipo y un número válido; el carné de extranjería no tiene consulta (400)', async () => {
+    process.env.CONSULTA_DOC_TOKEN = 'clave-de-prueba';
+    const f = responder(200, {});
+    expect((await como(CAJERA, 'get', '/consulta-documento?numero=12345678')).status).toBe(400);
+    expect((await como(CAJERA, 'get', '/consulta-documento?tipo=DNI&numero=123')).status).toBe(400);
+    expect((await como(CAJERA, 'get', '/consulta-documento?tipo=RUC&numero=12345678')).status).toBe(400);
+    expect((await como(CAJERA, 'get', '/consulta-documento?tipo=CARNET_EXTRANJERIA&numero=CE1234567')).status).toBe(400);
+    expect(f).not.toHaveBeenCalled();
+  });
+  it('sin clave configurada responde 503; si el documento no existe, 404; si el proveedor falla, 502', async () => {
+    delete process.env.CONSULTA_DOC_TOKEN; delete process.env.CONSULTA_DOC_URL_DNI;
+    expect((await como(CAJERA, 'get', '/consulta-documento?tipo=DNI&numero=12345678')).status).toBe(503);
+    process.env.CONSULTA_DOC_TOKEN = 'clave-de-prueba';
+    responder(404, {});
+    expect((await como(CAJERA, 'get', '/consulta-documento?tipo=DNI&numero=12345678')).status).toBe(404);
+    responder(500, {});
+    expect((await como(CAJERA, 'get', '/consulta-documento?tipo=DNI&numero=12345678')).status).toBe(502);
+    responder(200, { nombres: '' });
+    expect((await como(CAJERA, 'get', '/consulta-documento?tipo=DNI&numero=12345678')).status).toBe(404);
+  });
+});
+
+describe('consulta vehicular por placa', () => {
+  const guardado = { url: process.env.CONSULTA_PLACA_URL, token: process.env.CONSULTA_PLACA_TOKEN, doc: process.env.CONSULTA_DOC_TOKEN };
+  afterEach(() => {
+    jest.restoreAllMocks();
+    for (const [k, v] of [['CONSULTA_PLACA_URL', guardado.url], ['CONSULTA_PLACA_TOKEN', guardado.token], ['CONSULTA_DOC_TOKEN', guardado.doc]] as const) {
+      if (v === undefined) delete process.env[k]; else process.env[k] = v;
+    }
+  });
+  const responder = (status: number, cuerpo: unknown) => jest.spyOn(global, 'fetch').mockResolvedValue({ ok: status < 400, status, json: async () => cuerpo } as Response);
+
+  it('devuelve marca, modelo, año, color, serie, VIN y motor de la placa; la clave va al proveedor y no a la pantalla', async () => {
+    process.env.CONSULTA_PLACA_URL = 'https://proveedor.test/placa/{placa}';
+    process.env.CONSULTA_PLACA_TOKEN = 'clave-vehicular';
+    const f = responder(200, { data: { marca: 'Suzuki', modelo: 'Jimny', anio: '2012', color: 'Plomo negro', serie: 'SER123', vin: 'VIN456', motor: 'M789', codigoMotor: 'G3LA' } });
+    const r = await como(CAJERA, 'get', '/consulta-vehicular?placa=b5w-165');
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({ placa: 'B5W165', marca: 'SUZUKI', modelo: 'JIMNY', anio: 2012, color: 'PLOMO NEGRO', nroSerie: 'SER123', nroVin: 'VIN456', nroMotor: 'M789', codigoMotor: 'G3LA' });
+    expect(String(f.mock.calls[0][0])).toBe('https://proveedor.test/placa/B5W165');
+    expect((f.mock.calls[0][1] as RequestInit).headers).toMatchObject({ Authorization: 'Bearer clave-vehicular' });
+    expect(JSON.stringify(r.body)).not.toContain('clave-vehicular');
+  });
+  it('pide una placa completa (400); sin proveedor configurado, 503; placa no encontrada, 404; proveedor caído, 502', async () => {
+    process.env.CONSULTA_PLACA_URL = 'https://proveedor.test/placa/{placa}';
+    const f = responder(200, {});
+    expect((await como(CAJERA, 'get', '/consulta-vehicular?placa=AB1')).status).toBe(400);
+    expect((await como(CAJERA, 'get', '/consulta-vehicular')).status).toBe(400);
+    expect(f).not.toHaveBeenCalled();
+    responder(404, {});
+    expect((await como(CAJERA, 'get', '/consulta-vehicular?placa=B5W165')).status).toBe(404);
+    responder(200, { marca: '', modelo: '' });
+    expect((await como(CAJERA, 'get', '/consulta-vehicular?placa=B5W165')).status).toBe(404);
+    responder(500, {});
+    expect((await como(CAJERA, 'get', '/consulta-vehicular?placa=B5W165')).status).toBe(502);
+    delete process.env.CONSULTA_PLACA_URL;
+    expect((await como(CAJERA, 'get', '/consulta-vehicular?placa=B5W165')).status).toBe(503);
   });
 });

@@ -158,7 +158,7 @@ it('Estado: cerrar sin nota de venta muestra el aviso del servidor', async () =>
 it('Nueva orden: pide cliente, vehículo y tipo de atención y la crea', async () => {
   simular();
   render(<App />);
-  await userEvent.click(await screen.findByRole('button', { name: '+ Nueva orden' }));
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nuevo' }));
   const d = await screen.findByRole('dialog');
   await userEvent.selectOptions(within(d).getByLabelText('Cliente'), 'c1');
   await userEvent.selectOptions(within(d).getByLabelText('Vehículo'), 'v1');
@@ -179,7 +179,7 @@ it('Nueva orden: fotos de ingreso opcionales, como máximo 5, que se suben al cr
   simular();
   vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: () => 'blob:foto', revokeObjectURL: () => undefined }));
   render(<App />);
-  await userEvent.click(await screen.findByRole('button', { name: '+ Nueva orden' }));
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nuevo' }));
   const d = await screen.findByRole('dialog');
   expect(within(d).getByRole('button', { name: /Cargar fotos/ })).toBeEnabled();
   expect(within(d).getByRole('button', { name: /Tomar foto/ })).toBeEnabled();
@@ -208,7 +208,7 @@ it('Editar: el responsable de un producto es una cajera o un logístico y el de 
 it('Nueva orden: el servicio toma por defecto el técnico de la ODS y el producto, la cajera', async () => {
   simular();
   render(<App />);
-  await userEvent.click(await screen.findByRole('button', { name: '+ Nueva orden' }));
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nuevo' }));
   const d = await screen.findByRole('dialog');
   await userEvent.selectOptions(within(d).getByLabelText('Técnico'), 't1');
   const resp = () => within(d).getAllByLabelText('Responsable').map((s) => (s as HTMLSelectElement).value);
@@ -232,4 +232,51 @@ it('Editar: el precio con coma decimal («12,50») se entiende y lo que no es n�
   await userEvent.type(within(d).getByLabelText('Precio unitario'), 'x');
   await userEvent.tab();
   expect(within(d).getByText('TOTAL').parentElement).toHaveTextContent('S/ 12.50');
+});
+
+it('Pagos recibidos: método, valor recibido y concepto uno bajo otro, historia plegable y botones Salir y Guardar', async () => {
+  simular();
+  render(<App />);
+  const t = (await screen.findByText('#2026102800001')).closest('article')!;
+  await userEvent.click(within(t).getByRole('button', { name: 'Registrar abono o pago' }));
+  const d = screen.getByRole('dialog', { name: 'Pagos recibidos' });
+  expect(within(d).getByLabelText('Método')).toBeInTheDocument();
+  expect(within(d).getByLabelText('Concepto de pago')).toBeInTheDocument();
+  expect(within(d).getByText('No hay pagos registrados.')).toBeInTheDocument();
+  await userEvent.click(within(d).getByRole('button', { name: /Historia de pagos/ }));
+  expect(within(d).queryByText('No hay pagos registrados.')).toBeNull();
+  await userEvent.type(within(d).getByLabelText('Valor recibido'), '5,50');
+  await userEvent.click(within(d).getByRole('button', { name: 'Guardar' }));
+  await waitFor(() => expect(llamadas.some((l) => l.metodo === 'POST' && l.ruta === '/ordenes/o1/abonos')).toBe(true));
+  expect(llamadas.find((l) => l.ruta === '/ordenes/o1/abonos')!.cuerpo).toMatchObject({ concepto: 'Abono', valor: 5.5 });
+});
+
+it('Pagos recibidos: «Salir» cierra el modal sin guardar nada', async () => {
+  simular();
+  render(<App />);
+  const t = (await screen.findByText('#2026102800001')).closest('article')!;
+  await userEvent.click(within(t).getByRole('button', { name: 'Registrar abono o pago' }));
+  await userEvent.click(within(screen.getByRole('dialog', { name: 'Pagos recibidos' })).getByRole('button', { name: 'Salir' }));
+  expect(screen.queryByRole('dialog', { name: 'Pagos recibidos' })).toBeNull();
+  expect(llamadas.some((l) => l.metodo === 'POST')).toBe(false);
+});
+
+it('Imprimir: PDF, Recepción y Ticket abren su vista previa en un modal con el visor del navegador', async () => {
+  const creados: Blob[] = [];
+  const revocados: string[] = [];
+  URL.createObjectURL = (b: Blob | MediaSource) => { creados.push(b as Blob); return `blob:vista-${creados.length}`; };
+  URL.revokeObjectURL = (u: string) => { revocados.push(u); };
+  simular();
+  render(<App />);
+  const t = (await screen.findByText('#2026102800001')).closest('article')!;
+  for (const [formato, titulo] of [['PDF', 'Orden de servicio 2026102800001'], ['Recepción', 'Recepción 2026102800001'], ['Ticket', 'Ticket 2026102800001']] as const) {
+    await userEvent.click(within(t).getByRole('button', { name: 'Imprimir' }));
+    await userEvent.click(within(t).getByRole('menuitem', { name: formato }));
+    const d = screen.getByRole('dialog', { name: titulo });
+    expect(within(d).getByTitle(`Vista previa: ${titulo}`)).toHaveAttribute('src', `blob:vista-${creados.length}`);
+    expect(creados[creados.length - 1].type).toBe('application/pdf');
+    await userEvent.click(within(d).getAllByRole('button', { name: 'Cerrar' }).at(-1)!);
+    expect(screen.queryByRole('dialog', { name: titulo })).toBeNull();
+  }
+  expect(revocados).toEqual(['blob:vista-1', 'blob:vista-2', 'blob:vista-3']);
 });

@@ -77,10 +77,10 @@ it('lista los usuarios con su correo, sus roles y su estado', async () => {
   expect(within(baja).getByText('Inactivo')).toBeInTheDocument();
 });
 
-it('«+ Usuario» crea un usuario con nombre, correo, contraseña, local y roles', async () => {
+it('«+ Nuevo» crea un usuario con nombre, correo, contraseña, local y roles', async () => {
   simular('A');
   render(<App />);
-  await userEvent.click(await screen.findByRole('button', { name: '+ Usuario' }));
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nuevo' }));
   await userEvent.type(screen.getByLabelText('Nombre'), 'Reemplazo Nuevo');
   await userEvent.type(screen.getByLabelText('Correo'), 'nuevo@demo.local');
   await userEvent.type(screen.getByLabelText('Contraseña'), 'ClaveSegura-1');
@@ -95,7 +95,7 @@ it('«+ Usuario» crea un usuario con nombre, correo, contraseña, local y roles
 it('solo ofrece los roles que puedes asignar (nivel inferior al tuyo)', async () => {
   simular('A');
   render(<App />);
-  await userEvent.click(await screen.findByRole('button', { name: '+ Usuario' }));
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nuevo' }));
   expect(screen.getByRole('checkbox', { name: 'Cajera' })).toBeInTheDocument();
   expect(screen.queryByRole('checkbox', { name: 'Administrador' })).toBeNull();
 });
@@ -104,7 +104,7 @@ it('muestra el mensaje del servidor cuando algo falla (correo repetido)', async 
   simular('A');
   respuestas['POST /usuarios'] = { status: 409, cuerpo: { message: 'Ese correo ya existe.' } };
   render(<App />);
-  await userEvent.click(await screen.findByRole('button', { name: '+ Usuario' }));
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nuevo' }));
   await userEvent.type(screen.getByLabelText('Nombre'), 'X');
   await userEvent.type(screen.getByLabelText('Correo'), 'cajera@demo.local');
   await userEvent.type(screen.getByLabelText('Contraseña'), 'ClaveSegura-1');
@@ -118,6 +118,7 @@ it('desactiva un usuario después de confirmar', async () => {
   vi.stubGlobal('confirm', () => true);
   render(<App />);
   const fila = (await screen.findByText('cajera@demo.local')).closest('tr')!;
+  await userEvent.click(within(fila).getByRole('button', { name: 'Acciones' }));
   await userEvent.click(within(fila).getByRole('button', { name: 'Desactivar' }));
   await waitFor(() => expect(llamadas.some((l) => l.metodo === 'PATCH' && l.ruta === '/usuarios/u1')).toBe(true));
   expect(llamadas.find((l) => l.metodo === 'PATCH')!.cuerpo).toEqual({ activo: false });
@@ -127,15 +128,42 @@ it('con nivel «solo ver» no hay botones para crear ni modificar', async () => 
   simular('V');
   render(<App />);
   await screen.findByText('cajera@demo.local');
-  expect(screen.queryByRole('button', { name: '+ Usuario' })).toBeNull();
-  expect(screen.queryByRole('button', { name: 'Desactivar' })).toBeNull();
+  expect(screen.queryByRole('button', { name: '+ Nuevo' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Acciones' })).toBeNull();
+});
+
+it('las acciones de la fila van en un solo botón con lista: Editar, Cambiar contraseña y Desactivar', async () => {
+  simular('A');
+  render(<App />);
+  const fila = (await screen.findByText('cajera@demo.local')).closest('tr')!;
+  expect(within(fila).queryByRole('button', { name: 'Editar' })).toBeNull();
+  await userEvent.click(within(fila).getByRole('button', { name: 'Acciones' }));
+  for (const a of ['Editar', 'Cambiar contraseña', 'Desactivar']) expect(within(fila).getByRole('button', { name: a })).toBeInTheDocument();
+});
+
+it('«Cambiar contraseña» pide la nueva contraseña dos veces y la envía', async () => {
+  simular('A');
+  render(<App />);
+  const fila = (await screen.findByText('cajera@demo.local')).closest('tr')!;
+  await userEvent.click(within(fila).getByRole('button', { name: 'Acciones' }));
+  await userEvent.click(within(fila).getByRole('button', { name: 'Cambiar contraseña' }));
+  const d = screen.getByRole('dialog', { name: /Cambiar contraseña de/ });
+  await userEvent.type(within(d).getByLabelText('Nueva contraseña *'), 'clave-nueva-1');
+  await userEvent.type(within(d).getByLabelText('Repetir contraseña *'), 'clave-distinta');
+  await userEvent.click(within(d).getByRole('button', { name: 'Guardar' }));
+  expect(await screen.findByText('Las dos contraseñas no son iguales.')).toBeInTheDocument();
+  expect(llamadas.some((l) => l.metodo === 'PATCH')).toBe(false);
+  await userEvent.clear(within(d).getByLabelText('Repetir contraseña *'));
+  await userEvent.type(within(d).getByLabelText('Repetir contraseña *'), 'clave-nueva-1');
+  await userEvent.click(within(d).getByRole('button', { name: 'Guardar' }));
+  await waitFor(() => expect(llamadas.find((l) => l.metodo === 'PATCH' && l.ruta === '/usuarios/u1')?.cuerpo).toEqual({ password: 'clave-nueva-1' }));
 });
 
 it('Roles: el Superadministrador crea un rol propio eligiendo módulos y niveles', async () => {
   simular('A');
   render(<App />);
   await userEvent.click(await screen.findByRole('button', { name: 'Roles' }));
-  await userEvent.click(await screen.findByRole('button', { name: '+ Rol' }));
+  await userEvent.click(await screen.findByRole('button', { name: '+ Nuevo' }));
   expect(screen.getByRole('dialog', { name: 'Nuevo rol propio' })).toBeInTheDocument();
   await userEvent.type(screen.getByLabelText('Nombre del rol'), 'Recepcionista');
   await userEvent.click(screen.getByRole('checkbox', { name: 'Clientes' }));
@@ -153,6 +181,6 @@ it('Roles: sin nivel «todo» sobre Usuarios no se puede crear roles', async () 
   simular('E');
   render(<App />);
   await userEvent.click(await screen.findByRole('button', { name: 'Roles' }));
-  expect(screen.queryByRole('button', { name: '+ Rol' })).toBeNull();
+  expect(screen.queryByRole('button', { name: '+ Nuevo' })).toBeNull();
   expect(await screen.findByText('Cajera')).toBeInTheDocument();
 });

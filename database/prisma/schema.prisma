@@ -17,6 +17,16 @@ model Organizacion {
   ruc                String?
   activa             Boolean            @default(true)
   paisPredeterminado String             @default("PE")
+  // Datos que salen en la cabecera y el pie de los PDF de la orden (ODS, recepción y ticket).
+  direccion          String?
+  telefono           String?
+  correo             String?
+  lema               String?
+  cuentasBancarias   String?
+  terminosRecepcion  String?
+  razonSocial        String?
+  pieTicket          String?
+  anchoTicketMm      Int                @default(80)
   locales            Local[]
   roles              Rol[]
   usuarios           Usuario[]
@@ -47,6 +57,11 @@ model Local {
   organizacionId String
   nombre         String
   direccion      String?
+  telefono       String?
+  // Series de los comprobantes que emite este local (la cajera emite con las de su local).
+  serieNotaVenta String?
+  serieBoleta    String?
+  serieFactura   String?
   organizacion   Organizacion           @relation(fields: [organizacionId], references: [id])
   usuarios       Usuario[]
   ordenes        OrdenServicio[]
@@ -135,6 +150,7 @@ model Cliente {
   movil           String?
   direccionFiscal String?
   email           String?
+  contacto        String?
   ubigeo          String?
   comentario      String?
   esGenerico      Boolean         @default(false)
@@ -353,12 +369,15 @@ model Proveedor {
   organizacionId String
   tipoDocumento  TipoDocumento @default(RUC)
   documento      String
-  nombre         String
-  contacto       String?
-  telefono       String?
-  correo         String?
-  direccion      String?
-  rubro          String?
+  nombre          String
+  nombreComercial String?
+  pais            String        @default("PE")
+  movil           String?
+  direccionFiscal String?
+  email           String?
+  contacto        String?
+  comentario      String?
+  rubro           String?
   activo         Boolean       @default(true)
   creadoEn       DateTime      @default(now())
   organizacion   Organizacion  @relation(fields: [organizacionId], references: [id])

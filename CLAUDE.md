@@ -1,4 +1,4 @@
-# CLAUDE.md — Tesis sistema posventa (R Motriz)
+# CLAUDE.md — Tesis sistema posventa (RMOTRIZ)
 
 Este archivo no duplica reglas: la fuente única es `AGENTS.md`. Se importa aquí para que Claude Code lo cargue al abrir la carpeta.
 

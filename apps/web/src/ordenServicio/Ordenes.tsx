@@ -3,6 +3,8 @@ import { api, CatalogosOds, Cliente, Orden, Vehiculo } from '../comun/api';
 import EditorOrden from './EditorOrden';
 import FormAbono from './FormAbono';
 import FormFechas from './FormFechas';
+import VistaPreviaPdf from './VistaPreviaPdf';
+import { FormatoPdf, generarPdf, TITULO_VISTA } from './pdfOrden';
 import { Paginacion, usePaginacion } from '../comun/Paginacion';
 import { ESTADOS, fecha, hace, Nivel, soles } from './ordenServicio.util';
 
@@ -16,6 +18,7 @@ export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nive
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [abierta, setAbierta] = useState<Orden | 'nueva' | null>(null);
   const [menu, setMenu] = useState<{ id: string; tipo: 'estado' | 'imprimir' | 'abono' | 'comprobantes' | 'bitacora' | 'fechas' } | null>(null);
+  const [vista, setVista] = useState<{ titulo: string; url: string } | null>(null);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
@@ -42,23 +45,31 @@ export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nive
     if (motivo === null) return;
     try { await api.eliminarOrden(o.id, motivo); await ok(`ODS ${o.codigo} eliminada.`); } catch (x) { falla(x); }
   }
-  function imprimir(o: Orden, formato: 'PDF' | 'Ticket' | 'Recepción') {
+  // El PDF se arma aquí mismo y se muestra en un modal con el visor del navegador (imprimir y descargar vienen en el visor).
+  function imprimir(o: Orden, formato: FormatoPdf) {
     setMenu(null);
-    const w = window.open('', '_blank');
-    if (!w) return setError('Permite ventanas emergentes para imprimir.');
-    const filas = o.detalles.map((d) => `<tr><td>${d.descripcion}</td><td style="text-align:right">${d.cantidad}</td><td style="text-align:right">${soles(d.total)}</td></tr>`).join('');
-    const terminos = formato === 'Recepción' ? '<h3>Términos y condiciones</h3><p>El taller no se responsabiliza por objetos de valor dejados en el vehículo. Los repuestos cambiados se entregan al cliente si los solicita.</p><br><p>______________________<br>Firma del cliente</p>' : '';
-    w.document.write(`<title>${formato} ODS ${o.codigo}</title><body style="font-family:Arial;padding:20px;${formato === 'Ticket' ? 'width:280px;font-size:12px' : ''}"><h2>${formato === 'Recepción' ? 'Recepción del vehículo' : 'Orden de servicio'} ${o.codigo}</h2><p>${o.cliente.nombre} (${o.cliente.documento})<br>${[o.vehiculo.marca, o.vehiculo.modelo, o.vehiculo.anio, o.vehiculo.placa].filter(Boolean).join(' · ')} · ${o.km ?? ''} km<br>${o.tipoAtencion}</p>${formato === 'Recepción' ? '' : `<table style="width:100%">${filas}</table><h3>TOTAL ${soles(o.total)}</h3>`}${terminos}</body>`);
-    w.document.close();
-    w.print();
+    try {
+      const bytes = generarPdf(formato, o, cat?.empresa ?? { nombre: '', ruc: null, direccion: null, telefono: null, correo: null, lema: null, cuentasBancarias: null, terminosRecepcion: null });
+      cerrarVista();
+      setVista({ titulo: `${TITULO_VISTA[formato]} ${o.codigo}`, url: URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })) });
+    } catch (x) {
+      falla(x);
+    }
+  }
+  function cerrarVista() {
+    setVista((v) => {
+      if (v) URL.revokeObjectURL(v.url);
+      return null;
+    });
   }
 
   return (
     <div className="panel ancho ods">
       <div className="fila entre">
         <h1>Órdenes de servicio</h1>
-        {puedeEditar && <button type="button" className="primario chico" onClick={() => setAbierta('nueva')}>+ Nueva orden</button>}
+        {puedeEditar && <button type="button" className="primario chico" onClick={() => setAbierta('nueva')}>+ Nuevo</button>}
       </div>
+      {vista && <VistaPreviaPdf titulo={vista.titulo} url={vista.url} alCerrar={cerrarVista} />}
       <div className="estados" role="tablist">
         {ESTADOS.map((e) => (
           <button key={e.id} type="button" role="tab" aria-selected={estado === e.id} className={'est-' + e.id + (estado === e.id ? ' on' : '')} onClick={() => { setEstado(e.id); cargar(e.id).catch(falla); }}>{e.nombre}</button>
@@ -108,9 +119,9 @@ export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nive
             <button type="button" className="ac" aria-label="Registrar abono o pago" title="Registrar abono o pago" disabled={!puedeEditar} onClick={() => setMenu({ id: o.id, tipo: 'abono' })}>💵</button>
             {menu?.id === o.id && menu.tipo === 'abono' && cat && (
               <div className="fondo-modal">
-                <div className="modal-form" role="dialog" aria-modal="true" aria-label="Pagos recibidos">
+                <div className="modal-form modal-pagos" role="dialog" aria-modal="true" aria-label="Pagos recibidos">
                   <div className="fila entre"><h3>Pagos recibidos</h3><button type="button" className="cerrar" aria-label="Cerrar" onClick={() => setMenu(null)}>×</button></div>
-                  <FormAbono orden={o} metodos={cat.metodosPago} alGuardar={ok} alFallar={falla} />
+                  <FormAbono orden={o} metodos={cat.metodosPago} alGuardar={ok} alFallar={falla} alCancelar={() => setMenu(null)} />
                 </div>
               </div>
             )}

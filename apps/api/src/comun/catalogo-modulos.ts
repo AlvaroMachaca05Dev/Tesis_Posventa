@@ -214,7 +214,7 @@ export const CATALOGO_MODULOS: ModuloCatalogo[] = [
   },
   {
     "id": "ajustes",
-    "label": "Configuración (horarios y avisos)",
+    "label": "Empresa y parámetros",
     "grupo": "Configuración"
   },
   {

@@ -97,7 +97,7 @@ function resumen(o: Orden) {
     id: o.id, codigo: o.codigo, externa: o.externa, estado: o.estado, decision: o.decision, tipoAtencion: o.tipoAtencion, tipoAtencionDetalle: o.tipoAtencionDetalle,
     fechaInicio: o.fechaInicio.toISOString(), fechaCierre: o.fechaCierre?.toISOString() ?? null, km: o.km,
     observaciones: o.observaciones, recomendaciones: o.recomendaciones,
-    cliente: { id: o.cliente.id, nombre: o.cliente.nombre, documento: o.cliente.documento, tipoDocumento: o.cliente.tipoDocumento },
+    cliente: { id: o.cliente.id, nombre: o.cliente.nombre, documento: o.cliente.documento, tipoDocumento: o.cliente.tipoDocumento, movil: o.cliente.movil, direccionFiscal: o.cliente.direccionFiscal, pais: o.cliente.pais },
     vehiculo: { id: o.vehiculo.id, grupo: o.vehiculo.grupo?.activo ? o.vehiculo.grupo.codigo : null, placa: o.vehiculo.placa, marca: o.vehiculo.marca, modelo: o.vehiculo.modelo, anio: o.vehiculo.anio, color: o.vehiculo.color, nroSerie: o.vehiculo.nroSerie, nroVin: o.vehiculo.nroVin, nroMotor: o.vehiculo.nroMotor },
     tecnico: persona(o.tecnico), jefeTaller: persona(o.jefeTaller), creadoPor: persona(o.creadoPor),
     detalles, total, abonos, totalAbonos, pendiente: r2(total - totalAbonos), solapamientosMantenidos: o.solapamientosMantenidos,
@@ -181,13 +181,19 @@ export class OrdenesController {
     return u.id;
   }
 
+  /** Datos de la empresa para la cabecera y el pie de los PDF de la orden. */
+  private async datosEmpresa(organizacionId: string) {
+    const e = await this.prisma.organizacion.findUniqueOrThrow({ where: { id: organizacionId } });
+    return { nombre: e.nombre, razonSocial: e.razonSocial, ruc: e.ruc, direccion: e.direccion, telefono: e.telefono, correo: e.correo, lema: e.lema, cuentasBancarias: e.cuentasBancarias, terminosRecepcion: e.terminosRecepcion, pieTicket: e.pieTicket, anchoTicketMm: e.anchoTicketMm };
+  }
+
   @Get('catalogos')
   @Requiere('ods', 'V')
   async catalogos(@SesionActual() s: Sesion) {
     const organizacionId = this.empresa(s);
     const usuarios = await this.prisma.usuario.findMany({ where: { organizacionId, activo: true }, include: { roles: { include: { rol: true } } }, orderBy: { nombre: 'asc' } });
     const con = (nombre: string) => usuarios.filter((u) => u.roles.some((r) => r.rol.nombre === nombre)).map((u) => ({ id: u.id, nombre: u.nombre }));
-    return { tiposAtencion: TIPOS_ATENCION, decisiones: DECISIONES, estados: ESTADOS, metodosPago: METODOS, tecnicos: [...con('Técnico'), ...con('Jefe de taller')], jefes: con('Jefe de taller'), logisticos: con('Logístico'), cajeras: con('Cajera') };
+    return { tiposAtencion: TIPOS_ATENCION, decisiones: DECISIONES, estados: ESTADOS, metodosPago: METODOS, tecnicos: [...con('Técnico'), ...con('Jefe de taller')], jefes: con('Jefe de taller'), logisticos: con('Logístico'), cajeras: con('Cajera'), empresa: await this.datosEmpresa(organizacionId) };
   }
 
   @Get()

@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
 import { PrismaService } from '../comun/prisma.service';
 import { choqueUnico, empresaDe, texto } from '../comun/validacion';
+import { datosTercero, revisarMovil } from '../comun/tercero';
 import { calcularServicio, errorDocumento, errorTelefono, evaluarSolapamientos, HORAS_PREDETERMINADAS, Nivel, Regla, ReglaSolape, TipoRegla, validarRegla } from './maestros.reglas';
 
 const num = (d: Prisma.Decimal | number | null | undefined) => (d == null ? null : Number(d));
@@ -29,8 +30,8 @@ const codigo = (v: unknown, campo = 'el código') => requerido(v, campo, 20).toU
 
 // ─────────── formas de respuesta ───────────
 const proveedorRes = (p: Prisma.ProveedorGetPayload<object>) => ({
-  id: p.id, tipoDocumento: p.tipoDocumento, documento: p.documento, nombre: p.nombre, contacto: p.contacto, telefono: p.telefono,
-  correo: p.correo, direccion: p.direccion, rubro: p.rubro, activo: p.activo, creadoEn: p.creadoEn.toISOString(),
+  id: p.id, tipoDocumento: p.tipoDocumento, documento: p.documento, nombre: p.nombre, nombreComercial: p.nombreComercial, pais: p.pais, movil: p.movil,
+  direccionFiscal: p.direccionFiscal, email: p.email, contacto: p.contacto, comentario: p.comentario, rubro: p.rubro, activo: p.activo, creadoEn: p.creadoEn.toISOString(),
 });
 const INCLUIR_PRODUCTO = { proveedor: true, stock: true } as const;
 const productoRes = (p: Prisma.ProductoGetPayload<{ include: typeof INCLUIR_PRODUCTO }>) => {
@@ -83,28 +84,10 @@ export class MaestrosController {
   constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
   // ═══════════════ Proveedores (RF-008) ═══════════════
+  // Los mismos datos y las mismas reglas que un cliente (comun/tercero.ts); el rubro se conserva aunque ya no se pida en pantalla.
   private datosProveedor(b: Record<string, unknown>, parcial: boolean) {
-    const d: Record<string, unknown> = {};
-    const viene = (k: string) => !parcial || b[k] !== undefined;
-    if (viene('tipoDocumento')) {
-      const t = String(b.tipoDocumento ?? 'RUC') || 'RUC';
-      if (!TIPOS_DOCUMENTO.includes(t)) throw new BadRequestException('Elige el tipo de documento: DNI, Carné de extranjería o RUC.');
-      d.tipoDocumento = t;
-    }
-    if (viene('documento')) d.documento = requerido(b.documento, 'el número de documento', 20).toUpperCase().replace(/\s+/g, '');
-    if (viene('nombre')) d.nombre = requerido(b.nombre, 'la razón social o el nombre');
-    for (const k of ['contacto', 'direccion', 'rubro']) if (viene(k)) d[k] = texto(b[k], 150);
-    if (viene('telefono')) {
-      const t = String(b.telefono ?? '').replace(/[\s-]/g, '') || null;
-      const e = errorTelefono(t);
-      if (e) throw new BadRequestException(e);
-      d.telefono = t;
-    }
-    if (viene('correo')) {
-      const c = texto(b.correo, 150);
-      if (c && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)) throw new BadRequestException('El correo no es válido.');
-      d.correo = c;
-    }
+    const d = datosTercero(b, { tipoPorDefecto: 'RUC', paisBase: 'PE', parcial });
+    if (!parcial || b.rubro !== undefined) d.rubro = texto(b.rubro, 150);
     if (b.activo !== undefined) d.activo = !!b.activo;
     return d;
   }
@@ -121,6 +104,7 @@ export class MaestrosController {
     const organizacionId = empresaDe(s);
     try {
       const d = this.datosProveedor(b ?? {}, false);
+      revisarMovil(d);
       const e = errorDocumento(String(d.tipoDocumento), String(d.documento));
       if (e) throw new BadRequestException(e);
       const p = await this.prisma.proveedor.create({ data: { ...(d as Prisma.ProveedorUncheckedCreateInput), organizacionId } });
@@ -138,6 +122,7 @@ export class MaestrosController {
     if (!antes) throw new NotFoundException('Proveedor no encontrado.');
     try {
       const d = this.datosProveedor(b ?? {}, true);
+      revisarMovil(d, antes);
       const e = errorDocumento(String(d.tipoDocumento ?? antes.tipoDocumento), String(d.documento ?? antes.documento));
       if (e && (d.tipoDocumento !== undefined || d.documento !== undefined)) throw new BadRequestException(e);
       const p = await this.prisma.proveedor.update({ where: { id }, data: d });

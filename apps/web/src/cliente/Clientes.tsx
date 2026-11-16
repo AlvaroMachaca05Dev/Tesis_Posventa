@@ -1,18 +1,15 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { api, Cliente, Pais, TipoDocumento } from '../comun/api';
+import { useCallback, useEffect, useState } from 'react';
+import { api, Cliente, Pais } from '../comun/api';
+import FormTercero from '../comun/FormTercero';
 import { FilaFiltros, useFiltros } from '../comun/FiltrosColumna';
-import { largoDocumento } from '../comun/documento';
+import { dejarFiltro } from '../comun/filtroPendiente';
 import { useColumnasRedimensionables } from '../comun/useColumnasRedimensionables';
 import { MenuAcciones } from '../comun/TablaMaestro';
 import { Paginacion, usePaginacion } from '../comun/Paginacion';
 
 type Nivel = 'A' | 'E' | 'V';
-export const TIPOS: { valor: TipoDocumento; etiqueta: string }[] = [
-  { valor: 'DNI', etiqueta: 'DNI' },
-  { valor: 'CARNET_EXTRANJERIA', etiqueta: 'Carné de extranjería' },
-  { valor: 'RUC', etiqueta: 'RUC' },
-];
-export const etiquetaDocumento = (t: TipoDocumento) => (t === 'CARNET_EXTRANJERIA' ? 'CE' : t);
+export { TIPOS, etiquetaDocumento } from '../comun/documento';
+import { etiquetaDocumento } from '../comun/documento';
 const fecha = (iso: string) => new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
 
 export default function Clientes({ nivel }: { nivel: Nivel }) {
@@ -24,7 +21,6 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
   const [verEliminados, setVerEliminados] = useState(false);
-  const [vehiculosDe, setVehiculosDe] = useState<{ cliente: string; placas: string[] } | null>(null);
 
   const cargar = useCallback(async (texto: string) => {
     setClientes(await api.clientes(texto));
@@ -72,9 +68,8 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
       <h1>Clientes</h1>
       <div className="fila entre">
         <label className="check"><input type="checkbox" checked={verEliminados} onChange={(e) => setVerEliminados(e.target.checked)} /> Mostrar eliminados</label>
-        {puedeEditar && <button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Cliente</button>}
+        {puedeEditar && <button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Nuevo</button>}
       </div>
-      {vehiculosDe && <p className="ok" role="status">Vehículos de {vehiculosDe.cliente}: {vehiculosDe.placas.length ? vehiculosDe.placas.join(', ') : 'ninguno'}.</p>}
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !editando && <p className="error" role="alert">{error}</p>}
       {editando && (
@@ -122,7 +117,7 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
                       {!c.esGenerico && (
                         <button type="button" className={c.activo ? 'peligro' : ''} onClick={() => void cambiarEstado(c)}>{c.activo ? 'Eliminar' : 'Restaurar'}</button>
                       )}
-                      <button type="button" onClick={() => void api.cliente(c.id).then((x) => setVehiculosDe({ cliente: x.nombre, placas: x.vehiculos.map((v) => v.placa) })).catch((e) => setError((e as Error).message))}>Vehículos</button>
+                      <button type="button" onClick={() => { dejarFiltro('vehiculos', 'Número de documento', c.documento); window.location.hash = '#/vehiculos'; }}>Vehículos</button>
                     </MenuAcciones>
                   </td>
                 )}
@@ -157,74 +152,23 @@ export function FormCliente(p: {
   alFallar: (m: string) => void;
 }) {
   const c = p.cliente;
-  const [tipo, setTipo] = useState<TipoDocumento>(c?.tipoDocumento ?? 'DNI');
-  const [documento, setDocumento] = useState(c?.documento ?? '');
-  const [nombre, setNombre] = useState(c?.nombre ?? '');
-  const [comercial, setComercial] = useState(c?.nombreComercial ?? '');
-  const [pais, setPais] = useState(c?.pais ?? p.paisBase);
-  const [movil, setMovil] = useState(c?.movil ?? '');
-  const [direccion, setDireccion] = useState(c?.direccionFiscal ?? '');
-  const [email, setEmail] = useState(c?.email ?? '');
-  const [ubigeo, setUbigeo] = useState(c?.ubigeo ?? '');
-  const [comentario, setComentario] = useState(c?.comentario ?? '');
-  const prefijo = p.paises.find((x) => x.codigo === pais)?.prefijo ?? '';
-
-  async function enviar(e: FormEvent) {
-    e.preventDefault();
-    const datos = { tipoDocumento: tipo, documento, nombre, nombreComercial: comercial, pais, movil, direccionFiscal: direccion, email, ubigeo, comentario };
-    try {
-      if (c) {
-        const guardado = await api.editarCliente(c.id, datos);
-        await p.alGuardar('Cliente guardado.', guardado);
-      } else {
-        const creado = await api.crearCliente(datos);
-        await p.alGuardar('Cliente creado.', creado);
-      }
-    } catch (err) {
-      p.alFallar((err as Error).message);
-    }
-  }
-
   return (
-    <div className="fondo-modal">
-      <form className="modal-form" role="dialog" aria-modal="true" aria-label={c ? 'Editar cliente' : 'Nuevo cliente'} onSubmit={enviar}>
-        <h2>{c ? 'Editar cliente' : 'Nuevo cliente'}</h2>
-        {p.error && <p className="error" role="alert">{p.error}</p>}
-        <div className="dos-col">
-          <div className="campo"><label htmlFor="c-tipo">Tipo de documento</label>
-            <select id="c-tipo" value={tipo} onChange={(e) => { const t = e.target.value as TipoDocumento; setTipo(t); setDocumento((d) => d.slice(0, largoDocumento(t).max)); }} disabled={c?.esGenerico}>
-              {TIPOS.map((t) => <option key={t.valor} value={t.valor}>{t.etiqueta}</option>)}
-            </select></div>
-          <div className="campo"><label htmlFor="c-doc">Número de documento</label>
-            <input id="c-doc" value={documento} maxLength={c?.esGenerico ? undefined : largoDocumento(tipo).max} inputMode={largoDocumento(tipo).digitos ? 'numeric' : undefined}
-              onChange={(e) => setDocumento(largoDocumento(tipo).digitos ? e.target.value.replace(/\D/g, '') : e.target.value.toUpperCase())} required disabled={c?.esGenerico} /></div>
-          <div className="campo"><label htmlFor="c-nombre">Razón social o nombre</label>
-            <input id="c-nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} required /></div>
-          <div className="campo"><label htmlFor="c-comercial">Nombre comercial</label>
-            <input id="c-comercial" value={comercial} onChange={(e) => setComercial(e.target.value)} /></div>
-          <div className="campo"><label htmlFor="c-pais">País</label>
-            <select id="c-pais" value={pais} onChange={(e) => setPais(e.target.value)}>
-              {p.paises.map((x) => <option key={x.codigo} value={x.codigo}>{`${x.nombre} (${x.prefijo})`}</option>)}
-            </select></div>
-          <div className="campo"><label htmlFor="c-movil">Móvil</label>
-            <div className="movil">
-              <span className="prefijo">{prefijo}</span>
-              <input id="c-movil" inputMode="numeric" maxLength={pais === 'PE' ? 9 : 15} value={movil} onChange={(e) => setMovil(e.target.value.replace(/\D/g, ''))} placeholder="Sin prefijo" />
-            </div></div>
-          <div className="campo"><label htmlFor="c-dir">Dirección fiscal</label>
-            <input id="c-dir" value={direccion} onChange={(e) => setDireccion(e.target.value)} /></div>
-          <div className="campo"><label htmlFor="c-mail">Correo</label>
-            <input id="c-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <div className="campo"><label htmlFor="c-ubigeo">Ubigeo</label>
-            <input id="c-ubigeo" value={ubigeo} onChange={(e) => setUbigeo(e.target.value)} /></div>
-          <div className="campo ancha"><label htmlFor="c-com">Comentario</label>
-            <textarea id="c-com" rows={2} value={comentario} onChange={(e) => setComentario(e.target.value)} /></div>
-        </div>
-        <div className="fila fin">
-          <button type="button" onClick={p.alCancelar}>Cancelar</button>
-          <button type="submit" className="primario chico">Guardar cliente</button>
-        </div>
-      </form>
-    </div>
+    <FormTercero
+      uno="cliente"
+      entrada={c}
+      tipoPorDefecto="DNI"
+      paises={p.paises}
+      paisBase={p.paisBase}
+      error={p.error}
+      alCancelar={p.alCancelar}
+      alGuardar={async (datos) => {
+        try {
+          if (c) await p.alGuardar('Cliente guardado.', await api.editarCliente(c.id, datos));
+          else await p.alGuardar('Cliente creado.', await api.crearCliente(datos));
+        } catch (err) {
+          p.alFallar((err as Error).message);
+        }
+      }}
+    />
   );
 }

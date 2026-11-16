@@ -3,6 +3,7 @@ import { api, ItemMenu, Me, sesion, UsuarioLista } from '../comun/api';
 import Usuarios from '../usuario/Usuarios';
 import Clientes from '../cliente/Clientes';
 import Vehiculos from '../vehiculo/Vehiculos';
+import Empresa from '../empresa/Empresa';
 import Ordenes from '../ordenServicio/Ordenes';
 import Proveedores from '../maestros/Proveedores';
 import Catalogo from '../maestros/Catalogo';
@@ -49,8 +50,9 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
   const puedeConfigurar = me.permisos['ajustes'] === 'A';
 
   useEffect(() => {
-    if (me.esPlataforma) api.usuarios().then(setUsuarios).catch(() => setUsuarios([]));
-  }, [me.esPlataforma]);
+    // La lista de «Ver como…» se pide como Desarrollador; viendo como otra persona la API la rechazaría (403), así que se conserva la ya cargada.
+    if (me.esPlataforma && !me.actuandoComo) api.usuarios().then(setUsuarios).catch(() => setUsuarios([]));
+  }, [me.esPlataforma, me.actuandoComo]);
 
   useEffect(() => {
     const f = () => setCompleta(enPantallaCompleta());
@@ -127,7 +129,7 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
     <div className={clase}>
       {movil && cajon && <div className="velo" onClick={() => setCajon(false)} />}
       <aside>
-        <div className="marca">R <b>Motriz</b></div>
+        <div className="marca">R<b>MOTRIZ</b></div>
         <nav aria-label="Menú">
           {sueltos.length > 0 && <div className="grupo">{sueltos.map(enlace)}</div>}
           {grupos.map((g) => {
@@ -202,7 +204,8 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
           {mostrado?.id === 'catalogo' && <Catalogo nivel={mostrado.nivel} />}
           {mostrado?.id === 'grupos' && <Grupos nivel={mostrado.nivel} />}
           {mostrado?.id === 'solapes' && <Solapamientos nivel={mostrado.nivel} />}
-          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods', 'proveedores', 'catalogo', 'grupos', 'solapes'].includes(mostrado.id) && (
+          {mostrado?.id === 'ajustes' && <Empresa nivel={mostrado.nivel} />}
+          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods', 'proveedores', 'catalogo', 'grupos', 'solapes', 'ajustes'].includes(mostrado.id) && (
             <div className="panel">
               <h1>{mostrado.label}</h1>
               <p className="sub">Nivel de tu rol: {NIVEL[mostrado.nivel]}.</p>

@@ -32,8 +32,10 @@ export default function TablaMaestro<T extends { id: string }>(p: {
   uno: string; // «proveedor», «servicio»…
   filas: T[];
   columnas: Columna<T>[];
-  campos: Campo[] | ((x: T | null, v: Record<string, Valor>) => Campo[]);
-  valores: (x: T | null) => Record<string, Valor>;
+  // Formulario genérico por campos, o un formulario propio (p. ej. el de cliente y proveedor) con `formulario`.
+  campos?: Campo[] | ((x: T | null, v: Record<string, Valor>) => Campo[]);
+  valores?: (x: T | null) => Record<string, Valor>;
+  formulario?: (a: { fila: T | null; error: string; alCancelar: () => void; alGuardar: (d: object) => Promise<void> }) => ReactNode;
   guardar: (x: T | null, d: Record<string, Valor>) => Promise<unknown>;
   puedeEditar: boolean;
   activo?: (x: T) => boolean;
@@ -70,33 +72,37 @@ export default function TablaMaestro<T extends { id: string }>(p: {
       {!p.sinTitulo && <h1>{p.titulo}</h1>}
       <div className="fila entre">
         {p.activo ? <label className="check"><input type="checkbox" checked={verInactivos} onChange={(e) => setVerInactivos(e.target.checked)} /> Mostrar inactivos</label> : <span />}
-        {p.puedeEditar && <button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ {p.uno[0].toUpperCase() + p.uno.slice(1)}</button>}
+        {p.puedeEditar && <button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Nuevo</button>}
       </div>
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !editando && <p className="error" role="alert">{error}</p>}
-      {editando && (
-        <FormMaestro
-          titulo={`${editando === 'nuevo' ? 'Nuevo' : 'Editar'} ${p.uno}`}
-          fila={editando === 'nuevo' ? null : editando}
-          campos={p.campos}
-          inicial={p.valores(editando === 'nuevo' ? null : editando)}
-          error={error}
-          alCancelar={() => { setEditando(null); setError(''); }}
-          alGuardar={async (d) => {
-            const x = editando === 'nuevo' ? null : editando;
-            try {
-              await p.guardar(x, d);
-              setEditando(null);
-              setError('');
-              setMensaje(x ? `${p.uno[0].toUpperCase() + p.uno.slice(1)} guardado.` : `${p.uno[0].toUpperCase() + p.uno.slice(1)} creado.`);
-              await p.alCambiar();
-            } catch (e) {
-              setMensaje('');
-              setError((e as Error).message);
-            }
-          }}
-        />
-      )}
+      {editando && (() => {
+        const fila = editando === 'nuevo' ? null : editando;
+        const alCancelar = () => { setEditando(null); setError(''); };
+        const alGuardar = async (d: object) => {
+          try {
+            await p.guardar(fila, d as Record<string, Valor>);
+            setEditando(null);
+            setError('');
+            setMensaje(fila ? `${p.uno[0].toUpperCase() + p.uno.slice(1)} guardado.` : `${p.uno[0].toUpperCase() + p.uno.slice(1)} creado.`);
+            await p.alCambiar();
+          } catch (e) {
+            setMensaje('');
+            setError((e as Error).message);
+          }
+        };
+        return p.formulario ? p.formulario({ fila, error, alCancelar, alGuardar }) : (
+          <FormMaestro
+            titulo={`${fila ? 'Editar' : 'Nuevo'} ${p.uno}`}
+            fila={fila}
+            campos={p.campos ?? []}
+            inicial={p.valores ? p.valores(fila) : {}}
+            error={error}
+            alCancelar={alCancelar}
+            alGuardar={alGuardar}
+          />
+        );
+      })()}
       <div className="tabla">
         <table>
           <thead>
@@ -195,11 +201,29 @@ function FormMaestro<T>(p: { titulo: string; fila: T | null; campos: Campo[] | (
 
 /** Un solo botón por fila (⚙) que despliega verticalmente las acciones, en vez de una fila de botones. Se reutiliza en Clientes y Vehículos, que no usan TablaMaestro. */
 export function MenuAcciones({ children }: { children: ReactNode }) {
-  const [abierto, setAbierto] = useState(false);
+  // La lista va en posición fija respecto a la ventana: así no la recorta la tabla ni la tapa la paginación.
+  // Si no cabe debajo del botón (últimas filas), se abre hacia arriba.
+  const [lugar, setLugar] = useState<CSSProperties | null>(null);
+  const abierto = lugar !== null;
+  useEffect(() => {
+    if (!abierto) return;
+    const cerrar = () => setLugar(null);
+    window.addEventListener('scroll', cerrar, true);
+    window.addEventListener('resize', cerrar);
+    return () => { window.removeEventListener('scroll', cerrar, true); window.removeEventListener('resize', cerrar); };
+  }, [abierto]);
+  const alternar = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (abierto) return setLugar(null);
+    const r = e.currentTarget.getBoundingClientRect();
+    const opciones = Array.isArray(children) ? children.flat().filter(Boolean).length : 1;
+    const altoEstimado = opciones * 34 + 12;
+    const cabeAbajo = window.innerHeight - r.bottom >= altoEstimado || r.top < altoEstimado;
+    setLugar(cabeAbajo ? { position: 'fixed', left: r.left, top: r.bottom + 2 } : { position: 'fixed', left: r.left, top: 'auto', bottom: window.innerHeight - r.top + 2 });
+  };
   return (
-    <div className="menu-acciones" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setAbierto(false); }}>
-      <button type="button" className="icono" aria-label="Acciones" aria-expanded={abierto} onClick={() => setAbierto((v) => !v)}>⚙ ▾</button>
-      {abierto && <div className="menu-lista" onClick={() => setAbierto(false)}>{children}</div>}
+    <div className="menu-acciones" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setLugar(null); }}>
+      <button type="button" className="icono" aria-label="Acciones" aria-expanded={abierto} onClick={alternar}>⚙ ▾</button>
+      {abierto && <div className="menu-lista" style={lugar!} onClick={() => setLugar(null)}>{children}</div>}
     </div>
   );
 }

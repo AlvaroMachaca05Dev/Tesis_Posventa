@@ -1,6 +1,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { api, Local, Me, Rol, UsuarioLista } from '../comun/api';
 import { FilaFiltros, useFiltros } from '../comun/FiltrosColumna';
+import { MenuAcciones } from '../comun/TablaMaestro';
 
 const NIVEL: Record<string, string> = { A: 'Todo', E: 'Ver y editar', V: 'Solo ver' };
 
@@ -67,6 +68,7 @@ function ListaUsuarios(p: {
   alFallar: (m: string) => void;
 }) {
   const [editando, setEditando] = useState<UsuarioLista | 'nuevo' | null>(null);
+  const [claveDe, setClaveDe] = useState<UsuarioLista | null>(null);
   const asignables = p.roles.filter((r) => r.asignable);
   const COLUMNAS = ['Nombre', 'Correo', 'Local', 'Roles', 'Estado'];
   const { filtros, setFiltros, pasa } = useFiltros<UsuarioLista>([
@@ -86,8 +88,8 @@ function ListaUsuarios(p: {
 
   return (
     <>
-      {p.puedeEditar && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Usuario</button></div>}
-      {p.error && !editando && <p className="error" role="alert">{p.error}</p>}
+      {p.puedeEditar && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Nuevo</button></div>}
+      {p.error && !editando && !claveDe && <p className="error" role="alert">{p.error}</p>}
       {editando && (
         <FormUsuario
           usuario={editando === 'nuevo' ? null : editando}
@@ -102,6 +104,7 @@ function ListaUsuarios(p: {
           alFallar={p.alFallar}
         />
       )}
+      {claveDe && <FormClave usuario={claveDe} error={p.error} alCancelar={() => { setClaveDe(null); p.limpiarError(); }} alGuardar={async (m) => { setClaveDe(null); await p.alGuardar(m); }} alFallar={p.alFallar} />}
       <div className="tabla">
         <table>
           <thead>
@@ -116,8 +119,11 @@ function ListaUsuarios(p: {
               <tr key={u.id}>
                 {p.puedeEditar && (
                   <td className="acc">
-                    <button type="button" onClick={() => setEditando(u)}>Editar</button>
-                    <button type="button" className="peligro" onClick={() => void cambiarEstado(u)}>{u.activo ? 'Desactivar' : 'Activar'}</button>
+                    <MenuAcciones>
+                      <button type="button" onClick={() => setEditando(u)}>Editar</button>
+                      <button type="button" onClick={() => { p.limpiarError(); setClaveDe(u); }}>Cambiar contraseña</button>
+                      <button type="button" className="peligro" onClick={() => void cambiarEstado(u)}>{u.activo ? 'Desactivar' : 'Activar'}</button>
+                    </MenuAcciones>
                   </td>
                 )}
                 <td>{u.nombre}</td>
@@ -208,7 +214,7 @@ function PestanaRoles(p: { me: Me; roles: Rol[]; nivel: Nivel; puedeCrear: boole
 
   return (
     <>
-      {p.puedeCrear && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setCreando(true)}>+ Rol</button></div>}
+      {p.puedeCrear && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setCreando(true)}>+ Nuevo</button></div>}
       {p.error && !creando && <p className="error" role="alert">{p.error}</p>}
       {creando && <FormRol me={p.me} nivel={p.nivel} error={p.error} alCancelar={() => { setCreando(false); p.limpiarError(); }} alGuardar={async (m) => { setCreando(false); await p.alGuardar(m); }} alFallar={p.alFallar} />}
       <div className="tabla">
@@ -230,6 +236,38 @@ function PestanaRoles(p: { me: Me; roles: Rol[]; nivel: Nivel; puedeCrear: boole
         </table>
       </div>
     </>
+  );
+}
+
+/** «Cambiar contraseña» es una acción más de la fila: pide la nueva contraseña dos veces. */
+function FormClave(p: { usuario: UsuarioLista; error?: string; alCancelar: () => void; alGuardar: (m: string) => Promise<void>; alFallar: (m: string) => void }) {
+  const [clave, setClave] = useState('');
+  const [repetida, setRepetida] = useState('');
+  async function enviar(e: FormEvent) {
+    e.preventDefault();
+    if (clave !== repetida) return p.alFallar('Las dos contraseñas no son iguales.');
+    try {
+      await api.editarUsuario(p.usuario.id, { password: clave });
+      await p.alGuardar('Contraseña cambiada.');
+    } catch (err) {
+      p.alFallar((err as Error).message);
+    }
+  }
+  return (
+    <div className="fondo-modal">
+      <form className="modal-form modal-pagos" role="dialog" aria-modal="true" aria-label={`Cambiar contraseña de ${p.usuario.nombre}`} onSubmit={enviar}>
+        <h2>Cambiar contraseña</h2>
+        {p.error && <p className="error" role="alert">{p.error}</p>}
+        <div className="campo"><label htmlFor="c-nueva">Nueva contraseña *</label>
+          <input id="c-nueva" type="password" value={clave} onChange={(e) => setClave(e.target.value)} required minLength={8} autoFocus /></div>
+        <div className="campo"><label htmlFor="c-repetida">Repetir contraseña *</label>
+          <input id="c-repetida" type="password" value={repetida} onChange={(e) => setRepetida(e.target.value)} required minLength={8} /></div>
+        <div className="fila fin">
+          <button type="button" onClick={p.alCancelar}>Cancelar</button>
+          <button type="submit" className="primario chico">Guardar</button>
+        </div>
+      </form>
+    </div>
   );
 }
 

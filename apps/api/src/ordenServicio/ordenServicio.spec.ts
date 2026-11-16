@@ -227,6 +227,14 @@ describe('encabezado, abonos y lista (RF-012, DEC-28, DEC-80)', () => {
     expect(r.body.tecnicos.some((u: { nombre: string }) => /Técnico/.test(u.nombre))).toBe(true);
     expect(r.body.jefes.some((u: { nombre: string }) => /Jefe/.test(u.nombre))).toBe(true);
   });
+  it('PDF: los catálogos traen los datos de la empresa y la orden, el móvil y la dirección del cliente', async () => {
+    const r = await como(CAJERA, 'get', '/ordenes/catalogos');
+    expect(r.body.empresa).toMatchObject({ nombre: 'Taller Demo' });
+    for (const k of ['ruc', 'direccion', 'telefono', 'correo', 'lema', 'cuentasBancarias', 'terminosRecepcion']) expect(r.body.empresa).toHaveProperty(k);
+    await como(CAJERA, 'patch', `/clientes/${clienteId}`, { movil: '987654321', direccionFiscal: 'Av. Prueba 123' });
+    const o = await nueva(await vehiculo());
+    expect(o.body.cliente).toMatchObject({ movil: '987654321', direccionFiscal: 'Av. Prueba 123', pais: 'PE' });
+  });
 });
 
 describe('intentos de romper la ODS (pruebas de ataque del 28/10)', () => {

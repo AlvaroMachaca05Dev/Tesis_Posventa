@@ -39,7 +39,7 @@ export default function Login({ onIngreso }: { onIngreso: () => void | Promise<v
     <div className="login">
       <form className="tarjeta" onSubmit={enviar}>
         <div className="logo">
-          R <b>Motriz</b>
+          R<b>MOTRIZ</b>
         </div>
         <p className="sub">Posventa · Workspace</p>
         <h1>Iniciar sesión</h1>

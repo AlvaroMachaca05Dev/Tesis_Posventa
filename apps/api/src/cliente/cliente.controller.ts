@@ -3,12 +3,10 @@ import { Prisma } from '@prisma/client';
 import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
 import { PrismaService } from '../comun/prisma.service';
 import { choqueUnico, empresaDe, texto } from '../comun/validacion';
+import { datosTercero, revisarMovil } from '../comun/tercero';
 import { PAISES } from './paises';
 import { normalizarPlaca } from '../vehiculo/vehiculo.reglas';
 import { errorDocumento } from '../maestros/maestros.reglas';
-
-const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const TIPOS_DOCUMENTO = ['DNI', 'CARNET_EXTRANJERIA', 'RUC'];
 
 type ClienteFila = Prisma.ClienteGetPayload<object>;
 
@@ -23,6 +21,7 @@ function resumenCliente(c: ClienteFila) {
     movil: c.movil,
     direccionFiscal: c.direccionFiscal,
     email: c.email,
+    contacto: c.contacto,
     ubigeo: c.ubigeo,
     comentario: c.comentario,
     esGenerico: c.esGenerico,
@@ -37,52 +36,14 @@ export class ClienteController {
 
   /** Valida y normaliza los datos del cliente que llegan; con `parcial` solo revisa lo que vino. */
   private datosCliente(b: Record<string, unknown>, paisBase: string, parcial: boolean) {
-    const d: Record<string, unknown> = {};
-    const viene = (k: string) => b[k] !== undefined;
-    if (!parcial || viene('tipoDocumento')) {
-      const t = b.tipoDocumento === undefined || b.tipoDocumento === '' ? 'DNI' : String(b.tipoDocumento);
-      if (!TIPOS_DOCUMENTO.includes(t)) throw new BadRequestException('Elige el tipo de documento: DNI, Carné de extranjería o RUC.');
-      d.tipoDocumento = t;
-    }
-    if (!parcial || viene('documento')) {
-      const doc = texto(b.documento, 20)?.toUpperCase().replace(/\s+/g, '');
-      if (!doc) throw new BadRequestException('Escribe el número de documento (hasta 20 caracteres).');
-      d.documento = doc;
-    }
-    if (!parcial || viene('nombre')) {
-      const n = texto(b.nombre, 150);
-      if (!n) throw new BadRequestException('Escribe el nombre o la razón social.');
-      d.nombre = n;
-    }
-    if (!parcial || viene('pais')) {
-      const p = (texto(b.pais) ?? paisBase).toUpperCase();
-      if (!PAISES.some((x) => x.codigo === p)) throw new BadRequestException('El país no es válido.');
-      d.pais = p;
-    }
-    if (!parcial || viene('movil')) {
-      const m = String(b.movil ?? '').replace(/[\s-]/g, '');
-      d.movil = m === '' ? null : m;
-    }
-    if (!parcial || viene('email')) {
-      const e = texto(b.email);
-      if (e && !CORREO.test(e)) throw new BadRequestException('El correo no es válido.');
-      d.email = e;
-    }
-    for (const k of ['nombreComercial', 'direccionFiscal', 'ubigeo', 'comentario']) if (!parcial || viene(k)) d[k] = texto(b[k]);
+    // En un cliente solo el tipo y el número de documento son obligatorios; el nombre puede quedar vacío.
+    const d = datosTercero(b, { tipoPorDefecto: 'DNI', paisBase, parcial, nombreOpcional: true });
+    if (!parcial || b.ubigeo !== undefined) d.ubigeo = texto(b.ubigeo);
     return d;
   }
 
-  /** El móvil se escribe sin prefijo: en Perú son 9 dígitos y en otros países entre 6 y 15. */
-  private validarMovil(pais: string, movil: string | null | undefined) {
-    if (!movil) return;
-    if (!/^\d+$/.test(movil)) throw new BadRequestException('El móvil solo lleva números, sin el prefijo del país.');
-    if (pais === 'PE' ? movil.length !== 9 : movil.length < 6 || movil.length > 15) {
-      throw new BadRequestException(pais === 'PE' ? 'El móvil de Perú lleva 9 dígitos.' : 'El móvil debe tener entre 6 y 15 dígitos.');
-    }
-  }
-
+  // Los países y el país predeterminado los usan los formularios de clientes y de proveedores: basta con haber ingresado.
   @Get('maestros/config')
-  @Requiere('clientes', 'V')
   async config(@SesionActual() s: Sesion) {
     const org = await this.prisma.organizacion.findUniqueOrThrow({ where: { id: empresaDe(s) } });
     return { paisPredeterminado: org.paisPredeterminado, paises: PAISES };
@@ -118,7 +79,7 @@ export class ClienteController {
     const organizacionId = empresaDe(s);
     const org = await this.prisma.organizacion.findUniqueOrThrow({ where: { id: organizacionId } });
     const d = this.datosCliente(b ?? {}, org.paisPredeterminado, false);
-    this.validarMovil(d.pais as string, d.movil as string | null);
+    revisarMovil(d);
     const errDoc = errorDocumento(String(d.tipoDocumento), String(d.documento));
     if (errDoc) throw new BadRequestException(errDoc);
     const igual = await this.prisma.cliente.findUnique({ where: { organizacionId_documento: { organizacionId, documento: d.documento as string } } });
@@ -146,7 +107,7 @@ export class ClienteController {
       if (d.activo === false) throw new BadRequestException('«Clientes varios» no se puede dar de baja.');
       if (d.documento !== undefined && d.documento !== actual.documento) throw new BadRequestException('«Clientes varios» no puede cambiar de documento.');
     }
-    this.validarMovil((d.pais as string | undefined) ?? actual.pais, d.movil !== undefined ? (d.movil as string | null) : actual.movil);
+    revisarMovil(d, actual);
     if (!actual.esGenerico && (d.tipoDocumento !== undefined || d.documento !== undefined)) {
       const errDoc = errorDocumento(String(d.tipoDocumento ?? actual.tipoDocumento), String(d.documento ?? actual.documento));
       if (errDoc) throw new BadRequestException(errDoc);

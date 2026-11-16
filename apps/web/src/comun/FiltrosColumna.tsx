@@ -29,8 +29,8 @@ const pasaFiltro = (valor: string, f?: Filtro) => {
 };
 
 /** columnas: cómo se lee el texto de cada columna filtrable (sin la de acciones). */
-export function useFiltros<T>(columnas: ((x: T) => string)[]) {
-  const [filtros, setFiltros] = useState<Record<number, Filtro>>({});
+export function useFiltros<T>(columnas: ((x: T) => string)[], inicial?: Record<number, Filtro>) {
+  const [filtros, setFiltros] = useState<Record<number, Filtro>>(inicial ?? {});
   const pasa = (x: T) => columnas.every((c, i) => pasaFiltro(c(x), filtros[i]));
   return { filtros, setFiltros, pasa };
 }

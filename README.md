@@ -1,4 +1,4 @@
-# Tesis — Sistema de posventa para R Motriz
+# Tesis — Sistema de posventa para RMOTRIZ
 
 Tesis de Ingeniería de Software (La Salle, Arequipa) de Álvaro Machaca: una aplicación web que convierte el historial de órdenes de servicio (ODS) en **planes de mantenimiento preventivo, reajuste, citas y posventa**.
 

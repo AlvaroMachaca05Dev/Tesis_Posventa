@@ -15,7 +15,7 @@ const menu = [
   { id: 'catalogo', label: 'Productos y servicios', grupo: 'Inventario', nivel: 'A' },
 ];
 const me = { usuario: { id: 'u', nombre: 'Administrador Demo', correo: 'admin@demo.local', organizacionId: 'o' }, roles: ['Administrador'], permisos: Object.fromEntries(menu.map((m) => [m.id, 'A'])), menu, actuandoComo: false, esPlataforma: false, real: { id: 'u', nombre: 'Administrador Demo' } };
-const proveedor = { id: 'p1', tipoDocumento: 'RUC', documento: '20000000001', nombre: 'Lubricantes Demo S.A.C.', contacto: null, telefono: null, correo: null, direccion: null, rubro: 'Lubricantes', activo: true, creadoEn: '2026-11-05T10:00:00.000Z' };
+const proveedor = { id: 'p1', tipoDocumento: 'RUC', documento: '20000000001', nombre: 'Lubricantes Demo S.A.C.', nombreComercial: null, pais: 'PE', movil: null, direccionFiscal: null, email: null, contacto: null, comentario: null, rubro: 'Lubricantes', activo: true, creadoEn: '2026-11-05T10:00:00.000Z' };
 const grupos = [{ id: 'g2', codigo: 'N2', nombre: 'Nivel de tiempo 2', descripcion: null, activo: true, vehiculos: 3, reglas: 4, familias: 2 }];
 const tabla = { grupos: ['N2'], filas: [{ servicioId: 's1', codigo: 'COR', nombre: 'CAMBIO DE CORREA DE DISTRIBUCION', estandar: { horas: 3.5, precio: 80 }, porGrupo: { N2: { horas: 4, precio: 100 } } }] };
 const vehiculo = { id: 'v1', grupo: 'N2', placa: 'DEM-679', marca: 'KIA', modelo: 'PICANTO', anio: 2017, color: null, nroSerie: null, nroVin: null, nroMotor: 'G3LA', cliente: { id: 'c1', nombre: 'Clientes varios', documento: '0000', tipoDocumento: 'DNI' }, kmActual: 290200 };
@@ -36,7 +36,7 @@ function simular(extra: Record<string, unknown> = {}) {
     const cuerpo = typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body;
     llamadas.push({ metodo, ruta: u.pathname, consulta: u.search, cuerpo });
     const base: Record<string, unknown> = {
-      'GET /me': me, 'GET /proveedores': [proveedor], 'POST /proveedores': { ...proveedor, id: 'p2' }, 'GET /grupos': grupos, 'GET /reglas-precio': [], 'GET /precios-por-grupo': tabla, 'GET /familias-motor': [],
+      'GET /me': me, 'GET /maestros/config': { paisPredeterminado: 'PE', paises: [{ codigo: 'PE', nombre: 'Perú', prefijo: '+51' }, { codigo: 'CO', nombre: 'Colombia', prefijo: '+57' }] }, 'GET /proveedores': [proveedor], 'POST /proveedores': { ...proveedor, id: 'p2' }, 'GET /grupos': grupos, 'GET /reglas-precio': [], 'GET /precios-por-grupo': tabla, 'GET /familias-motor': [],
       'GET /ordenes/catalogos': catalogos, 'GET /ordenes': [orden], 'GET /ordenes/o1': orden, 'GET /clientes': [{ ...vehiculo.cliente, activo: true }], 'GET /vehiculos': [vehiculo], 'GET /catalogo-ods': catalogoOds,
       'GET /precio-servicio': { servicioId: 's2', codigo: 'BOM', nombre: 'CAMBIO DE BOMBA DE AGUA', grupo: 'N2', horas: 1.5, precio: 30, traza: ['Estándar BOM: 2 h, S/ 40', 'SERVICIO N2-BOM (SUMAR): 1.5 h, S/ 30'] },
       'POST /solapamientos/evaluar': [{ clave: 'sol1:s2', solapamientoId: 'sol1', codigo: 'SOL-01', modo: 'OPCIONAL', indiceBase: 0, indiceReducido: 1, monto: 30, alerta: 'Correa de distribución y bomba de agua se hacen juntas. Puedes descontar hasta S/ 30 en la bomba, si deseas.' }],
@@ -64,13 +64,18 @@ it('Proveedores: tabla con filtros por columna y modal centrado de dos columnas 
   render(<App />);
   expect(await screen.findByText('Lubricantes Demo S.A.C.')).toBeInTheDocument();
   expect(screen.getByLabelText('Filtrar Proveedor')).toBeInTheDocument();
-  await userEvent.click(screen.getByRole('button', { name: '+ Proveedor' }));
+  await userEvent.click(screen.getByRole('button', { name: '+ Nuevo' }));
   const modal = screen.getByRole('dialog', { name: 'Nuevo proveedor' });
   expect(modal.querySelector('.dos-col')).not.toBeNull();
-  await userEvent.type(within(modal).getByLabelText('Número de documento'), '20123456789');
-  await userEvent.type(within(modal).getByLabelText('Razón social o nombre'), 'Repuestos Demo');
+  // Mismo formulario que el de clientes: mismos campos y en el mismo orden.
+  expect([...modal.querySelectorAll('.campo > label')].map((l) => l.textContent)).toEqual(['Tipo de documento *', 'Número de documento *', 'Razón social o nombre *', 'Nombre comercial', 'País', 'Móvil', 'Dirección fiscal', 'Correo', 'Nombre de contacto (solo si es una empresa)', 'Comentario']);
+  expect(within(modal).getByDisplayValue('Perú (+51)')).toBeInTheDocument();
+  await userEvent.type(within(modal).getByLabelText('Número de documento *'), '20123456789');
+  await userEvent.type(within(modal).getByLabelText('Razón social o nombre *'), 'Repuestos Demo');
+  await userEvent.type(within(modal).getByLabelText('Nombre de contacto (solo si es una empresa)'), 'Luis Torres');
+  await userEvent.type(within(modal).getByLabelText('Móvil'), '987654321');
   await userEvent.click(within(modal).getByRole('button', { name: 'Guardar' }));
-  await waitFor(() => expect(llamadas.some((l) => l.metodo === 'POST' && l.ruta === '/proveedores' && l.cuerpo.documento === '20123456789' && l.cuerpo.tipoDocumento === 'RUC')).toBe(true));
+  await waitFor(() => expect(llamadas.some((l) => l.metodo === 'POST' && l.ruta === '/proveedores' && l.cuerpo.documento === '20123456789' && l.cuerpo.tipoDocumento === 'RUC' && l.cuerpo.contacto === 'Luis Torres' && l.cuerpo.movil === '987654321' && l.cuerpo.pais === 'PE')).toBe(true));
 });
 
 it('Grupos: pestañas de grupos, reglas, precios por grupo y familias; la tabla muestra el precio de cada grupo', async () => {

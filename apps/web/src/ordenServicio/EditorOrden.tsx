@@ -335,9 +335,9 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
                 </div>
                 {formAbono && o && (
                   <div className="fondo-modal">
-                    <div className="modal-form" role="dialog" aria-modal="true" aria-label="Pagos recibidos">
+                    <div className="modal-form modal-pagos" role="dialog" aria-modal="true" aria-label="Pagos recibidos">
                       <div className="fila entre"><h3>Pagos recibidos</h3><button type="button" className="cerrar" aria-label="Cerrar" onClick={() => setFormAbono(false)}>×</button></div>
-                      <FormAbono orden={{ ...o, pendiente }} metodos={p.cat.metodosPago} alGuardar={async () => { setO(await api.orden(o.id)); setFormAbono(false); }} alFallar={(x) => setError((x as Error).message)} />
+                      <FormAbono orden={{ ...o, pendiente }} metodos={p.cat.metodosPago} alGuardar={async () => { setO(await api.orden(o.id)); setFormAbono(false); }} alFallar={(x) => setError((x as Error).message)} alCancelar={() => setFormAbono(false)} />
                     </div>
                   </div>
                 )}
@@ -363,7 +363,7 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
             )}
             {crearVehiculo && (
               <FormVehiculo vehiculo={null} marcas={marcasVehiculo} grupos={gruposVehiculo} error={errorModal}
-                alCancelar={() => { setCrearVehiculo(false); setErrorModal(''); }} alGuardar={alCrearVehiculo} alFallar={setErrorModal} />
+                alCancelar={() => { setCrearVehiculo(false); setErrorModal(''); }} alGuardar={alCrearVehiculo} alFallar={setErrorModal} alCrearMarca={(m) => setMarcasVehiculo((x) => [...x, m])} />
             )}
             {crearItemPara != null && (
               <div className="fondo-modal sobre">

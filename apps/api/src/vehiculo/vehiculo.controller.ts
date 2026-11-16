@@ -98,6 +98,25 @@ export class VehiculoController {
     return m.map((x) => ({ id: x.id, nombre: x.nombre, modelos: x.modelos }));
   }
 
+  /** Crea una marca desde el formulario de vehículos; no se repite dentro de la empresa (sin distinguir mayúsculas). */
+  @Post('marcas-vehiculo')
+  @Requiere('vehiculos', 'E')
+  async crearMarca(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    const nombre = texto(b?.nombre, 60);
+    if (!nombre) throw new BadRequestException('Escribe el nombre de la marca.');
+    const igual = await this.prisma.marcaVehiculo.findFirst({ where: { organizacionId, nombre: { equals: nombre, mode: 'insensitive' } } });
+    if (igual) throw new ConflictException(`La marca «${igual.nombre}» ya existe.`);
+    try {
+      const m = await this.prisma.marcaVehiculo.create({ data: { organizacionId, nombre, modelos: [] } });
+      const res = { id: m.id, nombre: m.nombre, modelos: m.modelos };
+      await auditar(this.prisma, real, s, 'marcaVehiculo', m.id, null, res, 'Marca creada');
+      return res;
+    } catch (e) {
+      return choqueUnico(e, 'Esa marca ya existe.');
+    }
+  }
+
   @Get('vehiculos')
   @Requiere('vehiculos', 'V')
   async vehiculos(@SesionActual() s: Sesion, @Query('q') q?: string) {
