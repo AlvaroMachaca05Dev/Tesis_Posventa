@@ -34,7 +34,7 @@ RF-059,Comentarios de bitácora,Pendiente,Bitácora y auditoría,CU-10,DCU-R81-0
 RF-060,Auditoría de cambios,Parcial,Bitácora y auditoría,CU-10,DCU-R81-0001,DCL-R82-0004,DMD-R81-0001,—,—,DAC-R82-0007,S10,Auditoria,comun/ auditoría en cada controlador,—,maestros.spec; usuario.spec,CP-40
 RF-063,Historial cronológico,Parcial,Bitácora y auditoría,CU-10,DCU-R81-0001,DCL-R82-0004,DMD-R81-0001,—,—,DAC-R82-0007,S10,Bitacora,ordenServicio/ OrdenesController (bitácora),ordenServicio/ Bitácora de la ODS,ordenServicio.spec,CP-42
 RF-087,Cotización,Pendiente,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-43
-RF-088,Nota de venta,Pendiente,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-44
+RF-088,Nota de venta,Implementado,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-44
 RF-090,Cuentas por cobrar y por pagar,Pendiente,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-46
 RF-091,Bancos y movimientos,Pendiente,Comercial y finanzas,CU-11,DCU-R81-0002,DCL-R81-0005,DMD-R81-0003,DSE-R81-0004,DES-R82-0002,DAC-R82-0006,S11,—,—,—,—,CP-47
 RF-078,Compras,Pendiente,Compras e inventario,CU-12,DCU-R81-0002,DCL-R81-0006,DMD-R81-0004,DSE-R81-0005,DES-R81-0003,—,S12,—,—,—,—,CP-48
