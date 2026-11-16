@@ -24,8 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -34,10 +32,14 @@ jobs:
         run: pnpm install
       - name: Preparar entorno
         run: cp .env.example .env
+      - name: Cliente de Prisma
+        run: pnpm --filter @posventa/database generate
       - name: Migraciones y semillas
         run: |
           pnpm db:deploy
           pnpm db:seed
+      - name: Base de pruebas (las pruebas de la API usan «posventa_test»)
+        run: pnpm db:test-prep
       - name: Revisión de estilo
         run: pnpm -r --if-present lint
       - name: Compilar
