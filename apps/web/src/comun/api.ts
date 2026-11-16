@@ -48,7 +48,9 @@ export interface Orden {
 export type TipoIgv = 'GRAVADO' | 'EXONERADO' | 'INAFECTO';
 export interface DetalleNota { id: string; tipo: string; descripcion: string; referencia: string | null; cantidad: number; precio: number; descuentoPct: number; tipoIgv: TipoIgv; total: number }
 export interface NotaOrden { id: string; codigo: string; condicion: 'CONTADO' | 'CREDITO'; fechaEmision: string; fechaVencimiento: string | null; local: string; observaciones: string | null; comentario: string | null; detalles: DetalleNota[]; exonerada: number; inafecta: number; gravada: number; igv: number; total: number; conDetraccion: boolean; detraccionPct: number; detraccion: number }
-export interface NotaVenta extends Omit<NotaOrden, 'local'> { serie: string; numero: number; estado: 'EMITIDA' | 'ANULADA'; local: { id: string; nombre: string }; pagado: number; saldo: number; emitidaPor: string; anuladaPor: string | null; motivoAnulacion: string | null }
+/** Cotización: sin pagos ni caja; el vehículo es opcional y «válida hasta» marca su vigencia. */
+export interface Cotizacion { id: string; codigo: string; estado: 'VIGENTE' | 'VENCIDA' | 'ANULADA'; fechaEmision: string; validaHasta: string; condicion: 'CONTADO' | 'CREDITO'; formaPago: string | null; conIgv: boolean; conDetraccion: boolean; observaciones: string | null; comentario: string | null; local: { id: string; nombre: string }; cliente: { id: string; nombre: string; documento: string; tipoDocumento: TipoDocumento; direccionFiscal: string | null; movil: string | null }; vehiculo: { id: string; placa: string; marca: string | null; modelo: string | null } | null; detalles: (DetalleNota & { servicioId: string | null; productoId: string | null })[]; exonerada: number; inafecta: number; gravada: number; igv: number; total: number; creadaPor: string; anuladaPor: string | null; motivoAnulacion: string | null }
+export interface NotaVenta extends Omit<NotaOrden, 'local'> { serie: string; numero: number; estado: 'EMITIDA' | 'ANULADA'; local: { id: string; nombre: string }; pagado: number; saldo: number; emitidaPor: string; anuladaPor: string | null; motivoAnulacion: string | null; orden: { id: string; codigo: string; km: number | null } | null; pagos: Abono[]; cliente: { id: string; nombre: string; documento: string; tipoDocumento: TipoDocumento; direccionFiscal: string | null; movil: string | null }; vehiculo: { placa: string; marca: string | null; modelo: string | null } | null }
 /** RF-018: solicitud de corrección o reapertura de una ODS cerrada. */
 export interface SolicitudOds { id: string; tipo: 'REAPERTURA' | 'CORRECCION'; motivo: string; estadoDestino: string | null; cambios: Record<string, unknown> | null; estado: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA'; solicitadaPor: string; resueltaPor: string | null; respuesta: string | null; fecha: string; resuelta: string | null }
 export type EstadoVehiculo = Record<string, string | string[]>;
@@ -145,6 +147,11 @@ export const api = {
   guardarDetalles: (id: string, detalles: DetalleOds[], solapamientosMantenidos?: string[]) => pedir<Orden>(`/ordenes/${id}/detalles`, { method: 'PUT', body: JSON.stringify({ detalles, ...(solapamientosMantenidos ? { solapamientosMantenidos } : {}) }) }),
   descuentoOrden: (id: string, porcentaje: number) => pedir<Orden>(`/ordenes/${id}/descuento`, { method: 'POST', body: JSON.stringify({ porcentaje }) }),
   emitirNotaVenta: (ordenId: string, d: Record<string, unknown>) => pedir<NotaVenta>(`/ordenes/${ordenId}/nota-venta`, { method: 'POST', body: JSON.stringify(d) }),
+  emitirNotaDirecta: (d: Record<string, unknown>) => pedir<NotaVenta>('/notas-venta', { method: 'POST', body: JSON.stringify(d) }),
+  cotizaciones: () => pedir<Cotizacion[]>('/cotizaciones'),
+  crearCotizacion: (d: Record<string, unknown>) => pedir<Cotizacion>('/cotizaciones', { method: 'POST', body: JSON.stringify(d) }),
+  anularCotizacion: (id: string, motivo: string) => pedir<Cotizacion>(`/cotizaciones/${id}/anular`, { method: 'POST', body: JSON.stringify({ motivo }) }),
+  notasVenta: () => pedir<NotaVenta[]>('/notas-venta'),
   anularNotaVenta: (id: string, motivo: string) => pedir<NotaVenta>(`/notas-venta/${id}/anular`, { method: 'POST', body: JSON.stringify({ motivo }) }),
   solicitarOds: (id: string, d: Record<string, unknown>) => pedir<Orden>(`/ordenes/${id}/solicitudes`, { method: 'POST', body: JSON.stringify(d) }),
   resolverSolicitudOds: (id: string, sid: string, d: Record<string, unknown>) => pedir<Orden>(`/ordenes/${id}/solicitudes/${sid}/resolver`, { method: 'POST', body: JSON.stringify(d) }),

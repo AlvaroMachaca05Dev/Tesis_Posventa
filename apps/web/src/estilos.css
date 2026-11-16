@@ -333,3 +333,13 @@ body.arrastrando-columna * { cursor: col-resize !important; }
 .totales-nota .suma { display:flex; justify-content:space-between; gap:30px; padding:4px 2px; border-top:1px solid var(--borde); font-size:13px; }
 .totales-nota .suma.total { font-size:15px; } .totales-nota .suma.pagado b { color:#7ee08a; } .totales-nota .suma.saldo b { color:#ff8a8a; }
 @media (max-width:700px) { .dos-col.tres { grid-template-columns:1fr; } .dos-col.tres .campo.ancha { grid-column:auto; } }
+.bloque-nota { border:1px solid var(--borde); border-radius:10px; padding:8px 12px 10px; margin:10px 0; }
+.bloque-nota h3 { margin:0 0 8px; font-size:13px; color:var(--suave); font-weight:600; }
+.bloque-nota textarea { width:100%; }
+.radios { display:flex; gap:16px; align-items:center; min-height:34px; }
+.fila-pago { display:flex; gap:8px; margin-bottom:8px; } .fila-pago input { flex:1; } .fila-pago .mas { width:34px; font-weight:700; }
+.pagos-nota { flex:1; min-width:300px; }
+.modal-venta { max-width:1500px; }
+.con-boton { display:flex; gap:0; } .con-boton select { flex:1; border-top-right-radius:0; border-bottom-right-radius:0; } .con-boton button { border-top-left-radius:0; border-bottom-left-radius:0; font-weight:700; }
+.modal-venta .tabla input.corto { width:80px; text-align:right; } .modal-venta .tabla td input, .modal-venta .tabla td select { width:100%; box-sizing:border-box; } .modal-venta .tabla td input.corto { width:80px; }
+.enlace { all:unset; cursor:pointer; text-decoration:underline; }

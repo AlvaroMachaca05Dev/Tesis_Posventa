@@ -44,6 +44,8 @@ export default function TablaMaestro<T extends { id: string }>(p: {
   acciones?: (x: T) => ReactNode;
   alCambiar: () => Promise<void>;
   sinTitulo?: boolean;
+  // Módulos cuyo «+ Nuevo» abre un flujo propio y cuyas filas no se editan (p. ej. los comprobantes).
+  alNuevo?: () => void;
 }) {
   const [editando, setEditando] = useState<T | 'nuevo' | null>(null);
   const [mensaje, setMensaje] = useState('');
@@ -53,7 +55,8 @@ export default function TablaMaestro<T extends { id: string }>(p: {
   const { anchos, iniciarArrastre } = useColumnasRedimensionables(p.uno);
   const filtradas = p.filas.filter((x) => (verInactivos || !p.activo || p.activo(x)) && pasa(x));
   const { visibles, pagina, setPagina, tam, setTam, total, totalPaginas, inicio, fin } = usePaginacion(filtradas);
-  const conAcciones = p.puedeEditar || !!p.acciones;
+  const edita = p.puedeEditar && !p.alNuevo;
+  const conAcciones = edita || !!p.acciones;
 
   async function hacer(f: () => Promise<unknown>, ok: string) {
     try {
@@ -72,7 +75,7 @@ export default function TablaMaestro<T extends { id: string }>(p: {
       {!p.sinTitulo && <h1>{p.titulo}</h1>}
       <div className="fila entre">
         {p.activo ? <label className="check"><input type="checkbox" checked={verInactivos} onChange={(e) => setVerInactivos(e.target.checked)} /> Mostrar inactivos</label> : <span />}
-        {p.puedeEditar && <button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Nuevo</button>}
+        {p.puedeEditar && <button type="button" className="primario chico" onClick={() => (p.alNuevo ? p.alNuevo() : setEditando('nuevo'))}>+ Nuevo</button>}
       </div>
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !editando && <p className="error" role="alert">{error}</p>}
@@ -123,11 +126,11 @@ export default function TablaMaestro<T extends { id: string }>(p: {
                 {conAcciones && (
                   <td className="acc">
                     <MenuAcciones>
-                      {p.puedeEditar && <button type="button" onClick={() => setEditando(x)}>Editar</button>}
-                      {p.puedeEditar && p.alternar && p.activo && (
+                      {edita && <button type="button" onClick={() => setEditando(x)}>Editar</button>}
+                      {edita && p.alternar && p.activo && (
                         <button type="button" className={p.activo(x) ? 'peligro' : ''} onClick={() => { if (!p.activo!(x) || window.confirm(`¿Quitar este ${p.uno} de la lista activa? Se conserva y puedes restaurarlo.`)) void hacer(() => p.alternar!(x), p.activo!(x) ? 'Quitado de la lista activa.' : 'Restaurado.'); }}>{p.activo(x) ? 'Quitar' : 'Restaurar'}</button>
                       )}
-                      {p.puedeEditar && p.eliminar && <button type="button" className="peligro" onClick={() => { if (window.confirm(`¿Eliminar este ${p.uno}?`)) void hacer(() => p.eliminar!(x), 'Eliminado.'); }}>Eliminar</button>}
+                      {edita && p.eliminar && <button type="button" className="peligro" onClick={() => { if (window.confirm(`¿Eliminar este ${p.uno}?`)) void hacer(() => p.eliminar!(x), 'Eliminado.'); }}>Eliminar</button>}
                       {p.acciones?.(x)}
                     </MenuAcciones>
                   </td>

@@ -3,32 +3,38 @@ import { Prisma } from '@prisma/client';
 import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
 import { PrismaService } from '../comun/prisma.service';
 import { empresaDe, texto } from '../comun/validacion';
+import { parsearItems } from './lineas';
 import { codigoNota, detraccionDe, proponeDetraccion, TIPOS_IGV, TipoIgv, tipoIgvPorDefecto, totalesNota } from './notaVenta.reglas';
 
-const INCLUIR_NOTA = { detalles: { orderBy: { posicion: 'asc' as const } }, local: true, emitidaPor: true, anuladaPor: true, orden: { include: { cliente: true, vehiculo: true, abonos: true } } };
+const INCLUIR_NOTA = { detalles: { orderBy: { posicion: 'asc' as const } }, local: true, emitidaPor: true, anuladaPor: true, cliente: true, vehiculo: true, abonos: true, orden: { include: { abonos: true } } };
 type Nota = Prisma.NotaVentaGetPayload<{ include: typeof INCLUIR_NOTA }>;
 const n = (d: Prisma.Decimal | number) => Number(d);
 const r2 = (x: number) => Math.round((x + Number.EPSILON) * 100) / 100;
+const METODOS = ['Efectivo', 'Yape', 'Transferencia', 'Tarjeta', 'Otro'];
 
 export function resumenNota(x: Nota) {
-  const pagado = x.estado === 'EMITIDA' ? r2(x.orden.abonos.reduce((a, b) => a + n(b.valor), 0)) : 0;
+  // Los pagos son los abonos de la ODS enlazada (RF-089) más los registrados en la propia nota (venta directa).
+  const pagado = x.estado === 'EMITIDA' ? r2([...(x.orden?.abonos ?? []), ...x.abonos].reduce((a, b) => a + n(b.valor), 0)) : 0;
   return {
     id: x.id, codigo: x.codigo, serie: x.serie, numero: x.numero, estado: x.estado, condicion: x.condicion,
     fechaEmision: x.fechaEmision.toISOString(), fechaVencimiento: x.fechaVencimiento?.toISOString() ?? null,
     local: { id: x.localId, nombre: x.local.nombre }, observaciones: x.observaciones, comentario: x.comentario,
-    orden: { id: x.ordenId, codigo: x.orden.codigo, km: x.orden.km },
-    cliente: { id: x.orden.cliente.id, nombre: x.orden.cliente.nombre, documento: x.orden.cliente.documento, tipoDocumento: x.orden.cliente.tipoDocumento, direccionFiscal: x.orden.cliente.direccionFiscal, movil: x.orden.cliente.movil },
-    vehiculo: { placa: x.orden.vehiculo.placa, marca: x.orden.vehiculo.marca, modelo: x.orden.vehiculo.modelo },
+    orden: x.orden ? { id: x.orden.id, codigo: x.orden.codigo, km: x.orden.km } : null,
+    cliente: { id: x.cliente.id, nombre: x.cliente.nombre, documento: x.cliente.documento, tipoDocumento: x.cliente.tipoDocumento, direccionFiscal: x.cliente.direccionFiscal, movil: x.cliente.movil },
+    vehiculo: x.vehiculo ? { placa: x.vehiculo.placa, marca: x.vehiculo.marca, modelo: x.vehiculo.modelo } : null,
     detalles: x.detalles.map((d) => ({ id: d.id, tipo: d.tipo, descripcion: d.descripcion, referencia: d.referencia, cantidad: n(d.cantidad), precio: n(d.precio), descuentoPct: n(d.descuentoPct), tipoIgv: d.tipoIgv, total: n(d.total) })),
     exonerada: n(x.exonerada), inafecta: n(x.inafecta), gravada: n(x.gravada), igv: n(x.igv), total: n(x.total),
     conDetraccion: x.conDetraccion, detraccionPct: n(x.detraccionPct), detraccionExacta: n(x.detraccionExacta), detraccion: n(x.detraccion),
     // La detracción la deposita la empresa: el saldo es el total menos lo pagado (DEC-82).
     pagado, saldo: x.estado === 'EMITIDA' ? r2(n(x.total) - pagado) : 0,
+    pagos: x.abonos.map((a) => ({ id: a.id, fecha: a.fecha.toISOString(), metodo: a.metodo, concepto: a.concepto, valor: n(a.valor) })),
     emitidaPor: x.emitidaPor.nombre, anuladaPor: x.anuladaPor?.nombre ?? null, motivoAnulacion: x.motivoAnulacion, anuladaEn: x.anuladaEn?.toISOString() ?? null,
   };
 }
 
-/** Nota de venta interna (RF-088): se emite desde la ODS, con la serie del local, número consecutivo, tipo de IGV por ítem y detracción. */
+interface Linea { posicion: number; tipo: string; descripcion: string; referencia: string | null; cantidad: number | Prisma.Decimal; precio: number | Prisma.Decimal; descuentoPct: number | Prisma.Decimal; tipoIgv: TipoIgv; total: number; servicioId: string | null; productoId: string | null }
+
+/** Nota de venta interna (RF-088): se emite desde una ODS o directo por mostrador, con la serie del local, número consecutivo, tipo de IGV por ítem y detracción. */
 @Controller()
 export class NotaVentaController {
   constructor(private prisma: PrismaService) {}
@@ -39,44 +45,39 @@ export class NotaVentaController {
     return x;
   }
 
-  @Post('ordenes/:id/nota-venta')
-  @Requiere('ods', 'E')
-  async emitir(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
+  /** Núcleo común: serie del local del usuario, número, totales, detracción, stock, pagos iniciales y bitácora. */
+  private async crear(s: Sesion, real: Sesion, p: { ordenId: string | null; clienteId: string; vehiculoId: string | null; lineas: Linea[]; b: Record<string, unknown> }) {
+    const { b, lineas } = p;
     const organizacionId = empresaDe(s);
-    const o = await this.prisma.ordenServicio.findFirst({ where: { id, organizacionId, eliminada: false }, include: { detalles: { orderBy: { posicion: 'asc' } }, notas: true } });
-    if (!o) throw new NotFoundException('Orden de servicio no encontrada.');
-    if (o.estado === 'Cerrada') throw new ConflictException('La ODS está cerrada: reábrela para emitir su nota de venta.');
-    if (o.decision === 'No aprobada') throw new ConflictException('El cliente no aprobó la orden: no se emite nota de venta.');
-    if (o.notas.some((x) => x.estado === 'EMITIDA')) throw new ConflictException('Esta ODS ya tiene una nota de venta vigente.');
-    if (o.detalles.length === 0) throw new ConflictException('La ODS no tiene ítems: agrega servicios o productos antes de emitir.');
-
-    const localId = String(b?.localId ?? s.localId ?? o.localId);
-    const local = await this.prisma.local.findFirst({ where: { id: localId, organizacionId } });
+    if (!s.localId) throw new ConflictException('Tu usuario no tiene un local asignado: la serie sale del local, así que no puedes emitir.');
+    const local = await this.prisma.local.findFirst({ where: { id: s.localId, organizacionId } });
     if (!local) throw new BadRequestException('Elige un local de la empresa.');
     if (!local.serieNotaVenta) throw new ConflictException(`El local «${local.nombre}» no tiene serie de nota de venta. Asígnala en Empresa y parámetros.`);
     const serie = local.serieNotaVenta;
 
     const condicion = b?.condicion === undefined || b.condicion === '' ? 'CONTADO' : String(b.condicion);
     if (!['CONTADO', 'CREDITO'].includes(condicion)) throw new BadRequestException('La condición es contado o crédito.');
-    let fechaVencimiento: Date | null = null;
-    if (condicion === 'CREDITO') {
-      fechaVencimiento = new Date(String(b?.fechaVencimiento ?? ''));
-      if (Number.isNaN(fechaVencimiento.getTime())) throw new BadRequestException('A crédito hay que indicar la fecha de vencimiento.');
-      if (fechaVencimiento.getTime() < Date.now() - 86_400_000) throw new BadRequestException('La fecha de vencimiento no puede ser anterior a hoy.');
-    }
-    const tipos = (b?.tiposIgv ?? {}) as Record<string, unknown>;
-    const lineas = o.detalles.map((d, i) => {
-      const pedido = tipos[d.id];
-      if (pedido !== undefined && !TIPOS_IGV.includes(String(pedido) as TipoIgv)) throw new BadRequestException('El tipo de IGV es Gravado, Exonerado o Inafecto.');
-      return {
-        posicion: i, tipo: d.tipo, descripcion: d.descripcion, referencia: d.referencia, cantidad: d.cantidad, precio: d.precio, descuentoPct: d.descuentoPct,
-        tipoIgv: (pedido !== undefined ? String(pedido) : tipoIgvPorDefecto(d.impuesto)) as TipoIgv, total: n(d.total), servicioId: d.servicioId, productoId: d.productoId,
-      };
-    });
+    // El vencimiento se puede elegir siempre; si no llega, es la fecha de emisión (hoy). A crédito es obligatorio y no puede ser anterior a hoy.
+    let fechaVencimiento: Date | null = b?.fechaVencimiento ? new Date(String(b.fechaVencimiento)) : null;
+    if (fechaVencimiento && Number.isNaN(fechaVencimiento.getTime())) throw new BadRequestException('La fecha de vencimiento no es válida.');
+    if (condicion === 'CREDITO' && !fechaVencimiento) throw new BadRequestException('A crédito hay que indicar la fecha de vencimiento.');
+    if (fechaVencimiento && fechaVencimiento.getTime() < Date.now() - 86_400_000) throw new BadRequestException('La fecha de vencimiento no puede ser anterior a hoy.');
+    if (!fechaVencimiento) fechaVencimiento = new Date();
     const t = totalesNota(lineas);
-    if (t.total <= 0) throw new ConflictException('El total de la ODS es cero: no se emite nota de venta.');
+    if (t.total <= 0) throw new ConflictException('El total es cero: no se emite nota de venta.');
     const conDetraccion = b?.conDetraccion === undefined ? proponeDetraccion(lineas, t.total) : b.conDetraccion === true;
     const det = conDetraccion ? detraccionDe(t.total) : { pct: 0, exacta: 0, redondeada: 0 };
+
+    // Pagos que se registran al emitir (adelantos o cobro), validados contra el total.
+    const pagos = (Array.isArray(b?.pagos) ? b.pagos : []).map((x: unknown) => {
+      const q = x as { metodo?: unknown; valor?: unknown; concepto?: unknown };
+      const valor = r2(Number(q?.valor));
+      if (!METODOS.includes(String(q?.metodo))) throw new BadRequestException('Elige el método de pago.');
+      if (!Number.isFinite(valor) || valor <= 0) throw new BadRequestException('El valor de cada pago debe ser mayor a cero.');
+      return { metodo: String(q.metodo), valor, concepto: texto(q.concepto, 200) ?? 'Pago' };
+    });
+    const previos = p.ordenId ? r2((await this.prisma.abono.findMany({ where: { ordenId: p.ordenId } })).reduce((a, x) => a + n(x.valor), 0)) : 0;
+    if (r2(previos + pagos.reduce((a, x) => a + x.valor, 0)) > t.total) throw new BadRequestException('Los pagos superan el total de la nota.');
 
     // El número lo da el servidor en la misma transacción: consecutivo por serie, sin saltos ni repetidos (RN-03).
     const notaId = await this.prisma.$transaction(async (tx) => {
@@ -84,12 +85,13 @@ export class NotaVentaController {
       const codigo = codigoNota(serie, c.ultimo);
       const nota = await tx.notaVenta.create({
         data: {
-          organizacionId, localId: local.id, ordenId: o.id, clienteId: o.clienteId, serie, numero: c.ultimo, codigo, condicion, fechaVencimiento,
+          organizacionId, localId: local.id, ordenId: p.ordenId, clienteId: p.clienteId, vehiculoId: p.vehiculoId, serie, numero: c.ultimo, codigo, condicion, fechaVencimiento,
           observaciones: texto(b?.observaciones, 1000), comentario: texto(b?.comentario, 1000),
           ...t, conDetraccion, detraccionPct: det.pct, detraccionExacta: det.exacta, detraccion: det.redondeada, emitidaPorId: real.id,
           detalles: { create: lineas },
         },
       });
+      for (const pg of pagos) await tx.abono.create({ data: { ...(p.ordenId ? { ordenId: p.ordenId } : { notaId: nota.id }), metodo: pg.metodo, concepto: pg.concepto, valor: pg.valor, registradoPorId: real.id } });
       // El stock baja solo al emitir la nota y puede quedar negativo (DEC-76); cada salida queda en el kárdex con el código de la nota.
       for (const l of lineas.filter((x) => x.tipo === 'producto' && x.productoId)) {
         const clave = { productoId_localId: { productoId: l.productoId as string, localId: local.id } };
@@ -98,12 +100,57 @@ export class NotaVentaController {
         await tx.stockProducto.upsert({ where: clave, update: { cantidad: saldo }, create: { productoId: l.productoId as string, localId: local.id, cantidad: saldo } });
         await tx.movimientoInventario.create({ data: { productoId: l.productoId as string, localId: local.id, tipo: 'Venta', entrada: 0, salida: l.cantidad, saldo, motivo: `Nota de venta ${codigo}`, usuarioId: real.id } });
       }
-      await tx.bitacora.create({ data: { ordenId: o.id, actorId: real.id, texto: `Nota de venta ${codigo} emitida por S/ ${t.total.toFixed(2)}${conDetraccion ? ` (detracción S/ ${det.redondeada.toFixed(2)})` : ''}.` } });
+      if (p.ordenId) await tx.bitacora.create({ data: { ordenId: p.ordenId, actorId: real.id, texto: `Nota de venta ${codigo} emitida por S/ ${t.total.toFixed(2)}${conDetraccion ? ` (detracción S/ ${det.redondeada.toFixed(2)})` : ''}.` } });
       return nota.id;
     });
     const res = resumenNota(await this.cargar(notaId, organizacionId));
     await auditar(this.prisma, real, s, 'nota_venta', notaId, null, res, 'Nota de venta emitida');
     return res;
+  }
+
+  private async ordenEmisible(id: string, organizacionId: string) {
+    const o = await this.prisma.ordenServicio.findFirst({ where: { id, organizacionId, eliminada: false }, include: { detalles: { orderBy: { posicion: 'asc' } }, notas: true } });
+    if (!o) throw new NotFoundException('Orden de servicio no encontrada.');
+    if (o.estado === 'Cerrada') throw new ConflictException('La ODS está cerrada: reábrela para emitir su nota de venta.');
+    if (o.decision === 'No aprobada') throw new ConflictException('El cliente no aprobó la orden: no se emite nota de venta.');
+    if (o.notas.some((x) => x.estado === 'EMITIDA')) throw new ConflictException('Esta ODS ya tiene una nota de venta vigente.');
+    return o;
+  }
+
+  @Post('ordenes/:id/nota-venta')
+  @Requiere('ods', 'E')
+  async emitir(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
+    const o = await this.ordenEmisible(id, empresaDe(s));
+    if (o.detalles.length === 0) throw new ConflictException('La ODS no tiene ítems: agrega servicios o productos antes de emitir.');
+    const tipos = (b?.tiposIgv ?? {}) as Record<string, unknown>;
+    const lineas: Linea[] = o.detalles.map((d, i) => {
+      const pedido = tipos[d.id];
+      if (pedido !== undefined && !TIPOS_IGV.includes(String(pedido) as TipoIgv)) throw new BadRequestException('El tipo de IGV es Gravado, Exonerado o Inafecto.');
+      return {
+        posicion: i, tipo: d.tipo, descripcion: d.descripcion, referencia: d.referencia, cantidad: d.cantidad, precio: d.precio, descuentoPct: d.descuentoPct,
+        tipoIgv: (pedido !== undefined ? String(pedido) : tipoIgvPorDefecto(d.impuesto)) as TipoIgv, total: n(d.total), servicioId: d.servicioId, productoId: d.productoId,
+      };
+    });
+    return this.crear(s, real, { ordenId: o.id, clienteId: o.clienteId, vehiculoId: o.vehiculoId, lineas, b });
+  }
+
+  /** Venta directa por mostrador: ítems propios y, si se quiere, enlazada a una ODS (que aporta sus abonos). */
+  @Post('notas-venta')
+  @Requiere('notas', 'E')
+  async emitirDirecta(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    let clienteId = String(b?.clienteId ?? ''), vehiculoId: string | null = b?.vehiculoId ? String(b.vehiculoId) : null;
+    let ordenId: string | null = null;
+    if (b?.ordenId) {
+      const o = await this.ordenEmisible(String(b.ordenId), organizacionId);
+      ordenId = o.id; clienteId = o.clienteId; vehiculoId = o.vehiculoId;
+    }
+    const cliente = await this.prisma.cliente.findFirst({ where: { id: clienteId, organizacionId } });
+    if (!cliente) throw new BadRequestException('Elige el cliente de la nota de venta.');
+    if (vehiculoId && !(await this.prisma.vehiculo.findFirst({ where: { id: vehiculoId, organizacionId } }))) throw new BadRequestException('El vehículo no existe.');
+    const lineas: Linea[] = parsearItems(b?.items);
+    if (lineas.length === 0) throw new ConflictException('Agrega al menos un ítem a la nota de venta.');
+    return this.crear(s, real, { ordenId, clienteId, vehiculoId, lineas, b });
   }
 
   @Get('notas-venta')
@@ -121,7 +168,7 @@ export class NotaVentaController {
     const q = String(f.q ?? '').trim();
     if (q) {
       const c = { contains: q, mode: 'insensitive' as const };
-      where.OR = [{ codigo: c }, { orden: { codigo: c } }, { orden: { cliente: { nombre: c } } }, { orden: { cliente: { documento: c } } }];
+      where.OR = [{ codigo: c }, { orden: { codigo: c } }, { cliente: { nombre: c } }, { cliente: { documento: c } }];
     }
     const lista = await this.prisma.notaVenta.findMany({ where, include: INCLUIR_NOTA, orderBy: { creadoEn: 'desc' }, take: 200 });
     return lista.map(resumenNota);
@@ -140,8 +187,7 @@ export class NotaVentaController {
     const organizacionId = empresaDe(s);
     const x = await this.cargar(id, organizacionId);
     if (x.estado !== 'EMITIDA') throw new ConflictException('Esta nota de venta ya está anulada.');
-    const cerrada = await this.prisma.ordenServicio.findFirst({ where: { id: x.ordenId, estado: 'Cerrada' } });
-    if (cerrada) throw new ConflictException('La ODS está cerrada: reábrela antes de anular su nota de venta.');
+    if (x.ordenId && (await this.prisma.ordenServicio.findFirst({ where: { id: x.ordenId, estado: 'Cerrada' } }))) throw new ConflictException('La ODS está cerrada: reábrela antes de anular su nota de venta.');
     const motivo = texto(b?.motivo, 500);
     if (!motivo) throw new BadRequestException('Escribe el motivo de la anulación.');
     await this.prisma.$transaction(async (tx) => {
@@ -153,7 +199,7 @@ export class NotaVentaController {
         await tx.stockProducto.upsert({ where: clave, update: { cantidad: saldo }, create: { productoId: l.productoId as string, localId: x.localId, cantidad: saldo } });
         await tx.movimientoInventario.create({ data: { productoId: l.productoId as string, localId: x.localId, tipo: 'Anulación de venta', entrada: l.cantidad, salida: 0, saldo, motivo: `Nota de venta ${x.codigo} anulada`, usuarioId: real.id } });
       }
-      await tx.bitacora.create({ data: { ordenId: x.ordenId, actorId: real.id, texto: `Nota de venta ${x.codigo} anulada: ${motivo}` } });
+      if (x.ordenId) await tx.bitacora.create({ data: { ordenId: x.ordenId, actorId: real.id, texto: `Nota de venta ${x.codigo} anulada: ${motivo}` } });
     });
     const res = resumenNota(await this.cargar(id, organizacionId));
     await auditar(this.prisma, real, s, 'nota_venta', id, resumenNota(x), res, 'Nota de venta anulada');

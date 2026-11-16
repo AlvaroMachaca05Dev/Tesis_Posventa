@@ -14,6 +14,7 @@ import { OrdenesController } from './ordenServicio/ordenServicio.controller';
 import { MaestrosController } from './maestros/maestros.controller';
 import { EmpresaController } from './empresa/empresa.controller';
 import { NotaVentaController } from './facturacion/notaVenta.controller';
+import { CotizacionController } from './facturacion/cotizacion.controller';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { NotaVentaController } from './facturacion/notaVenta.controller';
       },
     }),
   ],
-  controllers: [AuthController, SesionController, UsuariosController, ClienteController, ConsultaDocumentoController, VehiculoController, ConsultaVehicularController, OrdenesController, MaestrosController, EmpresaController, NotaVentaController],
+  controllers: [AuthController, SesionController, UsuariosController, ClienteController, ConsultaDocumentoController, VehiculoController, ConsultaVehicularController, OrdenesController, MaestrosController, EmpresaController, NotaVentaController, CotizacionController],
   providers: [
     PrismaService,
     { provide: APP_GUARD, useClass: AutenticacionGuard },

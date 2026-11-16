@@ -6,6 +6,7 @@ import FormFechas from './FormFechas';
 import VistaPreviaPdf from './VistaPreviaPdf';
 import FormSolicitud from './FormSolicitud';
 import FormNota from '../facturacion/FormNota';
+import FormVenta from '../facturacion/FormVenta';
 import { generarPdfNota } from '../facturacion/pdfNota';
 import { FormatoPdf, generarPdf, TITULO_VISTA } from './pdfOrden';
 import { Paginacion, usePaginacion } from '../comun/Paginacion';
@@ -93,7 +94,8 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
         {puedeEditar && <button type="button" className="primario chico" onClick={() => setAbierta('nueva')}>+ Nuevo</button>}
       </div>
       {vista && <VistaPreviaPdf titulo={vista.titulo} url={vista.url} alCerrar={cerrarVista} />}
-      {nota && cat && <FormNota orden={nota} cat={cat} puedeAnular={nivel === 'A'} alImprimir={(f) => imprimirNota(nota, f)} alCerrar={() => setNota(null)} alHecho={async (m) => { setNota(null); await ok(m); }} />}
+      {nota && cat && !nota.notaVenta && <FormVenta cat={cat} ordenInicial={nota} alCerrar={() => setNota(null)} alHecho={async (m) => { setNota(null); await ok(m); }} />}
+      {nota && cat && nota.notaVenta && <FormNota orden={nota} cat={cat} puedeAnular={nivel === 'A'} alImprimir={(f) => imprimirNota(nota, f)} alCerrar={() => setNota(null)} alHecho={async (m) => { setNota(null); await ok(m); }} />}
       {solicitud && cat && <FormSolicitud orden={solicitud} cat={cat} alCancelar={() => setSolicitud(null)} alGuardar={async (m) => { setSolicitud(null); await ok(m); }} />}
       <div className="estados" role="tablist">
         {ESTADOS.map((e) => (
@@ -141,7 +143,7 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
             {o.ultimaBitacora && <div className="suave">💬 {o.ultimaBitacora.actor}: {o.ultimaBitacora.texto} ({hace(o.ultimaBitacora.fecha)})</div>}
           </div>
           <div className="acciones-ods">
-            <button type="button" className="ac" aria-label="Facturar" title={o.notaVenta ? `Nota de venta ${o.notaVenta.codigo}` : 'Emitir nota de venta'} disabled={!o.notaVenta && (!puedeEditar || o.estado === 'Cerrada')} onClick={() => { setMenu(null); setNota(o); }}>$</button>
+            <button type="button" className="ac" aria-label="Facturar" title={o.notaVenta ? `Nota de venta ${o.notaVenta.codigo}` : 'Emitir comprobante'} disabled={!o.notaVenta && (!puedeEditar || o.estado === 'Cerrada')} onClick={() => { setMenu(null); setNota(o); }}>$</button>
             <button type="button" className="ac" aria-label="Editar" title="Editar" onClick={() => setAbierta(o)}>✎</button>
             <span className="rel">
               <button type="button" className="ac" aria-label="Fechas de inicio y cierre" title="Fechas de inicio y cierre" disabled={!superadmin} onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'fechas' ? null : { id: o.id, tipo: 'fechas' })}>📅</button>

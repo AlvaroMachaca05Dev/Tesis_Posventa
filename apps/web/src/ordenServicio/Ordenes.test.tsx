@@ -334,43 +334,57 @@ const catNota = { ...catalogos, locales: [{ id: 'l1', nombre: 'Local Prohogar', 
 const ordenServicio800 = { ...orden, detalles: [{ id: 'd1', tipo: 'servicio', descripcion: 'Cambio de motor', referencia: null, cantidad: 1, costo: null, rentabilidadPct: null, precio: 800, descuentoPct: 0, impuesto: 'IGV', total: 800 }, { id: 'd2', tipo: 'producto', descripcion: 'Aceite 5W-30', referencia: 'AMO-102', cantidad: 1, costo: 10, rentabilidadPct: 20, precio: 100, descuentoPct: 0, impuesto: 'IGV', total: 100 }], total: 900, pendiente: 900 };
 const notaVigente = { id: 'n1', codigo: 'NV01-000007', condicion: 'CONTADO', fechaEmision: '2026-11-16T15:00:00.000Z', fechaVencimiento: null, local: 'Local Prohogar', observaciones: null, comentario: null, detalles: [{ id: 'x1', tipo: 'servicio', descripcion: 'Cambio de motor', referencia: null, cantidad: 1, precio: 800, descuentoPct: 0, tipoIgv: 'GRAVADO', total: 800 }], exonerada: 0, inafecta: 0, gravada: 677.97, igv: 122.03, total: 800, conDetraccion: true, detraccionPct: 12, detraccion: 96 };
 
-it('Facturar: una sola pantalla con los totales, la detracción propuesta y el tipo de IGV por ítem; «Emitir» envía la nota', async () => {
+const extra = { 'GET /cotizaciones': { cuerpo: [] }, 'GET /clientes': { cuerpo: [] }, 'GET /vehiculos': { cuerpo: [] }, 'GET /catalogo-ods': { cuerpo: { servicios: [], productos: [] } } };
+it('Facturar: abre «Emitir nuevo comprobante» con la orden y sus ítems ya cargados, totales, detracción y tipo de IGV por ítem; «Emitir» envía la nota', async () => {
   simular();
+  Object.assign(respuestas, extra);
   respuestas['GET /ordenes/catalogos'] = { cuerpo: catNota };
   respuestas['GET /ordenes'] = { cuerpo: [ordenServicio800] };
-  respuestas['POST /ordenes/o1/nota-venta'] = { status: 201, cuerpo: { codigo: 'NV01-000008' } };
+  respuestas['POST /notas-venta'] = { status: 201, cuerpo: { codigo: 'NV01-000008' } };
   render(<App />);
   const t = (await screen.findByText('#2026102800001')).closest('article')!;
   await userEvent.click(within(t).getByRole('button', { name: 'Facturar' }));
-  const d = screen.getByRole('dialog', { name: /Nueva nota de venta/ });
-  expect(within(d).queryByRole('tab')).toBeNull();
+  const d = screen.getByRole('dialog', { name: /Emitir nuevo comprobante/ });
+  expect(within(d).getByLabelText('Cargar ítems desde una orden de servicio')).toHaveValue('o1');
+  expect(within(d).getByLabelText('Detalle del ítem 1')).toHaveValue('Cambio de motor');
+  expect(within(d).getByLabelText('Detalle del ítem 2')).toHaveValue('Aceite 5W-30');
   const totales = within(d).getByLabelText('Totales');
   expect(totales).toHaveTextContent('Gravada S/ 762.71');
   expect(totales).toHaveTextContent('IGV (18 %) S/ 137.29');
   expect(totales).toHaveTextContent('Total S/ 900.00');
   expect(totales).toHaveTextContent('Detracción S/ 108.00');
   expect(within(d).getByRole('checkbox')).toBeChecked();
-  await userEvent.selectOptions(within(d).getByLabelText('Tipo de IGV de Aceite 5W-30'), 'EXONERADO');
+  await userEvent.selectOptions(within(d).getByLabelText('Tipo de IGV del ítem 2'), 'EXONERADO');
   expect(totales).toHaveTextContent('Exonerada S/ 100.00');
   await userEvent.click(within(d).getByRole('button', { name: 'Emitir' }));
-  await waitFor(() => expect(llamadas.find((l) => l.ruta === '/ordenes/o1/nota-venta')?.cuerpo).toMatchObject({ localId: 'l1', condicion: 'CONTADO', conDetraccion: true, tiposIgv: { d1: 'GRAVADO', d2: 'EXONERADO' } }));
+  await waitFor(() => expect(llamadas.find((l) => l.ruta === '/notas-venta' && l.metodo === 'POST')?.cuerpo).toMatchObject({ ordenId: 'o1', condicion: 'CONTADO', conDetraccion: true, items: [{ descripcion: 'Cambio de motor', precio: 800, tipoIgv: 'GRAVADO' }, { descripcion: 'Aceite 5W-30', precio: 100, tipoIgv: 'EXONERADO' }] }));
   expect(await screen.findByRole('status')).toHaveTextContent('Nota de venta NV01-000008 emitida.');
 });
 
-it('Facturar: a crédito pide vencimiento y un local sin serie no deja emitir', async () => {
+it('Facturar: a crédito pide vencimiento y un local sin serie o sin local no deja emitir', async () => {
   simular();
-  respuestas['GET /ordenes/catalogos'] = { cuerpo: catNota };
+  Object.assign(respuestas, extra);
+  respuestas['GET /ordenes/catalogos'] = { cuerpo: { ...catNota, localId: 'l2' } };
   respuestas['GET /ordenes'] = { cuerpo: [ordenServicio800] };
   render(<App />);
   const t = (await screen.findByText('#2026102800001')).closest('article')!;
   await userEvent.click(within(t).getByRole('button', { name: 'Facturar' }));
-  const d = screen.getByRole('dialog', { name: /Nueva nota de venta/ });
-  expect(within(d).getByLabelText('Fecha de vencimiento')).toBeDisabled();
-  await userEvent.selectOptions(within(d).getByLabelText('Condición *'), 'CREDITO');
+  const d = screen.getByRole('dialog', { name: /Emitir nuevo comprobante/ });
+  // El vencimiento se puede elegir siempre y por defecto es hoy; solo a crédito es obligatorio.
+  expect(within(d).getByLabelText('Fecha de vencimiento')).toBeEnabled();
+  expect(within(d).getByLabelText('Fecha de vencimiento')).toHaveValue(new Date().toLocaleDateString('en-CA'));
+  await userEvent.click(within(d).getByLabelText('Crédito'));
   expect(within(d).getByLabelText('Fecha de vencimiento *')).toBeRequired();
-  await userEvent.selectOptions(within(d).getByLabelText('Local *'), 'l2');
   expect(within(d).getByRole('button', { name: 'Emitir' })).toBeDisabled();
   expect(within(d).getByRole('alert')).toHaveTextContent('no tiene serie de nota de venta');
+  cleanup();
+  simular();
+  Object.assign(respuestas, extra);
+  respuestas['GET /ordenes/catalogos'] = { cuerpo: { ...catNota, localId: null } };
+  respuestas['GET /ordenes'] = { cuerpo: [ordenServicio800] };
+  render(<App />);
+  await userEvent.click(within((await screen.findByText('#2026102800001')).closest('article')!).getByRole('button', { name: 'Facturar' }));
+  expect(within(screen.getByRole('dialog', { name: /Emitir nuevo comprobante/ })).getByRole('alert')).toHaveTextContent('no tiene un local asignado');
 });
 
 it('Orden con nota: «Facturar» la muestra bloqueada, con PDF, Ticket y Anular solo con nivel «todo»', async () => {
@@ -385,7 +399,8 @@ it('Orden con nota: «Facturar» la muestra bloqueada, con PDF, Ticket y Anular 
   expect(within(t).getByText('Con comprobante')).toBeInTheDocument();
   await userEvent.click(within(t).getByRole('button', { name: 'Facturar' }));
   const d = screen.getByRole('dialog', { name: 'Nota de venta NV01-000007' });
-  expect(within(d).getByLabelText('Condición *')).toBeDisabled();
+  expect(within(d).getByLabelText('Crédito')).toBeDisabled();
+  expect(within(d).getByLabelText('Serie')).toHaveValue('NV01');
   expect(within(d).queryByRole('button', { name: 'Emitir' })).toBeNull();
   expect(within(d).queryByRole('button', { name: 'Anular' })).toBeNull();
   await userEvent.click(within(d).getByRole('button', { name: 'PDF' }));

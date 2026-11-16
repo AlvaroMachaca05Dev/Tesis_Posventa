@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { api, CatalogosOds, Orden, TipoIgv } from '../comun/api';
-import { soles } from '../ordenServicio/ordenServicio.util';
+import { leerNumero, soles } from '../ordenServicio/ordenServicio.util';
 
 const TIPOS: [TipoIgv, string][] = [['GRAVADO', 'Gravado'], ['EXONERADO', 'Exonerado'], ['INAFECTO', 'Inafecto']];
 const r2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -18,13 +18,14 @@ export function totalesDe(lineas: { tipo: string; total: number; tipoIgv: TipoIg
 /**
  * Nota de venta de una orden (RF-088), en una sola pantalla y sin pestañas (DEC-81).
  * Si la orden aún no tiene nota, se emite; si ya la tiene, se muestra con Imprimir y Anular.
+ * La serie sale del local del usuario; quien no tiene local no puede emitir.
  */
 export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar, alHecho }: {
   orden: Orden; cat: CatalogosOds; puedeAnular: boolean; alImprimir: (formato: 'PDF' | 'Ticket') => void; alCerrar: () => void; alHecho: (m: string) => Promise<void> | void;
 }) {
   const nota = orden.notaVenta ?? null;
   const locales = cat.locales ?? [];
-  const [localId, setLocalId] = useState(cat.localId ?? locales[0]?.id ?? '');
+  const localId = cat.localId ?? '';
   const [condicion, setCondicion] = useState<'CONTADO' | 'CREDITO'>('CONTADO');
   const [vence, setVence] = useState('');
   const [observaciones, setObservaciones] = useState(orden.observaciones ?? '');
@@ -32,6 +33,11 @@ export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar
   const [tipos, setTipos] = useState<Record<string, TipoIgv>>(() => Object.fromEntries(orden.detalles.map((d, i) => [d.id ?? String(i), d.impuesto === 'NINGUNO' ? 'INAFECTO' : 'GRAVADO'])));
   const [detraccion, setDetraccion] = useState<boolean | null>(null); // null = la que propone el sistema
   const [error, setError] = useState('');
+  const [abonos, setAbonos] = useState(orden.abonos);
+  const [metodo, setMetodo] = useState(cat.metodosPago[0] ?? 'Efectivo');
+  const [valor, setValor] = useState('');
+  const [verHistorial, setVerHistorial] = useState(true);
+  const pagado = abonos.reduce((a, x) => a + x.valor, 0);
 
   const lineas = nota ? nota.detalles : orden.detalles.map((d, i) => ({ id: d.id ?? String(i), tipo: d.tipo, descripcion: d.descripcion, referencia: d.referencia, cantidad: d.cantidad, precio: d.precio, descuentoPct: d.descuentoPct, tipoIgv: tipos[d.id ?? String(i)], total: d.total }));
   const calculo = useMemo(() => totalesDe(lineas), [lineas]);
@@ -39,6 +45,7 @@ export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar
   const conDetraccion = nota ? nota.conDetraccion : detraccion ?? calculo.proponeDetraccion;
   const montoDetraccion = nota ? nota.detraccion : conDetraccion ? calculo.detraccion : 0;
   const serie = locales.find((l) => l.id === localId)?.serieNotaVenta ?? null;
+  const cond = nota ? nota.condicion : condicion;
 
   async function emitir(e: FormEvent) {
     e.preventDefault();
@@ -48,6 +55,14 @@ export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar
     } catch (x) {
       setError((x as Error).message);
     }
+  }
+  async function pagar() {
+    try {
+      const v = leerNumero(valor);
+      if (v === null) throw new Error('Escribe el monto recibido.');
+      const o = await api.abonar(orden.id, { metodo, concepto: 'Abono', valor: v });
+      setAbonos(o.abonos); setValor(''); setError('');
+    } catch (x) { setError((x as Error).message); }
   }
   async function anular() {
     if (!nota) return;
@@ -63,55 +78,82 @@ export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar
       <form className="modal-form modal-nota" role="dialog" aria-modal="true" aria-label={titulo} onSubmit={emitir}>
         <div className="fila entre"><h2>{titulo}</h2><button type="button" className="cerrar" aria-label="Cerrar" onClick={alCerrar}>×</button></div>
         {error && <p className="error" role="alert">{error}</p>}
-        <div className="dos-col tres">
-          <div className="campo"><label htmlFor="n-local">Local *</label>
-            {nota ? <input id="n-local" value={nota.local} disabled /> : (
-              <select id="n-local" value={localId} onChange={(e) => setLocalId(e.target.value)} required>{locales.map((l) => <option key={l.id} value={l.id}>{l.nombre}</option>)}</select>
-            )}</div>
-          <div className="campo"><label htmlFor="n-condicion">Condición *</label>
-            <select id="n-condicion" value={nota ? nota.condicion : condicion} disabled={!!nota} onChange={(e) => setCondicion(e.target.value as 'CONTADO' | 'CREDITO')}><option value="CONTADO">Contado</option><option value="CREDITO">Crédito</option></select></div>
-          <div className="campo"><label htmlFor="n-vence">{`Fecha de vencimiento${(nota ? nota.condicion : condicion) === 'CREDITO' ? ' *' : ''}`}</label>
-            {nota ? <input id="n-vence" value={nota.fechaVencimiento ? dia(nota.fechaVencimiento) : '—'} disabled /> : <input id="n-vence" type="date" value={vence} disabled={condicion !== 'CREDITO'} required={condicion === 'CREDITO'} onChange={(e) => setVence(e.target.value)} />}</div>
-          <div className="campo"><label htmlFor="n-cliente">Cliente</label><input id="n-cliente" value={`${orden.cliente.documento} · ${orden.cliente.nombre}`} disabled /></div>
-          <div className="campo"><label htmlFor="n-placa">Placa</label><input id="n-placa" value={orden.vehiculo.placa} disabled /></div>
-          <div className="campo"><label htmlFor="n-emision">Fecha de emisión</label><input id="n-emision" value={dia(nota ? nota.fechaEmision : new Date().toISOString())} disabled /></div>
-          <div className="campo ancha"><label htmlFor="n-obs">Observaciones</label><input id="n-obs" value={nota ? nota.observaciones ?? '' : observaciones} disabled={!!nota} onChange={(e) => setObservaciones(e.target.value)} /></div>
-          <div className="campo"><label htmlFor="n-com">Comentario</label><input id="n-com" value={nota ? nota.comentario ?? '' : comentario} disabled={!!nota} onChange={(e) => setComentario(e.target.value)} /></div>
-        </div>
-        {!nota && !serie && <p className="error" role="alert">Este local no tiene serie de nota de venta. Asígnala en Empresa y parámetros.</p>}
+        <section className="bloque-nota"><h3>Datos del comprobante</h3>
+          <div className="dos-col tres">
+            <div className="campo"><label htmlFor="n-tipo">Tipo de documento</label>
+              <select id="n-tipo" value="NV" disabled><option value="NV">Nota de venta</option></select></div>
+            <div className="campo"><label htmlFor="n-serie">Serie</label><input id="n-serie" value={nota ? nota.codigo.split('-')[0] : serie ?? ''} placeholder="Sin serie" disabled /></div>
+            <div className="campo"><label htmlFor="n-nro">Número</label><input id="n-nro" value={nota ? nota.codigo.split('-')[1] : 'Automático'} disabled /></div>
+            <div className="campo"><label htmlFor="n-emision">Fecha de emisión</label><input id="n-emision" value={dia(nota ? nota.fechaEmision : new Date().toISOString())} disabled /></div>
+            <div className="campo"><label htmlFor="n-vence">{`Fecha de vencimiento${cond === 'CREDITO' ? ' *' : ''}`}</label>
+              {nota ? <input id="n-vence" value={nota.fechaVencimiento ? dia(nota.fechaVencimiento) : '—'} disabled /> : <input id="n-vence" type="date" value={vence} disabled={condicion !== 'CREDITO'} required={condicion === 'CREDITO'} onChange={(e) => setVence(e.target.value)} />}</div>
+            <div className="campo"><label htmlFor="n-ods">Orden de servicio</label><input id="n-ods" value={orden.codigo} disabled /></div>
+            <div className="campo ancha"><label htmlFor="n-cliente">Cliente</label><input id="n-cliente" value={`${orden.cliente.documento} · ${orden.cliente.nombre}`} disabled /></div>
+            <div className="campo"><label htmlFor="n-placa">Placa</label><input id="n-placa" value={orden.vehiculo.placa} disabled /></div>
+            <div className="campo"><label>Condición</label>
+              <div className="radios">
+                {(['CONTADO', 'CREDITO'] as const).map((c) => (
+                  <label key={c} className="check"><input type="radio" name="n-condicion" checked={cond === c} disabled={!!nota} onChange={() => setCondicion(c)} /> {c === 'CONTADO' ? 'Contado' : 'Crédito'}</label>
+                ))}
+              </div></div>
+          </div>
+        </section>
+        {!nota && !serie && <p className="error" role="alert">{!localId ? 'Tu usuario no tiene un local asignado: la serie sale del local, así que no puedes emitir.' : 'Este local no tiene serie de nota de venta. Asígnala en Empresa y parámetros.'}</p>}
         <div className="tabla">
           <table>
-            <thead><tr><th>#</th><th>Descripción</th><th className="der">Cant.</th><th className="der">Precio</th><th>Tipo de IGV</th><th className="der">Total</th></tr></thead>
+            <thead><tr><th>#</th><th>Código</th><th>Detalle</th><th className="der">Cant.</th><th>Tipo de IGV</th><th className="der">Precio</th><th className="der">Descuento</th><th className="der">Subtotal</th><th className="der">Total</th></tr></thead>
             <tbody>
               {lineas.map((l, i) => (
                 <tr key={l.id}>
                   <td>{i + 1}</td>
-                  <td>{l.referencia ? `${l.referencia} · ` : ''}{l.descripcion}</td>
+                  <td>{l.referencia ?? ''}</td>
+                  <td>{l.descripcion}</td>
                   <td className="der">{l.cantidad}</td>
-                  <td className="der">{soles(l.precio)}</td>
                   <td>
                     <select aria-label={`Tipo de IGV de ${l.descripcion}`} value={l.tipoIgv} disabled={!!nota} onChange={(e) => setTipos({ ...tipos, [l.id]: e.target.value as TipoIgv })}>
                       {TIPOS.map(([v, n]) => <option key={v} value={v}>{n}</option>)}
                     </select>
                   </td>
+                  <td className="der">{soles(l.precio)}</td>
+                  <td className="der">{l.descuentoPct ? `${l.descuentoPct} %` : '—'}</td>
+                  <td className="der">{soles(l.cantidad * l.precio)}</td>
                   <td className="der">{soles(l.total)}</td>
                 </tr>
               ))}
-              {lineas.length === 0 && <tr><td colSpan={6} className="suave">La orden no tiene ítems.</td></tr>}
+              {lineas.length === 0 && <tr><td colSpan={9} className="suave">La orden no tiene ítems.</td></tr>}
             </tbody>
           </table>
         </div>
+        <div className="dos-col">
+          <section className="bloque-nota"><h3>Observaciones</h3><textarea aria-label="Observaciones" rows={2} value={nota ? nota.observaciones ?? '' : observaciones} disabled={!!nota} onChange={(e) => setObservaciones(e.target.value)} /></section>
+          <section className="bloque-nota"><h3>Comentario</h3><textarea aria-label="Comentario" rows={2} value={nota ? nota.comentario ?? '' : comentario} disabled={!!nota} onChange={(e) => setComentario(e.target.value)} /></section>
+        </div>
         <div className="pie-nota">
-          <label className="check"><input type="checkbox" checked={conDetraccion} disabled={!!nota} onChange={(e) => setDetraccion(e.target.checked)} /> Detracción de 12 % (mantenimiento y reparación de bienes muebles)</label>
-          <div className="totales-nota" aria-label="Totales">
-            {fila('Exonerada', soles(t.exonerada))}
-            {fila('Inafecta', soles(t.inafecta))}
-            {fila('Gravada', soles(t.gravada))}
-            {fila('IGV (18 %)', soles(t.igv))}
-            {fila('Total', soles(t.total), 'total')}
-            {fila('Detracción', soles(montoDetraccion))}
-            {fila('Total pagado', soles(orden.totalAbonos), 'pagado')}
-            {fila('Saldo', soles(r2(t.total - orden.totalAbonos)), 'saldo')}
+          <section className="bloque-nota pagos-nota"><h3>Pagos</h3>
+            <div className="fila-pago">
+              <select aria-label="Método de pago" value={metodo} onChange={(e) => setMetodo(e.target.value)}>{cat.metodosPago.map((m) => <option key={m}>{m}</option>)}</select>
+              <input aria-label="Monto recibido" inputMode="decimal" value={valor} placeholder={cond === 'CREDITO' && !nota ? 'A crédito: solo adelantos' : `Pendiente: ${soles(r2(t.total - pagado))}`} onChange={(e) => setValor(e.target.value)} />
+              <button type="button" className="mas" aria-label="Agregar pago" onClick={() => void pagar()}>+</button>
+            </div>
+            <section className="historia">
+              <button type="button" className="historia-cab" aria-expanded={verHistorial} onClick={() => setVerHistorial((x) => !x)}><b>Historial de pagos</b><span aria-hidden="true">{verHistorial ? '⌃' : '⌄'}</span></button>
+              {verHistorial && (abonos.length === 0 ? <p className="suave">No hay pagos registrados.</p> : (
+                <ul className="historial-pagos">{abonos.map((a) => <li key={a.id}><span className="fecha-pago">{new Date(a.fecha).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}</span><span className="chip-pago">{a.metodo}</span><span className="suave concepto-pago">{a.concepto || '—'}</span><b>{soles(a.valor)}</b></li>)}</ul>
+              ))}
+            </section>
+          </section>
+          <div>
+            <label className="check"><input type="checkbox" checked={conDetraccion} disabled={!!nota} onChange={(e) => setDetraccion(e.target.checked)} /> Detracción de 12 %</label>
+            <div className="totales-nota" aria-label="Totales">
+              {fila('Exonerada', soles(t.exonerada))}
+              {fila('Inafecta', soles(t.inafecta))}
+              {fila('Gravada', soles(t.gravada))}
+              {fila('IGV (18 %)', soles(t.igv))}
+              {fila('Total', soles(t.total), 'total')}
+              {fila('Detracción', soles(montoDetraccion))}
+              {fila('Total pagado', soles(pagado), 'pagado')}
+              {fila('Saldo', soles(r2(t.total - pagado)), 'saldo')}
+            </div>
           </div>
         </div>
         <div className="fila fin">

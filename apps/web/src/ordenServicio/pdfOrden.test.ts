@@ -58,7 +58,7 @@ describe('PDF de la orden', () => {
     const ods = texto(generarPdf('PDF', orden, empresa));
     for (const t of ['ORDEN DE SERVICIO', 'RAZÓN SOCIAL:','ABC-123', 'SUZUKI', '72.00', 'PRECIOS INCLUYEN IGV', 'AMO102', 'CAMBIO DE MOTOR', '20123456789']) expect(ods).toContain(t);
     const ticket = texto(generarPdf('Ticket', orden, empresa));
-    for (const t of ['NRO ORDEN DE SERVICIO: 2026000009', 'AMO102 - 8100', 'SERVICIOS - CAMBIO', 'Total']) expect(ticket).toContain(t);
+    for (const t of ['NRO ORDEN DE SERVICIO: 2026000009', 'AMO102 - 8100', 'CAMBIO', 'Total']) expect(ticket).toContain(t);
   });
   it('la recepción lleva los términos de la empresa y las dos firmas', () => {
     const rec = texto(generarPdf('Recepción', orden, empresa));

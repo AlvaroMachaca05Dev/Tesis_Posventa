@@ -68,6 +68,7 @@ model Local {
   stock          StockProducto[]
   movimientos    MovimientoInventario[]
   notas          NotaVenta[]
+  cotizaciones   Cotizacion[]
 }
 
 // Los roles son datos: los base se crean por empresa y el Superadministrador puede crear roles propios.
@@ -132,6 +133,8 @@ model Usuario {
   notasAnuladas        NotaVenta[]    @relation("NotaAnula")
   abonos         Abono[]
   evidencias     EvidenciaIngreso[]
+  cotizacionesCreadas Cotizacion[] @relation("CotizacionCrea")
+  cotizacionesAnuladas Cotizacion[] @relation("CotizacionAnula")
 }
 
 // Un usuario puede tener uno o más roles; sus permisos son la suma de los de cada rol.
@@ -166,6 +169,8 @@ model Cliente {
   ordenes         OrdenServicio[]
 
   @@unique([organizacionId, documento])
+  notas NotaVenta[]
+  cotizaciones Cotizacion[]
 }
 
 enum TipoDocumento {
@@ -202,6 +207,8 @@ model Vehiculo {
   ordenes        OrdenServicio[]
 
   @@unique([organizacionId, placaNorm])
+  notas NotaVenta[]
+  cotizaciones Cotizacion[]
 }
 
 // Marcas y modelos de vehículo de la empresa (catálogo del prototipo).
@@ -310,13 +317,15 @@ model DetalleODS {
 // Abono o pago antes del comprobante (DEC-28): reduce el saldo, no el total.
 model Abono {
   id              String        @id @default(uuid())
-  ordenId         String
+  ordenId         String?
+  notaId          String? // pago de una venta directa (sin orden de servicio)
   fecha           DateTime      @default(now())
   metodo          String
   concepto        String?
   valor           Decimal       @db.Decimal(12, 2)
   registradoPorId String
-  orden           OrdenServicio @relation(fields: [ordenId], references: [id])
+  orden           OrdenServicio? @relation(fields: [ordenId], references: [id])
+  nota            NotaVenta?    @relation(fields: [notaId], references: [id])
   registradoPor   Usuario       @relation(fields: [registradoPorId], references: [id])
 }
 
@@ -602,8 +611,9 @@ model NotaVenta {
   id               String        @id @default(uuid())
   organizacionId   String
   localId          String
-  ordenId          String
+  ordenId          String? // null en la venta directa por mostrador
   clienteId        String
+  vehiculoId       String?
   serie            String
   numero           Int
   codigo           String
@@ -627,7 +637,10 @@ model NotaVenta {
   motivoAnulacion  String?
   anuladaEn        DateTime?
   creadoEn         DateTime      @default(now())
-  orden            OrdenServicio @relation(fields: [ordenId], references: [id])
+  orden            OrdenServicio? @relation(fields: [ordenId], references: [id])
+  cliente          Cliente       @relation(fields: [clienteId], references: [id])
+  vehiculo         Vehiculo?     @relation(fields: [vehiculoId], references: [id])
+  abonos           Abono[]
   local            Local         @relation(fields: [localId], references: [id])
   emitidaPor       Usuario       @relation("NotaEmite", fields: [emitidaPorId], references: [id])
   anuladaPor       Usuario?      @relation("NotaAnula", fields: [anuladaPorId], references: [id])
@@ -635,6 +648,7 @@ model NotaVenta {
 
   @@unique([organizacionId, serie, numero])
   @@index([ordenId])
+  @@index([clienteId])
 }
 
 model DetalleNota {
@@ -652,4 +666,60 @@ model DetalleNota {
   servicioId   String?
   productoId   String?
   nota         NotaVenta @relation(fields: [notaId], references: [id], onDelete: Cascade)
+}
+
+// Cotización: calca de la nota de venta sin caja, pagos ni stock. El vehículo es opcional.
+model Cotizacion {
+  id             String   @id @default(uuid())
+  organizacionId String
+  localId        String
+  clienteId      String
+  vehiculoId     String?
+  serie          String   @default("COT")
+  numero         Int
+  codigo         String
+  fechaEmision   DateTime @default(now())
+  validaHasta    DateTime
+  condicion      String   @default("CONTADO") // CONTADO | CREDITO
+  formaPago      String?
+  conIgv         Boolean  @default(true)
+  conDetraccion  Boolean  @default(false)
+  observaciones  String?
+  comentario     String?
+  estado         String   @default("EMITIDA") // EMITIDA | ANULADA (vencida se calcula con validaHasta)
+  exonerada      Decimal  @default(0) @db.Decimal(12, 2)
+  inafecta       Decimal  @default(0) @db.Decimal(12, 2)
+  gravada        Decimal  @default(0) @db.Decimal(12, 2)
+  igv            Decimal  @default(0) @db.Decimal(12, 2)
+  total          Decimal  @default(0) @db.Decimal(12, 2)
+  creadaPorId    String
+  anuladaPorId   String?
+  motivoAnulacion String?
+  creadoEn       DateTime @default(now())
+  local          Local    @relation(fields: [localId], references: [id])
+  cliente        Cliente  @relation(fields: [clienteId], references: [id])
+  vehiculo       Vehiculo? @relation(fields: [vehiculoId], references: [id])
+  creadaPor      Usuario  @relation("CotizacionCrea", fields: [creadaPorId], references: [id])
+  anuladaPor     Usuario? @relation("CotizacionAnula", fields: [anuladaPorId], references: [id])
+  detalles       DetalleCotizacion[]
+
+  @@unique([organizacionId, serie, numero])
+  @@index([clienteId])
+}
+
+model DetalleCotizacion {
+  id           String     @id @default(uuid())
+  cotizacionId String
+  posicion     Int        @default(0)
+  tipo         String
+  descripcion  String
+  referencia   String?
+  cantidad     Decimal    @default(1) @db.Decimal(12, 3)
+  precio       Decimal    @default(0) @db.Decimal(12, 3)
+  descuentoPct Decimal    @default(0) @db.Decimal(9, 6)
+  tipoIgv      String     @default("GRAVADO")
+  total        Decimal    @default(0) @db.Decimal(12, 2)
+  servicioId   String?
+  productoId   String?
+  cotizacion   Cotizacion @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
 }

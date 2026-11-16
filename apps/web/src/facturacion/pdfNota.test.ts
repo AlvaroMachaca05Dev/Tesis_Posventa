@@ -39,7 +39,7 @@ describe('PDF de la nota de venta', () => {
   it('el ticket lleva el código, los ítems, los totales y el pie configurado', () => {
     const bytes = generarPdfNota('Ticket', orden, nota, empresa);
     const s = texto(bytes);
-    for (const t of ['NOTA DE VENTA: NV01-000007', 'SERVICIOS - Cambio de', 'Op. gravada', 'IGV 18 %', 'Total S/', '900.00', 'Gracias por su compra']) expect(s).toContain(t);
+    for (const t of ['NOTA DE VENTA: NV01-000007', 'Cambio de', 'Op. gravada', 'IGV 18 %', 'Total S/', '900.00', 'Gracias por su compra']) expect(s).toContain(t);
     expect(s).toContain('/MediaBox [0 0 227 ');
     if (process.env.PDF_SALIDA) writeFileSync(`${process.env.PDF_SALIDA}/nota-ticket.pdf`, bytes);
   });

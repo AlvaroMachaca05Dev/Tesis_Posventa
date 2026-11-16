@@ -162,7 +162,8 @@ async function main() {
         passwordHash: hash,
         activo: true,
         organizacionId: u.plataforma ? null : org.id,
-        localId: u.plataforma ? null : locales[0].id,
+        // El superadministrador (TI) ve ambos locales y no pertenece a ninguno: sin local no puede facturar.
+        localId: u.plataforma || u.roles.includes('Superadministrador') ? null : locales[0].id,
       },
     });
     for (const r of u.roles) {

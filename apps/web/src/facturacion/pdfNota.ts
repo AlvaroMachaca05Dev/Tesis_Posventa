@@ -16,7 +16,7 @@ const IGV_CORTO: Record<string, string> = { GRAVADO: 'Grav.', EXONERADO: 'Exon.'
 const mayus = (t: string | null | undefined) => (t ?? '').toUpperCase();
 const cuadro = (p: Pagina, x: number, y: number, w: number, h: number, relleno?: number) => p.rect(x, y, w, h, { radio: 5, borde: BORDE, ...(relleno !== undefined ? { relleno } : {}) });
 
-function hoja(o: Orden, n: NotaOrden, e: Empresa) {
+function hoja(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
   const p = new Pagina(612, 792);
   // Cabecera: logo, datos de la empresa y cuadro del comprobante
   p.imagen(L, 19, 207, 67);
@@ -24,7 +24,7 @@ function hoja(o: Orden, n: NotaOrden, e: Empresa) {
   ([e.razonSocial, e.lema, e.direccion, e.telefono ? `TLF : ${e.telefono}` : '', e.correo ? `Email: ${e.correo}` : ''].filter(Boolean) as string[]).forEach((t, i) => p.texto(336, 59 + i * 6.6, t, { tam: 5.2, alinear: 'centro' }));
   cuadro(p, 420, 36, R - 420, 51, GRIS);
   p.texto(502, 47, `R.U.C. ${e.ruc ?? ''}`, { f: 'B', tam: 6.6, alinear: 'centro' });
-  p.texto(502, 62, 'NOTA DE VENTA', { f: 'B', tam: 11.5, alinear: 'centro' });
+  p.texto(502, 62, titulo, { f: 'B', tam: 11.5, alinear: 'centro' });
   p.texto(502, 77, n.codigo, { f: 'B', tam: 11.5, alinear: 'centro' });
 
   // Cliente y datos del comprobante
@@ -48,7 +48,7 @@ function hoja(o: Orden, n: NotaOrden, e: Empresa) {
   cuadro(p, L, y, W, 23, GRIS);
   const col = { num: L + 8, cod: L + 22, desc: L + 112, cant: 395, uni: 445, igv: 458, tot: R - 4 };
   const th = (x: number, t: string, a: 'izq' | 'centro' | 'der' = 'izq') => p.texto(x, y + 15, t, { f: 'B', tam: 8.5, alinear: a });
-  th(col.num, '#'); th(col.cod, 'CODIGO'); th(col.desc + 90, 'DESCRIPCION', 'centro'); th(col.cant, 'CANT.', 'der'); th(col.uni, 'PRECIO', 'der'); th(col.igv, 'IGV'); th(col.tot, 'TOTAL', 'der');
+  th(col.num, '#'); th(col.cod, 'CODIGO'); th(col.desc + 90, 'DETALLE', 'centro'); th(col.cant, 'CANT.', 'der'); th(col.uni, 'PRECIO', 'der'); th(col.igv, 'IGV'); th(col.tot, 'TOTAL', 'der');
   y += 25;
   n.detalles.forEach((d, i) => {
     const desc = dividir(d.descripcion, 'N', 8.5, 220);
@@ -56,7 +56,7 @@ function hoja(o: Orden, n: NotaOrden, e: Empresa) {
     if (i % 2 === 0) p.rect(L, y, W, h, { relleno: GRIS });
     const b = y + 14;
     p.texto(col.num, b, String(i + 1), { tam: 8.5 });
-    p.texto(col.cod, b, dividir(d.tipo === 'servicio' ? 'SERVICIOS' : d.referencia ?? '', 'N', 8.5, 86)[0] ?? '', { tam: 8.5 });
+    p.texto(col.cod, b, dividir(d.referencia ?? '', 'N', 8.5, 86)[0] ?? '', { tam: 8.5 });
     desc.forEach((t, k) => p.texto(col.desc, b + k * paso, t, { tam: 8.5 }));
     p.texto(col.cant, b, dinero(d.cantidad), { tam: 8.5, alinear: 'der' });
     p.texto(col.uni, b, dinero(d.cantidad ? d.total / d.cantidad : d.precio), { tam: 8.5, alinear: 'der' });
@@ -93,7 +93,7 @@ function hoja(o: Orden, n: NotaOrden, e: Empresa) {
   return [p];
 }
 
-function ticket(o: Orden, n: NotaOrden, e: Empresa) {
+function ticket(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
   const ancho = Math.round((e.anchoTicketMm ?? 80) * 2.8346), m = 12, tam = 9.5, paso = 11.5, util = ancho - m * 2;
   type Fila = { t: string; f?: 'N' | 'B'; a?: 'izq' | 'centro'; par?: string };
   const filas: Fila[] = [];
@@ -109,13 +109,13 @@ function ticket(o: Orden, n: NotaOrden, e: Empresa) {
   filas.push({ t: '' });
   izq(`CLIENTE: ${mayus(o.cliente.nombre)}`);
   izq(`${TIPO_DOC[o.cliente.tipoDocumento] ?? 'DOC'}: ${o.cliente.documento}`);
-  izq(`NOTA DE VENTA: ${n.codigo}`);
+  izq(`${titulo}: ${n.codigo}`);
   filas.push({ t: '' });
   separador();
   par('CANT.  DESC.', 'PRECIO', 'B');
   const descMax = util - 34 - 44;
   for (const d of n.detalles) {
-    const nombre = d.tipo === 'servicio' ? `SERVICIOS - ${d.descripcion}` : d.referencia ? `${d.referencia} - ${d.descripcion}` : d.descripcion;
+    const nombre = d.referencia ? `${d.referencia} - ${d.descripcion}` : d.descripcion;
     dividir(nombre, 'N', tam, descMax).forEach((l, i) => filas.push({ t: `${i === 0 ? dinero(d.cantidad) : ''}\t${l}`, par: i === 0 ? dinero(d.total) : '' }));
   }
   separador();
@@ -145,6 +145,6 @@ function ticket(o: Orden, n: NotaOrden, e: Empresa) {
 }
 
 /** PDF (hoja carta) o ticket de la nota de venta vigente de la orden. */
-export function generarPdfNota(formato: 'PDF' | 'Ticket', o: Orden, n: NotaOrden, e: Empresa): Uint8Array {
-  return construirPdf(formato === 'Ticket' ? ticket(o, n, e) : hoja(o, n, e), LOGO);
+export function generarPdfNota(formato: 'PDF' | 'Ticket', o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA'): Uint8Array {
+  return construirPdf(formato === 'Ticket' ? ticket(o, n, e, titulo) : hoja(o, n, e, titulo), LOGO);
 }

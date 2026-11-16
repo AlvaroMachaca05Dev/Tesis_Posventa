@@ -49,8 +49,9 @@ afterAll(async () => {
   if (clienteId) {
     const ordenes = await prisma.ordenServicio.findMany({ where: { clienteId } });
     const ids = ordenes.map((o) => o.id);
-    const notas = await prisma.notaVenta.findMany({ where: { ordenId: { in: ids } } });
-    await prisma.notaVenta.deleteMany({ where: { ordenId: { in: ids } } });
+    const notas = await prisma.notaVenta.findMany({ where: { OR: [{ ordenId: { in: ids } }, { clienteId }] } });
+    await prisma.abono.deleteMany({ where: { notaId: { in: notas.map((x) => x.id) } } });
+    await prisma.notaVenta.deleteMany({ where: { id: { in: notas.map((x) => x.id) } } });
     for (const t of ['solicitudOds', 'abono', 'evidenciaIngreso', 'detalleODS', 'bitacora'] as const) await (prisma[t] as unknown as { deleteMany: (a: object) => Promise<unknown> }).deleteMany({ where: { ordenId: { in: ids } } });
     await prisma.ordenServicio.deleteMany({ where: { id: { in: ids } } });
     const vs = await prisma.vehiculo.findMany({ where: { clienteId } });
@@ -184,5 +185,37 @@ describe('anular la nota de venta', () => {
     const nota = (await como(CAJERA, 'post', `/ordenes/${o.id}/nota-venta`, {})).body;
     await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'Cerrada' });
     expect((await como(ADMIN, 'post', `/notas-venta/${nota.id}/anular`, { motivo: 'Tarde' })).status).toBe(409);
+  });
+});
+
+describe('venta directa por mostrador (sin ODS)', () => {
+  const item = (extra: object = {}) => ({ tipo: 'producto', descripcion: 'Producto nota prueba', productoId, cantidad: 2, precio: 20, tipoIgv: 'GRAVADO', ...extra });
+  it('emite con la serie del local, sin orden, con sus pagos, y baja el stock', async () => {
+    const antes = Number((await prisma.stockProducto.findUnique({ where: { productoId_localId: { productoId, localId: localCajera } } }))?.cantidad ?? 0);
+    const r = await como(CAJERA, 'post', '/notas-venta', { clienteId, items: [item()], pagos: [{ metodo: 'Efectivo', valor: 10 }] });
+    expect(r.status).toBe(201);
+    expect(r.body).toMatchObject({ serie, estado: 'EMITIDA', total: 40, orden: null, pagado: 10, saldo: 30 });
+    expect(r.body.pagos).toHaveLength(1);
+    expect(Number((await prisma.stockProducto.findUniqueOrThrow({ where: { productoId_localId: { productoId, localId: localCajera } } })).cantidad)).toBe(antes - 2);
+    const lista = (await como(CAJERA, 'get', '/notas-venta')).body;
+    expect(lista.find((x: { id: string }) => x.id === r.body.id)).toMatchObject({ cliente: { documento: expect.any(String) }, orden: null });
+    const anulada = await como(ADMIN, 'post', `/notas-venta/${r.body.id}/anular`, { motivo: 'Prueba' });
+    expect(anulada.body.estado).toBe('ANULADA');
+    expect(Number((await prisma.stockProducto.findUniqueOrThrow({ where: { productoId_localId: { productoId, localId: localCajera } } })).cantidad)).toBe(antes);
+  });
+  it('enlazada a una ODS toma su cliente y sus abonos; no se emite sin ítems, con pagos de más ni dos veces la misma ODS', async () => {
+    const o = await nuevaOds([servicio(100)]);
+    await como(CAJERA, 'post', `/ordenes/${o.id}/abonos`, { metodo: 'Efectivo', valor: 30 });
+    const r = await como(CAJERA, 'post', '/notas-venta', { ordenId: o.id, items: [{ tipo: 'servicio', descripcion: 'Servicio de prueba', cantidad: 1, precio: 100 }] });
+    expect(r.status).toBe(201);
+    expect(r.body).toMatchObject({ pagado: 30, saldo: 70, orden: { id: o.id } });
+    expect((await como(CAJERA, 'post', '/notas-venta', { ordenId: o.id, items: [item()] })).status).toBe(409);
+    expect((await como(CAJERA, 'post', '/notas-venta', { clienteId, items: [] })).status).toBe(409);
+    expect((await como(CAJERA, 'post', '/notas-venta', { clienteId, items: [item()], pagos: [{ metodo: 'Efectivo', valor: 999 }] })).status).toBe(400);
+    expect((await como(CAJERA, 'post', '/notas-venta', { items: [item()] })).status).toBe(400);
+  });
+  it('sin local asignado (el superadministrador) no se emite', async () => {
+    const r = await como('ti@demo.local', 'post', '/notas-venta', { clienteId, items: [item()] });
+    expect([403, 409]).toContain(r.status);
   });
 });

@@ -101,7 +101,7 @@ function hojaOds(o: Orden, e: Empresa) {
   cuadro(p, L, y, W, 23, GRIS);
   const col = { num: L + 8, cod: L + 22, desc: L + 112, cant: 410, uni: 458, reg: 505, dcto: 545, tot: R - 4 };
   const th = (x: number, t: string, a: 'izq' | 'centro' | 'der' = 'izq') => p.texto(x, y + 15, t, { f: 'B', tam: 8.5, alinear: a });
-  th(col.num, '#'); th(col.cod, 'CODIGO'); th(col.desc + 100, 'DESCRIPCION', 'centro');
+  th(col.num, '#'); th(col.cod, 'CODIGO'); th(col.desc + 100, 'DETALLE', 'centro');
   th(col.cant, 'CANT.', 'der'); th(col.uni, 'PRE UNI.', 'der'); th(col.reg, 'PRE REG', 'der'); th(col.dcto, 'DCTO', 'der'); th(col.tot, 'TOTAL', 'der');
   y += 25;
   o.detalles.forEach((d, i) => {
@@ -110,7 +110,7 @@ function hojaOds(o: Orden, e: Empresa) {
     if (i % 2 === 0) p.rect(L, y, W, h, { relleno: GRIS });
     const b = y + 14;
     const regular = d.precio, descuento = d.descuentoMonto ?? Math.round(d.precio * d.cantidad * d.descuentoPct) / 100;
-    const codigo = d.tipo === 'servicio' ? 'SERVICIOS' : d.referencia ?? '';
+    const codigo = d.referencia ?? '';
     p.texto(col.num, b, String(i + 1), { tam: 8.5 });
     p.texto(col.cod, b, dividir(codigo, 'N', 8.5, 86)[0] ?? '', { tam: 8.5 });
     desc.forEach((t, k) => p.texto(col.desc, b + k * 10.6, t, { tam: 8.5 }));
@@ -219,7 +219,7 @@ function hojaTicket(o: Orden, e: Empresa) {
   separador();
   const cantX = m, descX = m + 34, precioX = ancho - m, descMax = precioX - descX - 44;
   const items: { cant: string; lineas: string[]; precio: string }[] = o.detalles.map((d) => {
-    const nombre = d.tipo === 'servicio' ? `SERVICIOS - ${d.descripcion}` : d.referencia ? `${d.referencia} - ${d.descripcion}` : d.descripcion;
+    const nombre = d.referencia ? `${d.referencia} - ${d.descripcion}` : d.descripcion;
     return { cant: dinero(d.cantidad), lineas: dividir(nombre, 'N', tam, descMax), precio: dinero(d.total) };
   });
   const gracias = pie ? dividir(pie, 'N', tam, util) : [];

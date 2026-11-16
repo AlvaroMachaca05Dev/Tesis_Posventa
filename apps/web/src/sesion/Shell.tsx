@@ -4,6 +4,8 @@ import Usuarios from '../usuario/Usuarios';
 import Clientes from '../cliente/Clientes';
 import Vehiculos from '../vehiculo/Vehiculos';
 import Empresa from '../empresa/Empresa';
+import Comprobantes from '../facturacion/Comprobantes';
+import Cotizaciones from '../facturacion/Cotizaciones';
 import Ordenes from '../ordenServicio/Ordenes';
 import Proveedores from '../maestros/Proveedores';
 import Catalogo from '../maestros/Catalogo';
@@ -205,7 +207,9 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
           {mostrado?.id === 'grupos' && <Grupos nivel={mostrado.nivel} />}
           {mostrado?.id === 'solapes' && <Solapamientos nivel={mostrado.nivel} />}
           {mostrado?.id === 'ajustes' && <Empresa nivel={mostrado.nivel} />}
-          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods', 'proveedores', 'catalogo', 'grupos', 'solapes', 'ajustes'].includes(mostrado.id) && (
+          {mostrado?.id === 'notas' && <Comprobantes nivel={mostrado.nivel} />}
+          {mostrado?.id === 'cotizaciones' && <Cotizaciones nivel={mostrado.nivel} />}
+          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods', 'proveedores', 'catalogo', 'grupos', 'solapes', 'ajustes', 'notas', 'cotizaciones'].includes(mostrado.id) && (
             <div className="panel">
               <h1>{mostrado.label}</h1>
               <p className="sub">Nivel de tu rol: {NIVEL[mostrado.nivel]}.</p>
