@@ -67,6 +67,7 @@ model Local {
   ordenes        OrdenServicio[]
   stock          StockProducto[]
   movimientos    MovimientoInventario[]
+  notas          NotaVenta[]
 }
 
 // Los roles son datos: los base se crean por empresa y el Superadministrador puede crear roles propios.
@@ -127,6 +128,8 @@ model Usuario {
   odsCreadas     OrdenServicio[]    @relation("OdsCreador")
   solicitudesPedidas   SolicitudOds[] @relation("SolicitudPide")
   solicitudesResueltas SolicitudOds[] @relation("SolicitudResuelve")
+  notasEmitidas        NotaVenta[]    @relation("NotaEmite")
+  notasAnuladas        NotaVenta[]    @relation("NotaAnula")
   abonos         Abono[]
   evidencias     EvidenciaIngreso[]
 }
@@ -264,6 +267,7 @@ model OrdenServicio {
   bitacora                Bitacora[]
   evidencias              EvidenciaIngreso[]
   solicitudes             SolicitudOds[]
+  notas                   NotaVenta[]
 
   @@unique([organizacionId, codigo])
 }
@@ -582,4 +586,70 @@ model SolicitudOds {
   resueltaPor     Usuario?      @relation("SolicitudResuelve", fields: [resueltaPorId], references: [id])
 
   @@index([ordenId])
+}
+
+// RF-088: nota de venta interna, emitida desde la ODS. Serie del local y número consecutivo (RN-03), tipo de IGV por ítem
+// y detracción (RN-15). No se borra: se anula y queda consultable. Diseño en docs/diseno/NOTA_DE_VENTA.md.
+model CorrelativoSerie {
+  organizacionId String
+  serie          String
+  ultimo         Int    @default(0)
+
+  @@id([organizacionId, serie])
+}
+
+model NotaVenta {
+  id               String        @id @default(uuid())
+  organizacionId   String
+  localId          String
+  ordenId          String
+  clienteId        String
+  serie            String
+  numero           Int
+  codigo           String
+  fechaEmision     DateTime      @default(now())
+  fechaVencimiento DateTime?
+  condicion        String        @default("CONTADO") // CONTADO | CREDITO
+  observaciones    String?
+  comentario       String?
+  estado           String        @default("EMITIDA") // EMITIDA | ANULADA
+  exonerada        Decimal       @default(0) @db.Decimal(12, 2)
+  inafecta         Decimal       @default(0) @db.Decimal(12, 2)
+  gravada          Decimal       @default(0) @db.Decimal(12, 2)
+  igv              Decimal       @default(0) @db.Decimal(12, 2)
+  total            Decimal       @default(0) @db.Decimal(12, 2)
+  conDetraccion    Boolean       @default(false)
+  detraccionPct    Decimal       @default(0) @db.Decimal(5, 2)
+  detraccionExacta Decimal       @default(0) @db.Decimal(12, 2)
+  detraccion       Decimal       @default(0) @db.Decimal(12, 2)
+  emitidaPorId     String
+  anuladaPorId     String?
+  motivoAnulacion  String?
+  anuladaEn        DateTime?
+  creadoEn         DateTime      @default(now())
+  orden            OrdenServicio @relation(fields: [ordenId], references: [id])
+  local            Local         @relation(fields: [localId], references: [id])
+  emitidaPor       Usuario       @relation("NotaEmite", fields: [emitidaPorId], references: [id])
+  anuladaPor       Usuario?      @relation("NotaAnula", fields: [anuladaPorId], references: [id])
+  detalles         DetalleNota[]
+
+  @@unique([organizacionId, serie, numero])
+  @@index([ordenId])
+}
+
+model DetalleNota {
+  id           String    @id @default(uuid())
+  notaId       String
+  posicion     Int       @default(0)
+  tipo         String
+  descripcion  String
+  referencia   String?
+  cantidad     Decimal   @default(1) @db.Decimal(12, 3)
+  precio       Decimal   @default(0) @db.Decimal(12, 3)
+  descuentoPct Decimal   @default(0) @db.Decimal(9, 6)
+  tipoIgv      String    @default("GRAVADO") // GRAVADO | EXONERADO | INAFECTO
+  total        Decimal   @default(0) @db.Decimal(12, 2)
+  servicioId   String?
+  productoId   String?
+  nota         NotaVenta @relation(fields: [notaId], references: [id], onDelete: Cascade)
 }

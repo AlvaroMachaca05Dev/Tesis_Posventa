@@ -62,6 +62,7 @@ const INCLUIR = {
   bitacora: { orderBy: { fecha: 'desc' as const }, include: { actor: true } },
   evidencias: { orderBy: { creadoEn: 'asc' as const }, select: { id: true, nombre: true, tipo: true, tamano: true, creadoEn: true } },
   solicitudes: { orderBy: { creadoEn: 'desc' as const }, include: { solicitadaPor: true, resueltaPor: true } },
+  notas: { orderBy: { creadoEn: 'desc' as const }, include: { detalles: { orderBy: { posicion: 'asc' as const } }, local: true } },
 };
 // RF-018: quiénes autorizan la corrección o la reapertura de una ODS cerrada, y qué datos admite una corrección.
 const AUTORIZAN = ['Jefe de taller', 'Administrador', 'Superadministrador'];
@@ -108,8 +109,19 @@ function resumen(o: Orden) {
     horas: r2(detalles.reduce((a, d) => a + (d.tipo === 'servicio' ? d.horas ?? 0 : 0), 0)),
     estadoVehiculo: (o.estadoVehiculo ?? null) as Record<string, string | string[]> | null,
     evidencias: o.evidencias.map((e) => ({ id: e.id, nombre: e.nombre, tipo: e.tipo, tamano: e.tamano, fecha: e.creadoEn.toISOString() })),
-    // Los comprobantes (notas de venta, boletas y facturas) llegan con el slice comercial.
-    comprobantes: [] as string[], conComprobante: false,
+    // Comprobantes vigentes de la orden: por ahora la nota de venta (RF-088); la boleta y la factura llegan después.
+    comprobantes: o.notas.filter((x) => x.estado === 'EMITIDA').map((x) => x.codigo), conComprobante: o.notas.some((x) => x.estado === 'EMITIDA'),
+    notaVenta: (() => {
+      const x = o.notas.find((y) => y.estado === 'EMITIDA');
+      if (!x) return null;
+      return {
+        id: x.id, codigo: x.codigo, condicion: x.condicion, fechaEmision: x.fechaEmision.toISOString(), fechaVencimiento: x.fechaVencimiento?.toISOString() ?? null, local: x.local.nombre,
+        observaciones: x.observaciones, comentario: x.comentario,
+        detalles: x.detalles.map((d) => ({ id: d.id, tipo: d.tipo, descripcion: d.descripcion, referencia: d.referencia, cantidad: Number(d.cantidad), precio: Number(d.precio), descuentoPct: Number(d.descuentoPct), tipoIgv: d.tipoIgv, total: Number(d.total) })),
+        exonerada: Number(x.exonerada), inafecta: Number(x.inafecta), gravada: Number(x.gravada), igv: Number(x.igv), total: Number(x.total),
+        conDetraccion: x.conDetraccion, detraccionPct: Number(x.detraccionPct), detraccion: Number(x.detraccion),
+      };
+    })(),
     ultimaBitacora: ultima ? { texto: ultima.texto, fecha: ultima.fecha.toISOString(), actor: ultima.actor.nombre } : null,
     bitacora: o.bitacora.slice(0, 20).map((b) => ({ texto: b.texto, fecha: b.fecha.toISOString(), actor: b.actor.nombre })),
     // RF-018: solicitudes de corrección o reapertura de la ODS cerrada, de la más reciente a la más antigua.
@@ -339,8 +351,8 @@ export class OrdenesController {
     if (b.estado !== undefined && b.estado !== o.estado) {
       const e = String(b.estado);
       if (!ESTADOS.some((x) => x.id === e)) throw new BadRequestException('Estado no válido.');
-      // Sin nota de venta (llega con el slice comercial) solo se cierra una ODS «No aprobada» (DEC-72).
-      if (e === 'Cerrada' && (d.decision ?? o.decision) !== 'No aprobada') {
+      // Sin nota de venta solo se cierra una ODS «No aprobada» (DEC-72); con una nota vigente se cierra con cualquier decisión (RF-088).
+      if (e === 'Cerrada' && (d.decision ?? o.decision) !== 'No aprobada' && !o.notas.some((x) => x.estado === 'EMITIDA')) {
         throw new ConflictException('Para cerrar sin nota de venta, la decisión del cliente debe ser «No aprobada». Emite la nota de venta o cambia la decisión.');
       }
       if (o.estado === 'Cerrada') await this.limiteVehiculo(o.vehiculoId, String(d.tipoAtencion ?? o.tipoAtencion), o.id);
@@ -449,6 +461,8 @@ export class OrdenesController {
     const organizacionId = this.empresa(s);
     const o = await this.cargar(id, organizacionId);
     if (o.estado === 'Cerrada') throw new ConflictException('La ODS está cerrada: reábrela para cambiar sus ítems.');
+    // Con una nota de venta vigente los ítems ya están facturados: para cambiarlos hay que anular la nota.
+    if (o.notas.some((x) => x.estado === 'EMITIDA')) throw new ConflictException('La ODS tiene una nota de venta vigente: anúlala para cambiar sus ítems.');
     if (!Array.isArray(b?.detalles) || b.detalles.length > 300) throw new BadRequestException('Envía la lista de ítems (hasta 300).');
     const nuevas = b.detalles.map(linea);
     const solape = await this.catalogoYSolapes(organizacionId, o, nuevas, b);
