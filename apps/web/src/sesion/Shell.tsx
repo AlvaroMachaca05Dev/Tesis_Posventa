@@ -199,7 +199,7 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
           {mostrado?.id === 'usuarios' && <Usuarios me={me} nivel={mostrado.nivel} />}
           {mostrado?.id === 'clientes' && <Clientes nivel={mostrado.nivel} />}
           {mostrado?.id === 'vehiculos' && <Vehiculos nivel={mostrado.nivel} />}
-          {mostrado?.id === 'ods' && <Ordenes nivel={mostrado.nivel} superadmin={me.roles.includes('Superadministrador')} usuarioId={me.usuario.id} />}
+          {mostrado?.id === 'ods' && <Ordenes nivel={mostrado.nivel} superadmin={me.roles.includes('Superadministrador')} puedeAutorizar={me.roles.some((r) => ['Jefe de taller', 'Administrador', 'Superadministrador'].includes(r))} usuarioId={me.usuario.id} />}
           {mostrado?.id === 'proveedores' && <Proveedores nivel={mostrado.nivel} />}
           {mostrado?.id === 'catalogo' && <Catalogo nivel={mostrado.nivel} />}
           {mostrado?.id === 'grupos' && <Grupos nivel={mostrado.nivel} />}

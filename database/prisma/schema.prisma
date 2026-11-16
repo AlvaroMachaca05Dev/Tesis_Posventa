@@ -125,6 +125,8 @@ model Usuario {
   odsTecnico     OrdenServicio[]    @relation("OdsTecnico")
   odsJefe        OrdenServicio[]    @relation("OdsJefe")
   odsCreadas     OrdenServicio[]    @relation("OdsCreador")
+  solicitudesPedidas   SolicitudOds[] @relation("SolicitudPide")
+  solicitudesResueltas SolicitudOds[] @relation("SolicitudResuelve")
   abonos         Abono[]
   evidencias     EvidenciaIngreso[]
 }
@@ -261,6 +263,7 @@ model OrdenServicio {
   abonos                  Abono[]
   bitacora                Bitacora[]
   evidencias              EvidenciaIngreso[]
+  solicitudes             SolicitudOds[]
 
   @@unique([organizacionId, codigo])
 }
@@ -557,4 +560,26 @@ model Solapamiento {
   organizacion       Organizacion @relation(fields: [organizacionId], references: [id])
 
   @@unique([organizacionId, codigo])
+}
+
+// RF-018: una ODS cerrada no se edita de forma ordinaria. Se solicita su reapertura o una corrección,
+// y un Jefe de taller, Administrador o Superadministrador la autoriza o la rechaza. Nada se borra.
+model SolicitudOds {
+  id              String        @id @default(uuid())
+  ordenId         String
+  tipo            String // REAPERTURA | CORRECCION
+  motivo          String
+  estadoDestino   String?
+  cambios         Json?
+  estado          String        @default("PENDIENTE") // PENDIENTE | APROBADA | RECHAZADA
+  solicitadaPorId String
+  resueltaPorId   String?
+  respuesta       String?
+  creadoEn        DateTime      @default(now())
+  resueltoEn      DateTime?
+  orden           OrdenServicio @relation(fields: [ordenId], references: [id])
+  solicitadaPor   Usuario       @relation("SolicitudPide", fields: [solicitadaPorId], references: [id])
+  resueltaPor     Usuario?      @relation("SolicitudResuelve", fields: [resueltaPorId], references: [id])
+
+  @@index([ordenId])
 }

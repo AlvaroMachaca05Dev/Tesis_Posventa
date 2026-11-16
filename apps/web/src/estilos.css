@@ -322,3 +322,5 @@ body.arrastrando-columna * { cursor: col-resize !important; }
 .form-config input:disabled, .form-config textarea:disabled, .tabla td > input:disabled { opacity:.7; }
 .tabla input.serie { width:74px; text-transform:uppercase; }
 .modal-form > .campo { display:flex; flex-direction:column; gap:3px; } .modal-form > .campo > label { font-size:12px; color:var(--suave); }
+/* RF-018: solicitud pendiente de una ODS cerrada */
+.solicitud-ods { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-top:4px; padding:6px 10px; border:1px solid #6b5a1e; background:#2a2410; border-radius:8px; font-size:13px; }

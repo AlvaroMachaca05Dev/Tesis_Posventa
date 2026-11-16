@@ -280,3 +280,51 @@ it('Imprimir: PDF, Recepción y Ticket abren su vista previa en un modal con el 
   }
   expect(revocados).toEqual(['blob:vista-1', 'blob:vista-2', 'blob:vista-3']);
 });
+
+// ───────── RF-018: corregir o reabrir una ODS cerrada ─────────
+const cerrada = { ...orden, estado: 'Cerrada', decision: 'No aprobada', fechaCierre: '2026-10-29T10:00:00.000Z', solicitudes: [] };
+const pendiente = { id: 's1', tipo: 'REAPERTURA', motivo: 'Faltó un trabajo', estadoDestino: 'EnProceso', cambios: null, estado: 'PENDIENTE', solicitadaPor: 'Cajera Demo', resueltaPor: null, respuesta: null, fecha: '2026-10-30T10:00:00.000Z', resuelta: null };
+
+it('ODS cerrada: el botón de estado abre la solicitud; la reapertura envía el motivo y el estado al que vuelve', async () => {
+  simular();
+  respuestas['GET /ordenes'] = { cuerpo: [cerrada] };
+  render(<App />);
+  const t = (await screen.findByText('#2026102800001')).closest('article')!;
+  await userEvent.click(within(t).getByRole('button', { name: 'Estado de la orden' }));
+  const d = screen.getByRole('dialog', { name: /Solicitar corrección o reapertura/ });
+  await userEvent.selectOptions(within(d).getByLabelText('Vuelve al estado *'), 'Entrega');
+  await userEvent.type(within(d).getByLabelText('Motivo *'), 'Faltó un trabajo');
+  await userEvent.click(within(d).getByRole('button', { name: 'Enviar solicitud' }));
+  await waitFor(() => expect(llamadas.find((l) => l.metodo === 'POST' && l.ruta === '/ordenes/o1/solicitudes')?.cuerpo).toEqual({ tipo: 'REAPERTURA', motivo: 'Faltó un trabajo', estadoDestino: 'Entrega' }));
+});
+
+it('ODS cerrada: la corrección envía solo los datos que cambiaron', async () => {
+  simular();
+  respuestas['GET /ordenes'] = { cuerpo: [cerrada] };
+  render(<App />);
+  const t = (await screen.findByText('#2026102800001')).closest('article')!;
+  await userEvent.click(within(t).getByRole('button', { name: 'Estado de la orden' }));
+  const d = screen.getByRole('dialog', { name: /Solicitar corrección o reapertura/ });
+  await userEvent.selectOptions(within(d).getByLabelText('Tipo de solicitud *'), 'CORRECCION');
+  await userEvent.clear(within(d).getByLabelText('Kilometraje'));
+  await userEvent.type(within(d).getByLabelText('Kilometraje'), '65000');
+  await userEvent.type(within(d).getByLabelText('Motivo *'), 'Mal digitado');
+  await userEvent.click(within(d).getByRole('button', { name: 'Enviar solicitud' }));
+  await waitFor(() => expect(llamadas.find((l) => l.ruta === '/ordenes/o1/solicitudes')?.cuerpo).toEqual({ tipo: 'CORRECCION', motivo: 'Mal digitado', cambios: { km: 65000 } }));
+});
+
+it('Solicitud pendiente: la Cajera la ve sin botones; el Jefe de taller la autoriza', async () => {
+  simular();
+  respuestas['GET /ordenes'] = { cuerpo: [{ ...cerrada, solicitudes: [pendiente] }] };
+  render(<App />);
+  const nota = await screen.findByRole('note');
+  expect(nota).toHaveTextContent('Reapertura solicitada (a En proceso): Faltó un trabajo · Cajera Demo');
+  expect(within(nota).queryByRole('button', { name: 'Autorizar' })).toBeNull();
+  cleanup();
+  simular();
+  respuestas['GET /ordenes'] = { cuerpo: [{ ...cerrada, solicitudes: [pendiente] }] };
+  respuestas['GET /me'] = { cuerpo: { ...me('E'), roles: ['Jefe de taller'] } };
+  render(<App />);
+  await userEvent.click(within(await screen.findByRole('note')).getByRole('button', { name: 'Autorizar' }));
+  await waitFor(() => expect(llamadas.find((l) => l.ruta === '/ordenes/o1/solicitudes/s1/resolver')?.cuerpo).toEqual({ aprobar: true, respuesta: '' }));
+});

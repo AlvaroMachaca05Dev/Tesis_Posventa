@@ -61,7 +61,11 @@ const INCLUIR = {
   abonos: { orderBy: { fecha: 'asc' as const } },
   bitacora: { orderBy: { fecha: 'desc' as const }, include: { actor: true } },
   evidencias: { orderBy: { creadoEn: 'asc' as const }, select: { id: true, nombre: true, tipo: true, tamano: true, creadoEn: true } },
+  solicitudes: { orderBy: { creadoEn: 'desc' as const }, include: { solicitadaPor: true, resueltaPor: true } },
 };
+// RF-018: quiénes autorizan la corrección o la reapertura de una ODS cerrada, y qué datos admite una corrección.
+const AUTORIZAN = ['Jefe de taller', 'Administrador', 'Superadministrador'];
+const CAMPOS_CORRECCION: Record<string, string> = { observaciones: 'Observaciones', recomendaciones: 'Recomendaciones', km: 'Kilometraje', tecnicoId: 'Técnico', jefeTallerId: 'Jefe de taller' };
 // Evidencias de ingreso (RF-015): solo fotos, opcionales, hasta 25 MB cada una y 5 por ODS.
 const EVIDENCIA_MAX_BYTES = 25 * 1024 * 1024;
 const EVIDENCIA_MAX_POR_ODS = 5;
@@ -108,6 +112,12 @@ function resumen(o: Orden) {
     comprobantes: [] as string[], conComprobante: false,
     ultimaBitacora: ultima ? { texto: ultima.texto, fecha: ultima.fecha.toISOString(), actor: ultima.actor.nombre } : null,
     bitacora: o.bitacora.slice(0, 20).map((b) => ({ texto: b.texto, fecha: b.fecha.toISOString(), actor: b.actor.nombre })),
+    // RF-018: solicitudes de corrección o reapertura de la ODS cerrada, de la más reciente a la más antigua.
+    solicitudes: o.solicitudes.map((q) => ({
+      id: q.id, tipo: q.tipo, motivo: q.motivo, estadoDestino: q.estadoDestino, cambios: (q.cambios ?? null) as Record<string, unknown> | null, estado: q.estado,
+      solicitadaPor: q.solicitadaPor.nombre, resueltaPor: q.resueltaPor?.nombre ?? null, respuesta: q.respuesta,
+      fecha: q.creadoEn.toISOString(), resuelta: q.resueltoEn?.toISOString() ?? null,
+    })),
   };
 }
 
@@ -272,6 +282,12 @@ export class OrdenesController {
     const o = await this.cargar(id, organizacionId);
     const d: Prisma.OrdenServicioUncheckedUpdateInput = {};
     const notas: string[] = [];
+    // RN-13: una ODS cerrada no se edita de forma ordinaria. Solo queda la corrección de fechas del Superadministrador;
+    // lo demás pasa por una solicitud de corrección o de reapertura (RF-018).
+    if (o.estado === 'Cerrada') {
+      const cambia = Object.keys(b ?? {}).some((k) => !['fechaInicio', 'fechaCierre'].includes(k) && !((k === 'estado' && b[k] === o.estado) || (k === 'decision' && b[k] === o.decision)));
+      if (cambia) throw new ConflictException('La ODS está cerrada: solicita su corrección o su reapertura para cambiarla.');
+    }
     if (b.decision !== undefined) {
       if (!DECISIONES.includes(String(b.decision))) throw new BadRequestException('Decisión no válida.');
       const quedaCerrada = (b.estado ?? o.estado) === 'Cerrada';
@@ -339,6 +355,90 @@ export class OrdenesController {
     });
     const res = resumen(await this.cargar(id, organizacionId));
     await auditar(this.prisma, real, s, 'orden_servicio', id, resumen(o), res, notas.join(' ') || 'ODS modificada');
+    return res;
+  }
+
+  /** RF-018: pide reabrir una ODS cerrada (a qué estado vuelve) o corregir sus datos; queda pendiente hasta que alguien la autorice. */
+  @Post(':id/solicitudes')
+  @Requiere('ods', 'E')
+  async solicitar(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
+    const organizacionId = this.empresa(s);
+    const o = await this.cargar(id, organizacionId);
+    if (o.estado !== 'Cerrada') throw new ConflictException('Solo una ODS cerrada necesita una solicitud; esta se puede editar directamente.');
+    if (o.solicitudes.some((q) => q.estado === 'PENDIENTE')) throw new ConflictException('Esta ODS ya tiene una solicitud pendiente de autorizar.');
+    const motivo = textoLibre(b?.motivo, 500);
+    if (!motivo) throw new BadRequestException('Escribe el motivo de la solicitud.');
+    const tipo = String(b?.tipo ?? '');
+    let estadoDestino: string | null = null;
+    let cambios: Record<string, unknown> | null = null;
+    if (tipo === 'REAPERTURA') {
+      estadoDestino = String(b?.estadoDestino ?? '');
+      if (!ESTADOS.some((x) => x.id === estadoDestino && x.id !== 'Cerrada')) throw new BadRequestException('Elige a qué estado vuelve la ODS: Recepción, En proceso o Entrega.');
+    } else if (tipo === 'CORRECCION') {
+      const c = (b?.cambios ?? {}) as Record<string, unknown>;
+      cambios = {};
+      if (c.observaciones !== undefined) cambios.observaciones = textoLibre(c.observaciones);
+      if (c.recomendaciones !== undefined) cambios.recomendaciones = textoLibre(c.recomendaciones);
+      if (c.km !== undefined) cambios.km = kmValido(c.km);
+      if (c.tecnicoId !== undefined) cambios.tecnicoId = await this.persona(organizacionId, c.tecnicoId, 'técnico');
+      if (c.jefeTallerId !== undefined) cambios.jefeTallerId = await this.persona(organizacionId, c.jefeTallerId, 'jefe de taller');
+      const actual = o as unknown as Record<string, unknown>;
+      for (const k of Object.keys(cambios)) if ((cambios[k] ?? null) === (actual[k] ?? null)) delete cambios[k];
+      if (Object.keys(cambios).length === 0) throw new BadRequestException('Indica al menos un dato que cambie: observaciones, recomendaciones, kilometraje, técnico o jefe de taller.');
+    } else {
+      throw new BadRequestException('Elige el tipo de solicitud: reapertura o corrección.');
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.solicitudOds.create({ data: { ordenId: id, tipo, motivo, estadoDestino, cambios: (cambios ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull, solicitadaPorId: real.id } });
+      await this.bitacora(tx, id, real, `Solicitud de ${tipo === 'REAPERTURA' ? 'reapertura' : 'corrección'}: ${motivo}`);
+    });
+    return resumen(await this.cargar(id, organizacionId));
+  }
+
+  /** RF-018: autoriza o rechaza la solicitud. Al autorizar se aplica el cambio; queda el antes y el después con los dos responsables. */
+  @Post(':id/solicitudes/:sid/resolver')
+  @Requiere('ods', 'E')
+  async resolver(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Param('sid') sid: string, @Body() b: Record<string, unknown>) {
+    const organizacionId = this.empresa(s);
+    if (!s.roles.some((r) => AUTORIZAN.includes(r))) throw new ForbiddenException('Solo el Jefe de taller, el Administrador o el Superadministrador autorizan esta solicitud.');
+    const o = await this.cargar(id, organizacionId);
+    const q = o.solicitudes.find((x) => x.id === sid);
+    if (!q) throw new NotFoundException('Solicitud no encontrada.');
+    if (q.estado !== 'PENDIENTE') throw new ConflictException('Esta solicitud ya fue resuelta.');
+    const aprobar = b?.aprobar === true;
+    const respuesta = textoLibre(b?.respuesta, 500);
+    if (!aprobar && !respuesta) throw new BadRequestException('Escribe por qué se rechaza la solicitud.');
+    const nombreEstado = (x: string) => ESTADOS.find((y) => y.id === x)?.nombre ?? x;
+    const cual = q.tipo === 'REAPERTURA' ? 'reapertura' : 'corrección';
+    const notas: string[] = [];
+    const d: Prisma.OrdenServicioUncheckedUpdateInput = {};
+    if (aprobar && q.tipo === 'REAPERTURA') {
+      if (o.estado !== 'Cerrada') throw new ConflictException('La ODS ya no está cerrada.');
+      await this.limiteVehiculo(o.vehiculoId, o.tipoAtencion, o.id);
+      d.estado = q.estadoDestino as string;
+      d.fechaCierre = null;
+      notas.push(`ODS reabierta: Cerrado → ${nombreEstado(q.estadoDestino as string)} (se borró la fecha de cierre). Solicitó ${q.solicitadaPor.nombre}; motivo: ${q.motivo}`);
+    } else if (aprobar) {
+      const cambios = (q.cambios ?? {}) as Record<string, unknown>;
+      const personas = await this.prisma.usuario.findMany({ where: { id: { in: [cambios.tecnicoId, cambios.jefeTallerId, o.tecnicoId, o.jefeTallerId].filter((x): x is string => typeof x === 'string') } } });
+      const ver = (k: string, v: unknown) => (k.endsWith('Id') ? personas.find((u) => u.id === v)?.nombre ?? '—' : v === null || v === undefined || v === '' ? '—' : String(v));
+      const actual = o as unknown as Record<string, unknown>;
+      for (const k of Object.keys(cambios)) {
+        if (!(k in CAMPOS_CORRECCION)) continue;
+        (d as Record<string, unknown>)[k] = cambios[k];
+        notas.push(`Corrección autorizada · ${CAMPOS_CORRECCION[k]}: ${ver(k, actual[k])} → ${ver(k, cambios[k])}.`);
+      }
+      notas.push(`Solicitó ${q.solicitadaPor.nombre}; motivo: ${q.motivo}`);
+    } else {
+      notas.push(`Solicitud de ${cual} rechazada: ${respuesta}`);
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.solicitudOds.update({ where: { id: sid }, data: { estado: aprobar ? 'APROBADA' : 'RECHAZADA', resueltaPorId: real.id, respuesta, resueltoEn: new Date() } });
+      if (aprobar) await tx.ordenServicio.update({ where: { id }, data: d });
+      for (const t of notas) await this.bitacora(tx, id, real, t);
+    });
+    const res = resumen(await this.cargar(id, organizacionId));
+    await auditar(this.prisma, real, s, 'orden_servicio', id, resumen(o), res, aprobar ? `Solicitud de ${cual} autorizada` : `Solicitud de ${cual} rechazada`);
     return res;
   }
 

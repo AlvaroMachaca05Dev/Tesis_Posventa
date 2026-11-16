@@ -18,6 +18,15 @@ entity organizacion {
   nombre
   ruc
   activa
+  razon_social
+  direccion
+  telefono
+  correo
+  lema
+  cuentas_bancarias
+  terminos_recepcion
+  pie_ticket
+  ancho_ticket_mm
 }
 entity modulo_habilitado {
   #organizacion_id
@@ -28,6 +37,10 @@ entity local {
   #organizacion_id
   nombre
   direccion
+  telefono
+  serie_nota_venta
+  serie_boleta
+  serie_factura
 }
 entity rol {
   *id
@@ -71,6 +84,7 @@ entity cliente {
   movil
   direccion_fiscal
   email
+  contacto
   ubigeo
   comentario
   es_generico
@@ -159,6 +173,20 @@ entity detalle_ods {
   impuesto
   total
 }
+entity solicitud_ods {
+  *id
+  #orden_id
+  #solicitada_por_id
+  #resuelta_por_id
+  tipo
+  motivo
+  estado_destino
+  cambios
+  estado
+  respuesta
+  creado_en
+  resuelto_en
+}
 entity bitacora {
   *id
   #orden_id
@@ -202,6 +230,7 @@ organizacion ||--|| correlativo_ods
 local ||--o{ orden_servicio
 orden_servicio ||--o{ detalle_ods
 orden_servicio ||--o{ bitacora
+orden_servicio ||--o{ solicitud_ods
 bitacora ||--o{ evidencia
 usuario ||--o{ detalle_ods
 @enduml

@@ -16,7 +16,7 @@ RF-014,,,El sistema permite distinguir ítems de servicio e ítems de producto e
 RF-015,,"Tipo de atención, garantía e ingreso","El sistema permite registrar el tipo de atención («Otro» con texto propio), la garantía enlazada a la ODS y a los servicios de origen, hasta cinco fotos opcionales de ingreso y el estado del vehículo.",Órdenes de servicio,"Cajera, Técnico",Alta,Parcial,Queda,Texto R8.2
 RF-016,,Estados y cierre de la ODS,"El sistema permite mover la ODS entre Recepción, En proceso, En entrega y Cerrada, y cerrarla dejando la información consultable y auditable.",Órdenes de servicio,"Cajera, Jefe de taller",Alta,Parcial,Queda,Texto R8.2
 RF-017,,,El sistema permite cerrar una ODS dejando la información consultable y auditable.,,,,—,Absorbido,Criterio de aceptación de RF-016
-RF-018,,Corregir o reabrir una ODS cerrada,El sistema permite solicitar y autorizar correcciones o la reapertura de una ODS cerrada sin borrar el historial.,Órdenes de servicio,"Jefe de taller, Administrador",Media,Pendiente,Queda,Texto R8.2
+RF-018,,Corregir o reabrir una ODS cerrada,El sistema permite solicitar y autorizar correcciones o la reapertura de una ODS cerrada sin borrar el historial.,Órdenes de servicio,"Jefe de taller, Administrador",Media,Implementado,Queda,Texto R8.2
 RF-019,,,El sistema permite reconocer perfiles de importación Excel o CSV y sus encabezados versionados.,,,,—,Migración interna,Pasa al procedimiento de migración RN-11
 RF-020,,,"El sistema permite previsualizar lote, filas válidas, advertencias y errores antes de aplicar.",,,,—,Migración interna,Pasa al procedimiento de migración RN-11
 RF-021,,,"El sistema permite importar clientes, vehículos, servicios y ODS de forma atómica.",,,,—,Migración interna,Pasa al procedimiento de migración RN-11

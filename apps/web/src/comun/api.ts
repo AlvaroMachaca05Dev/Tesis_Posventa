@@ -41,9 +41,11 @@ export interface Orden {
   vehiculo: { id: string; grupo?: string | null; placa: string; marca: string | null; modelo: string | null; anio: number | null; color: string | null; nroSerie: string | null; nroVin: string | null; nroMotor: string | null };
   tecnico: Persona | null; jefeTaller: Persona | null; creadoPor: Persona | null;
   detalles: DetalleOds[]; total: number; abonos: Abono[]; totalAbonos: number; pendiente: number; solapamientosMantenidos?: string[]; horas?: number;
-  estadoVehiculo?: EstadoVehiculo | null; evidencias?: EvidenciaOds[];
+  estadoVehiculo?: EstadoVehiculo | null; evidencias?: EvidenciaOds[]; solicitudes?: SolicitudOds[];
   comprobantes: string[]; conComprobante: boolean; ultimaBitacora: { texto: string; fecha: string; actor: string } | null; bitacora: { texto: string; fecha: string; actor: string }[];
 }
+/** RF-018: solicitud de corrección o reapertura de una ODS cerrada. */
+export interface SolicitudOds { id: string; tipo: 'REAPERTURA' | 'CORRECCION'; motivo: string; estadoDestino: string | null; cambios: Record<string, unknown> | null; estado: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA'; solicitadaPor: string; resueltaPor: string | null; respuesta: string | null; fecha: string; resuelta: string | null }
 export type EstadoVehiculo = Record<string, string | string[]>;
 export interface EvidenciaOds { id: string; nombre: string; tipo: string; tamano: number; fecha: string }
 /** Datos de la empresa que salen en la cabecera y el pie de los PDF de la orden. */
@@ -137,6 +139,8 @@ export const api = {
   editarOrden: (id: string, d: Record<string, unknown>) => pedir<Orden>('/ordenes/' + id, { method: 'PATCH', body: JSON.stringify(d) }),
   guardarDetalles: (id: string, detalles: DetalleOds[], solapamientosMantenidos?: string[]) => pedir<Orden>(`/ordenes/${id}/detalles`, { method: 'PUT', body: JSON.stringify({ detalles, ...(solapamientosMantenidos ? { solapamientosMantenidos } : {}) }) }),
   descuentoOrden: (id: string, porcentaje: number) => pedir<Orden>(`/ordenes/${id}/descuento`, { method: 'POST', body: JSON.stringify({ porcentaje }) }),
+  solicitarOds: (id: string, d: Record<string, unknown>) => pedir<Orden>(`/ordenes/${id}/solicitudes`, { method: 'POST', body: JSON.stringify(d) }),
+  resolverSolicitudOds: (id: string, sid: string, d: Record<string, unknown>) => pedir<Orden>(`/ordenes/${id}/solicitudes/${sid}/resolver`, { method: 'POST', body: JSON.stringify(d) }),
   abonar: (id: string, d: { metodo: string; concepto: string; valor: number }) => pedir<Orden>(`/ordenes/${id}/abonos`, { method: 'POST', body: JSON.stringify(d) }),
   subirEvidencia: async (id: string, archivo: File) => {
     const fd = new FormData();

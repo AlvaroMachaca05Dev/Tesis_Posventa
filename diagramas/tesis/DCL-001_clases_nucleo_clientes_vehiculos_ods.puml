@@ -27,6 +27,13 @@ class Organizacion {
   -ruc: String [0..1]
   -activa: Boolean = true
   -paisPredeterminado: String = "PE"
+  -razonSocial: String [0..1]
+  -direccion: String [0..1]
+  -telefono: String [0..1]
+  -correo: String [0..1]
+  -terminosRecepcion: String [0..1]
+  -pieTicket: String [0..1]
+  -anchoTicketMm: Integer = 80
 }
 class ModuloHabilitado {
   -modulo: String
@@ -35,6 +42,9 @@ class Local {
   -id: String {readOnly}
   -nombre: String
   -direccion: String [0..1]
+  -serieNotaVenta: String [0..1]
+  -serieBoleta: String [0..1]
+  -serieFactura: String [0..1]
 }
 class Usuario {
   -id: String {readOnly}
@@ -70,6 +80,7 @@ class Cliente {
   -movil: String [0..1]
   -direccionFiscal: String [0..1]
   -email: String [0..1]
+  -contacto: String [0..1]
   -ubigeo: String [0..1]
   -esGenerico: Boolean = false
   -activo: Boolean = true
@@ -151,6 +162,18 @@ class Bitacora {
   -texto: String
   -fecha: DateTime {readOnly}
 }
+class SolicitudOds {
+  -tipo: TipoSolicitud
+  -motivo: String
+  -estadoDestino: String [0..1]
+  -cambios: Json [0..1]
+  -estado: EstadoSolicitud = PENDIENTE
+  -respuesta: String [0..1]
+  -creadoEn: DateTime {readOnly}
+  -resueltoEn: DateTime [0..1]
+  +solicitar(in motivo: String): SolicitudOds
+  +resolver(in aprobar: Boolean): OrdenServicio
+}
 class Auditoria {
   -tabla: String
   -registroId: String
@@ -184,6 +207,9 @@ OrdenServicio "1" *-- "0..*" DetalleODS
 OrdenServicio "1" *-- "0..*" Abono
 OrdenServicio "1" *-- "0..5" EvidenciaIngreso
 OrdenServicio "0..1" o-- "0..*" Bitacora
+OrdenServicio "1" *-- "0..*" SolicitudOds
+Usuario "1" <-- "0..*" SolicitudOds : solicita
+Usuario "0..1" <-- "0..*" SolicitudOds : autoriza
 OrdenServicio "0..*" --> "0..1" Usuario : técnico
 OrdenServicio "0..*" --> "0..1" Usuario : jefe de taller
 OrdenServicio ..> Auditoria : <<create>>

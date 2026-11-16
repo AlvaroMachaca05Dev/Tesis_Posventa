@@ -36,6 +36,7 @@ afterAll(async () => {
   if (!clienteId) { await app?.close(); await prisma.$disconnect(); return; }
   const ods = await prisma.ordenServicio.findMany({ where: { clienteId } });
   const ids = ods.map((o) => o.id);
+  await prisma.solicitudOds.deleteMany({ where: { ordenId: { in: ids } } });
   await prisma.abono.deleteMany({ where: { ordenId: { in: ids } } });
   await prisma.evidenciaIngreso.deleteMany({ where: { ordenId: { in: ids } } });
   await prisma.detalleODS.deleteMany({ where: { ordenId: { in: ids } } });
@@ -172,8 +173,10 @@ describe('estados, decisión y cierre (RF-016, RF-017, DEC-61, DEC-72)', () => {
     const c = await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'Cerrada' });
     expect(c.status).toBe(200);
     expect(c.body.fechaCierre).toBeTruthy();
+    // Cerrada, ya no se mueve con una edición común (RN-13): hay que solicitar la reapertura (RF-018).
     const re = await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'EnProceso' });
-    expect(re.body.fechaCierre).toBeNull();
+    expect(re.status).toBe(409);
+    expect(re.body.message).toMatch(/solicita su corrección o su reapertura/);
   });
   it('la decisión solo acepta sus cuatro valores y el estado los suyos', async () => {
     const o = (await nueva(await vehiculo())).body;
@@ -341,5 +344,63 @@ describe('ingreso, responsable y fechas (RF-015, 28/10)', () => {
     const antes = new Date(Date.now() - 2 * 86_400_000).toISOString();
     expect((await como('ti@demo.local', 'patch', `/ordenes/${o.id}`, { fechaCierre: antes })).status).toBe(400);
     expect((await como('ti@demo.local', 'patch', `/ordenes/${o.id}`, { fechaCierre: ayer })).body.fechaCierre).toBe(ayer);
+  });
+});
+
+describe('corregir o reabrir una ODS cerrada (RF-018, RN-13; CP-58)', () => {
+  const JEFE = 'jefe@demo.local';
+  const cerrada = async () => {
+    const o = (await nueva(await vehiculo(), { km: 1000 })).body;
+    return (await como(CAJERA, 'patch', `/ordenes/${o.id}`, { decision: 'No aprobada', estado: 'Cerrada' })).body;
+  };
+  it('la ODS cerrada no se edita de forma ordinaria (409) y la solicitud pide tipo, motivo y datos válidos', async () => {
+    const o = await cerrada();
+    expect((await como(CAJERA, 'patch', `/ordenes/${o.id}`, { observaciones: 'cambio directo' })).status).toBe(409);
+    expect((await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'REAPERTURA', estadoDestino: 'EnProceso' })).status).toBe(400);
+    expect((await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'REAPERTURA', motivo: 'Faltó un trabajo', estadoDestino: 'Cerrada' })).status).toBe(400);
+    expect((await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'CORRECCION', motivo: 'Nada cambia', cambios: { km: 1000 } })).status).toBe(400);
+    expect((await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'OTRA', motivo: 'x' })).status).toBe(400);
+    const abierta = (await nueva(await vehiculo())).body;
+    expect((await como(CAJERA, 'post', `/ordenes/${abierta.id}/solicitudes`, { tipo: 'REAPERTURA', motivo: 'x', estadoDestino: 'EnProceso' })).status).toBe(409);
+  });
+  it('reabrir: la Cajera la solicita, no puede autorizarla, y el Jefe de taller la autoriza; vuelve a un estado activo y queda en la bitácora (CA-2)', async () => {
+    const o = await cerrada();
+    const s = await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'REAPERTURA', motivo: 'Faltó un trabajo', estadoDestino: 'EnProceso' });
+    expect(s.status).toBe(201);
+    expect(s.body.estado).toBe('Cerrada');
+    expect(s.body.solicitudes[0]).toMatchObject({ tipo: 'REAPERTURA', estado: 'PENDIENTE', estadoDestino: 'EnProceso', solicitadaPor: 'Cajera Demo' });
+    const sid = s.body.solicitudes[0].id;
+    expect((await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'REAPERTURA', motivo: 'Otra', estadoDestino: 'Entrega' })).status).toBe(409);
+    expect((await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes/${sid}/resolver`, { aprobar: true })).status).toBe(403);
+    const r = await como(JEFE, 'post', `/ordenes/${o.id}/solicitudes/${sid}/resolver`, { aprobar: true });
+    expect(r.status).toBe(201);
+    expect(r.body).toMatchObject({ estado: 'EnProceso', fechaCierre: null });
+    expect(r.body.solicitudes[0]).toMatchObject({ estado: 'APROBADA', resueltaPor: 'Jefe de Taller Demo' });
+    expect(r.body.bitacora.some((b: { texto: string }) => /ODS reabierta: Cerrado → En proceso/.test(b.texto) && /Faltó un trabajo/.test(b.texto))).toBe(true);
+    expect((await como(JEFE, 'post', `/ordenes/${o.id}/solicitudes/${sid}/resolver`, { aprobar: true })).status).toBe(409);
+    expect(await prisma.auditoria.count({ where: { tabla: 'orden_servicio', registroId: o.id, motivo: 'Solicitud de reapertura autorizada' } })).toBe(1);
+  });
+  it('corregir: al autorizar se aplican los datos y la bitácora guarda el antes y el después con sus responsables (CA-1)', async () => {
+    const o = await cerrada();
+    const s = await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'CORRECCION', motivo: 'Kilometraje mal digitado', cambios: { km: 1500, observaciones: 'Cliente no aprobó' } });
+    expect(s.status).toBe(201);
+    expect(s.body.km).toBe(1000);
+    const r = await como(ADMIN, 'post', `/ordenes/${o.id}/solicitudes/${s.body.solicitudes[0].id}/resolver`, { aprobar: true });
+    expect(r.body).toMatchObject({ estado: 'Cerrada', km: 1500, observaciones: 'Cliente no aprobó' });
+    const textos = r.body.bitacora.map((b: { texto: string }) => b.texto).join(' | ');
+    expect(textos).toMatch(/Corrección autorizada · Kilometraje: 1000 → 1500\./);
+    expect(textos).toMatch(/Solicitó Cajera Demo; motivo: Kilometraje mal digitado/);
+    expect(r.body.bitacora.find((b: { texto: string }) => /Corrección autorizada/.test(b.texto)).actor).toBe('Administrador Demo');
+  });
+  it('rechazar exige el motivo, no cambia la ODS y permite una nueva solicitud', async () => {
+    const o = await cerrada();
+    const s = await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'REAPERTURA', motivo: 'Probar', estadoDestino: 'Recepcion' });
+    const sid = s.body.solicitudes[0].id;
+    expect((await como(JEFE, 'post', `/ordenes/${o.id}/solicitudes/${sid}/resolver`, { aprobar: false })).status).toBe(400);
+    const r = await como(JEFE, 'post', `/ordenes/${o.id}/solicitudes/${sid}/resolver`, { aprobar: false, respuesta: 'No corresponde' });
+    expect(r.body.estado).toBe('Cerrada');
+    expect(r.body.solicitudes[0]).toMatchObject({ estado: 'RECHAZADA', respuesta: 'No corresponde' });
+    expect((await como(CAJERA, 'post', `/ordenes/${o.id}/solicitudes`, { tipo: 'REAPERTURA', motivo: 'Segundo intento', estadoDestino: 'Recepcion' })).status).toBe(201);
+    expect((await como(JEFE, 'post', `/ordenes/${o.id}/solicitudes/no-existe/resolver`, { aprobar: true })).status).toBe(404);
   });
 });

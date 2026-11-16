@@ -4,11 +4,12 @@ import EditorOrden from './EditorOrden';
 import FormAbono from './FormAbono';
 import FormFechas from './FormFechas';
 import VistaPreviaPdf from './VistaPreviaPdf';
+import FormSolicitud from './FormSolicitud';
 import { FormatoPdf, generarPdf, TITULO_VISTA } from './pdfOrden';
 import { Paginacion, usePaginacion } from '../comun/Paginacion';
 import { ESTADOS, fecha, hace, Nivel, soles } from './ordenServicio.util';
 
-export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nivel: Nivel; superadmin?: boolean; usuarioId?: string }) {
+export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = false, usuarioId }: { nivel: Nivel; superadmin?: boolean; puedeAutorizar?: boolean; usuarioId?: string }) {
   const puedeEditar = nivel === 'A' || nivel === 'E';
   const [estado, setEstado] = useState('Recepcion');
   const [f, setF] = useState({ q: '', desde: '', hasta: '', clienteId: '', vehiculoId: '', n: '10' });
@@ -19,6 +20,7 @@ export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nive
   const [abierta, setAbierta] = useState<Orden | 'nueva' | null>(null);
   const [menu, setMenu] = useState<{ id: string; tipo: 'estado' | 'imprimir' | 'abono' | 'comprobantes' | 'bitacora' | 'fechas' } | null>(null);
   const [vista, setVista] = useState<{ titulo: string; url: string } | null>(null);
+  const [solicitud, setSolicitud] = useState<Orden | null>(null);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
@@ -36,8 +38,13 @@ export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nive
   const ok = async (m: string) => { setError(''); setMensaje(m); setMenu(null); await cargar(); };
   const falla = (e: unknown) => { setMensaje(''); setError((e as Error).message); };
 
+  // RF-018: autorizar aplica la reapertura o la corrección; rechazar pide el motivo.
+  async function resolver(o: Orden, solicitudId: string, aprobar: boolean) {
+    const respuesta = aprobar ? '' : window.prompt(`¿Por qué rechazas la solicitud de la ODS ${o.codigo}?`);
+    if (respuesta === null) return;
+    try { await api.resolverSolicitudOds(o.id, solicitudId, { aprobar, respuesta }); await ok(`ODS ${o.codigo}: solicitud ${aprobar ? 'autorizada' : 'rechazada'}.`); } catch (x) { falla(x); }
+  }
   async function cambiarEstado(o: Orden, e: string) {
-    if (o.estado === 'Cerrada' && e !== 'Cerrada' && !window.confirm('La ODS sale de «Cerrado»: se borrará su fecha de cierre. ¿Continuar?')) return;
     try { await api.editarOrden(o.id, { estado: e }); await ok(`ODS ${o.codigo}: estado cambiado.`); } catch (x) { setMenu(null); falla(x); }
   }
   async function eliminar(o: Orden) {
@@ -70,6 +77,7 @@ export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nive
         {puedeEditar && <button type="button" className="primario chico" onClick={() => setAbierta('nueva')}>+ Nuevo</button>}
       </div>
       {vista && <VistaPreviaPdf titulo={vista.titulo} url={vista.url} alCerrar={cerrarVista} />}
+      {solicitud && cat && <FormSolicitud orden={solicitud} cat={cat} alCancelar={() => setSolicitud(null)} alGuardar={async (m) => { setSolicitud(null); await ok(m); }} />}
       <div className="estados" role="tablist">
         {ESTADOS.map((e) => (
           <button key={e.id} type="button" role="tab" aria-selected={estado === e.id} className={'est-' + e.id + (estado === e.id ? ' on' : '')} onClick={() => { setEstado(e.id); cargar(e.id).catch(falla); }}>{e.nombre}</button>
@@ -97,6 +105,22 @@ export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nive
             <div><b>Tipo de atención:</b> {o.tipoAtencion === 'Otro' && o.tipoAtencionDetalle ? o.tipoAtencionDetalle : o.tipoAtencion}</div>
             {o.observaciones && <div><b>Comentarios:</b> {o.observaciones}</div>}
             <div><b>Técnico:</b> {o.tecnico?.nombre ?? 'Sin asignar'} · <b>Usuario:</b> {o.creadoPor?.nombre ?? '—'} · <b>Total:</b> {soles(o.total)}</div>
+            {(() => {
+              // RF-018: la solicitud pendiente de la ODS cerrada, con Autorizar y Rechazar para quien puede resolverla.
+              const q = o.solicitudes?.find((x) => x.estado === 'PENDIENTE');
+              if (!q) return null;
+              return (
+                <div className="solicitud-ods" role="note">
+                  <span><b>{q.tipo === 'REAPERTURA' ? `Reapertura solicitada (a ${ESTADOS.find((e) => e.id === q.estadoDestino)?.nombre ?? q.estadoDestino})` : 'Corrección solicitada'}:</b> {q.motivo} · {q.solicitadaPor}</span>
+                  {puedeAutorizar && (
+                    <span className="fila">
+                      <button type="button" className="primario chico" onClick={() => void resolver(o, q.id, true)}>Autorizar</button>
+                      <button type="button" className="chico" onClick={() => void resolver(o, q.id, false)}>Rechazar</button>
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
             {o.ultimaBitacora && <div className="suave">💬 {o.ultimaBitacora.actor}: {o.ultimaBitacora.texto} ({hace(o.ultimaBitacora.fecha)})</div>}
           </div>
           <div className="acciones-ods">
@@ -107,7 +131,8 @@ export default function Ordenes({ nivel, superadmin = false, usuarioId }: { nive
               {menu?.id === o.id && menu.tipo === 'fechas' && <div className="menu ancho"><FormFechas orden={o} alGuardar={ok} alFallar={falla} /></div>}
             </span>
             <span className="rel">
-              <button type="button" className="ac" aria-label="Estado de la orden" title="Estado de la orden" disabled={!puedeEditar} onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'estado' ? null : { id: o.id, tipo: 'estado' })}>⇄</button>
+              <button type="button" className="ac" aria-label="Estado de la orden" title={o.estado === 'Cerrada' ? 'Solicitar corrección o reapertura' : 'Estado de la orden'} disabled={!puedeEditar}
+                onClick={() => (o.estado === 'Cerrada' ? (setMenu(null), setSolicitud(o)) : setMenu(menu?.id === o.id && menu.tipo === 'estado' ? null : { id: o.id, tipo: 'estado' }))}>⇄</button>
               {menu?.id === o.id && menu.tipo === 'estado' && (
                 <div className="menu" role="menu">{ESTADOS.map((e) => <button key={e.id} type="button" role="menuitem" disabled={e.id === o.estado} onClick={() => void cambiarEstado(o, e.id)}>{e.nombre}</button>)}</div>
               )}
