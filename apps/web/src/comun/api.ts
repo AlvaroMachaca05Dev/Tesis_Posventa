@@ -139,6 +139,8 @@ export const api = {
     pedir<{ id: string; km: number }>(`/vehiculos/${id}/lecturas`, { method: 'POST', body: JSON.stringify({ km, ...(observacion ? { observacion } : {}), ...(fecha ? { fecha } : {}), ...(fuente ? { fuente } : {}) }) }),
   marcasVehiculo: () => pedir<Marca[]>('/marcas-vehiculo'),
   crearMarcaVehiculo: (nombre: string) => pedir<Marca>('/marcas-vehiculo', { method: 'POST', body: JSON.stringify({ nombre }) }),
+  editarMarcaVehiculo: (id: string, d: Record<string, unknown>) => pedir<Marca>(`/marcas-vehiculo/${id}`, { method: 'PATCH', body: JSON.stringify(d) }),
+  eliminarMarcaVehiculo: (id: string) => pedir<{ ok: boolean }>(`/marcas-vehiculo/${id}`, { method: 'DELETE' }),
   catalogosOds: () => pedir<CatalogosOds>('/ordenes/catalogos'),
   ordenes: (f: Record<string, string>) => pedir<Orden[]>('/ordenes?' + new URLSearchParams(Object.entries(f).filter(([, v]) => v)).toString()),
   orden: (id: string) => pedir<Orden>('/ordenes/' + id),

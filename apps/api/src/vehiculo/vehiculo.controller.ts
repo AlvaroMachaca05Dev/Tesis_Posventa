@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
 import { PrismaService } from '../comun/prisma.service';
@@ -115,6 +115,47 @@ export class VehiculoController {
     } catch (e) {
       return choqueUnico(e, 'Esa marca ya existe.');
     }
+  }
+
+  /** Cambia el nombre y los modelos de una marca; al renombrarla, sus vehículos siguen con la marca nueva. */
+  @Patch('marcas-vehiculo/:id')
+  @Requiere('marcasv', 'E')
+  async editarMarca(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    const antes = await this.prisma.marcaVehiculo.findFirst({ where: { id, organizacionId } });
+    if (!antes) throw new NotFoundException('Marca no encontrada.');
+    const nombre = b?.nombre === undefined ? antes.nombre : texto(b.nombre, 60);
+    if (!nombre) throw new BadRequestException('Escribe el nombre de la marca.');
+    const igual = await this.prisma.marcaVehiculo.findFirst({ where: { organizacionId, id: { not: id }, nombre: { equals: nombre, mode: 'insensitive' } } });
+    if (igual) throw new ConflictException(`La marca «${igual.nombre}» ya existe.`);
+    let modelos = antes.modelos;
+    if (b?.modelos !== undefined) {
+      if (!Array.isArray(b.modelos)) throw new BadRequestException('Los modelos van en una lista.');
+      const vistos = new Set<string>();
+      modelos = (b.modelos as unknown[]).map((m) => texto(m, 60)).filter((m): m is string => !!m && !vistos.has(m.toLowerCase()) && !!vistos.add(m.toLowerCase()));
+    }
+    const m = await this.prisma.$transaction(async (tx) => {
+      const x = await tx.marcaVehiculo.update({ where: { id }, data: { nombre, modelos } });
+      if (nombre !== antes.nombre) await tx.vehiculo.updateMany({ where: { organizacionId, marca: antes.nombre }, data: { marca: nombre } });
+      return x;
+    });
+    const res = { id: m.id, nombre: m.nombre, modelos: m.modelos };
+    await auditar(this.prisma, real, s, 'marcaVehiculo', id, { nombre: antes.nombre, modelos: antes.modelos }, res, 'Marca editada');
+    return res;
+  }
+
+  /** Una marca con vehículos no se elimina: se conserva para no dejarlos sin marca. */
+  @Delete('marcas-vehiculo/:id')
+  @Requiere('marcasv', 'A')
+  async eliminarMarca(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const organizacionId = empresaDe(s);
+    const m = await this.prisma.marcaVehiculo.findFirst({ where: { id, organizacionId } });
+    if (!m) throw new NotFoundException('Marca no encontrada.');
+    const usados = await this.prisma.vehiculo.count({ where: { organizacionId, marca: m.nombre } });
+    if (usados > 0) throw new ConflictException(`La marca «${m.nombre}» tiene ${usados} vehículo${usados === 1 ? '' : 's'}: no se puede eliminar.`);
+    await this.prisma.marcaVehiculo.delete({ where: { id } });
+    await auditar(this.prisma, real, s, 'marcaVehiculo', id, { nombre: m.nombre, modelos: m.modelos }, null, 'Marca eliminada');
+    return { ok: true };
   }
 
   @Get('vehiculos')
