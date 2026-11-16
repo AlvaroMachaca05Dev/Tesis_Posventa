@@ -324,3 +324,12 @@ body.arrastrando-columna * { cursor: col-resize !important; }
 .modal-form > .campo { display:flex; flex-direction:column; gap:3px; } .modal-form > .campo > label { font-size:12px; color:var(--suave); }
 /* RF-018: solicitud pendiente de una ODS cerrada */
 .solicitud-ods { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-top:4px; padding:6px 10px; border:1px solid #6b5a1e; background:#2a2410; border-radius:8px; font-size:13px; }
+/* Nota de venta: una sola pantalla, ancha como el editor de la orden (DEC-81) */
+.modal-form.modal-nota { width:min(980px,96vw); }
+.dos-col.tres { grid-template-columns:repeat(3,1fr); } .dos-col.tres .campo.ancha { grid-column:span 2; }
+.modal-nota .tabla select { background:#18233a; border:1px solid var(--borde); color:var(--texto); border-radius:8px; padding:4px 6px; width:auto; }
+.pie-nota { display:flex; flex-wrap:wrap; gap:14px; justify-content:space-between; align-items:flex-start; }
+.totales-nota { min-width:260px; margin-left:auto; }
+.totales-nota .suma { display:flex; justify-content:space-between; gap:30px; padding:4px 2px; border-top:1px solid var(--borde); font-size:13px; }
+.totales-nota .suma.total { font-size:15px; } .totales-nota .suma.pagado b { color:#7ee08a; } .totales-nota .suma.saldo b { color:#ff8a8a; }
+@media (max-width:700px) { .dos-col.tres { grid-template-columns:1fr; } .dos-col.tres .campo.ancha { grid-column:auto; } }

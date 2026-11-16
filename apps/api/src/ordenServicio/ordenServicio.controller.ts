@@ -215,7 +215,9 @@ export class OrdenesController {
     const organizacionId = this.empresa(s);
     const usuarios = await this.prisma.usuario.findMany({ where: { organizacionId, activo: true }, include: { roles: { include: { rol: true } } }, orderBy: { nombre: 'asc' } });
     const con = (nombre: string) => usuarios.filter((u) => u.roles.some((r) => r.rol.nombre === nombre)).map((u) => ({ id: u.id, nombre: u.nombre }));
-    return { tiposAtencion: TIPOS_ATENCION, decisiones: DECISIONES, estados: ESTADOS, metodosPago: METODOS, tecnicos: [...con('Técnico'), ...con('Jefe de taller')], jefes: con('Jefe de taller'), logisticos: con('Logístico'), cajeras: con('Cajera'), empresa: await this.datosEmpresa(organizacionId) };
+    return { tiposAtencion: TIPOS_ATENCION, decisiones: DECISIONES, estados: ESTADOS, metodosPago: METODOS, tecnicos: [...con('Técnico'), ...con('Jefe de taller')], jefes: con('Jefe de taller'), logisticos: con('Logístico'), cajeras: con('Cajera'), empresa: await this.datosEmpresa(organizacionId),
+      // Para la nota de venta: los locales con su serie y el local de quien emite.
+      locales: (await this.prisma.local.findMany({ where: { organizacionId }, orderBy: { nombre: 'asc' } })).map((l) => ({ id: l.id, nombre: l.nombre, serieNotaVenta: l.serieNotaVenta })), localId: s.localId };
   }
 
   @Get()

@@ -8,8 +8,8 @@ Diseño corto, previo al desarrollo (DEC-87). Se apoya en DEC-74, DEC-75, DEC-76
 |---|---|---|
 | 1 | Este diseño | Hecho (16/11/2026) |
 | 2 | Base de datos y API con pruebas (`notaVenta.spec.ts`; API 182/182) | Hecho (16/11/2026) |
-| 3 | Pantalla: «Facturar» desde la orden, en una sola pantalla | Pendiente |
-| 4 | PDF y ticket de la nota | Pendiente |
+| 3 | Pantalla: «Facturar» desde la orden, en una sola pantalla (`facturacion/FormNota.tsx`) | Hecho (16/11/2026) |
+| 4 | PDF y ticket de la nota (`facturacion/pdfNota.ts`; pantalla 82/82) | Hecho (16/11/2026) |
 | 5 | Cierre de la orden con nota, decisiones, tesis y registro | Pendiente |
 
 **Si el trabajo se corta:** mirar la última etapa «Hecho» y seguir con la siguiente; cada etapa termina con pruebas pasando y commit.

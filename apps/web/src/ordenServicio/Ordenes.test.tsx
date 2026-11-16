@@ -328,3 +328,68 @@ it('Solicitud pendiente: la Cajera la ve sin botones; el Jefe de taller la autor
   await userEvent.click(within(await screen.findByRole('note')).getByRole('button', { name: 'Autorizar' }));
   await waitFor(() => expect(llamadas.find((l) => l.ruta === '/ordenes/o1/solicitudes/s1/resolver')?.cuerpo).toEqual({ aprobar: true, respuesta: '' }));
 });
+
+// ───────── RF-088: nota de venta ─────────
+const catNota = { ...catalogos, locales: [{ id: 'l1', nombre: 'Local Prohogar', serieNotaVenta: 'NV01' }, { id: 'l2', nombre: 'Local Sin Serie', serieNotaVenta: null }], localId: 'l1' };
+const ordenServicio800 = { ...orden, detalles: [{ id: 'd1', tipo: 'servicio', descripcion: 'Cambio de motor', referencia: null, cantidad: 1, costo: null, rentabilidadPct: null, precio: 800, descuentoPct: 0, impuesto: 'IGV', total: 800 }, { id: 'd2', tipo: 'producto', descripcion: 'Aceite 5W-30', referencia: 'AMO-102', cantidad: 1, costo: 10, rentabilidadPct: 20, precio: 100, descuentoPct: 0, impuesto: 'IGV', total: 100 }], total: 900, pendiente: 900 };
+const notaVigente = { id: 'n1', codigo: 'NV01-000007', condicion: 'CONTADO', fechaEmision: '2026-11-16T15:00:00.000Z', fechaVencimiento: null, local: 'Local Prohogar', observaciones: null, comentario: null, detalles: [{ id: 'x1', tipo: 'servicio', descripcion: 'Cambio de motor', referencia: null, cantidad: 1, precio: 800, descuentoPct: 0, tipoIgv: 'GRAVADO', total: 800 }], exonerada: 0, inafecta: 0, gravada: 677.97, igv: 122.03, total: 800, conDetraccion: true, detraccionPct: 12, detraccion: 96 };
+
+it('Facturar: una sola pantalla con los totales, la detracción propuesta y el tipo de IGV por ítem; «Emitir» envía la nota', async () => {
+  simular();
+  respuestas['GET /ordenes/catalogos'] = { cuerpo: catNota };
+  respuestas['GET /ordenes'] = { cuerpo: [ordenServicio800] };
+  respuestas['POST /ordenes/o1/nota-venta'] = { status: 201, cuerpo: { codigo: 'NV01-000008' } };
+  render(<App />);
+  const t = (await screen.findByText('#2026102800001')).closest('article')!;
+  await userEvent.click(within(t).getByRole('button', { name: 'Facturar' }));
+  const d = screen.getByRole('dialog', { name: /Nueva nota de venta/ });
+  expect(within(d).queryByRole('tab')).toBeNull();
+  const totales = within(d).getByLabelText('Totales');
+  expect(totales).toHaveTextContent('Gravada S/ 762.71');
+  expect(totales).toHaveTextContent('IGV (18 %) S/ 137.29');
+  expect(totales).toHaveTextContent('Total S/ 900.00');
+  expect(totales).toHaveTextContent('Detracción S/ 108.00');
+  expect(within(d).getByRole('checkbox')).toBeChecked();
+  await userEvent.selectOptions(within(d).getByLabelText('Tipo de IGV de Aceite 5W-30'), 'EXONERADO');
+  expect(totales).toHaveTextContent('Exonerada S/ 100.00');
+  await userEvent.click(within(d).getByRole('button', { name: 'Emitir' }));
+  await waitFor(() => expect(llamadas.find((l) => l.ruta === '/ordenes/o1/nota-venta')?.cuerpo).toMatchObject({ localId: 'l1', condicion: 'CONTADO', conDetraccion: true, tiposIgv: { d1: 'GRAVADO', d2: 'EXONERADO' } }));
+  expect(await screen.findByRole('status')).toHaveTextContent('Nota de venta NV01-000008 emitida.');
+});
+
+it('Facturar: a crédito pide vencimiento y un local sin serie no deja emitir', async () => {
+  simular();
+  respuestas['GET /ordenes/catalogos'] = { cuerpo: catNota };
+  respuestas['GET /ordenes'] = { cuerpo: [ordenServicio800] };
+  render(<App />);
+  const t = (await screen.findByText('#2026102800001')).closest('article')!;
+  await userEvent.click(within(t).getByRole('button', { name: 'Facturar' }));
+  const d = screen.getByRole('dialog', { name: /Nueva nota de venta/ });
+  expect(within(d).getByLabelText('Fecha de vencimiento')).toBeDisabled();
+  await userEvent.selectOptions(within(d).getByLabelText('Condición *'), 'CREDITO');
+  expect(within(d).getByLabelText('Fecha de vencimiento *')).toBeRequired();
+  await userEvent.selectOptions(within(d).getByLabelText('Local *'), 'l2');
+  expect(within(d).getByRole('button', { name: 'Emitir' })).toBeDisabled();
+  expect(within(d).getByRole('alert')).toHaveTextContent('no tiene serie de nota de venta');
+});
+
+it('Orden con nota: «Facturar» la muestra bloqueada, con PDF, Ticket y Anular solo con nivel «todo»', async () => {
+  const creados: Blob[] = [];
+  URL.createObjectURL = (b: Blob | MediaSource) => { creados.push(b as Blob); return 'blob:nota'; };
+  URL.revokeObjectURL = () => undefined;
+  simular();
+  respuestas['GET /ordenes/catalogos'] = { cuerpo: catNota };
+  respuestas['GET /ordenes'] = { cuerpo: [{ ...ordenServicio800, conComprobante: true, comprobantes: ['NV01-000007'], notaVenta: notaVigente }] };
+  render(<App />);
+  const t = (await screen.findByText('#2026102800001')).closest('article')!;
+  expect(within(t).getByText('Con comprobante')).toBeInTheDocument();
+  await userEvent.click(within(t).getByRole('button', { name: 'Facturar' }));
+  const d = screen.getByRole('dialog', { name: 'Nota de venta NV01-000007' });
+  expect(within(d).getByLabelText('Condición *')).toBeDisabled();
+  expect(within(d).queryByRole('button', { name: 'Emitir' })).toBeNull();
+  expect(within(d).queryByRole('button', { name: 'Anular' })).toBeNull();
+  await userEvent.click(within(d).getByRole('button', { name: 'PDF' }));
+  const vista = await screen.findByRole('dialog', { name: 'Nota de venta NV01-000007' });
+  expect(within(vista).getByTitle('Vista previa: Nota de venta NV01-000007')).toHaveAttribute('src', 'blob:nota');
+  expect(creados[0].type).toBe('application/pdf');
+});

@@ -41,9 +41,14 @@ export interface Orden {
   vehiculo: { id: string; grupo?: string | null; placa: string; marca: string | null; modelo: string | null; anio: number | null; color: string | null; nroSerie: string | null; nroVin: string | null; nroMotor: string | null };
   tecnico: Persona | null; jefeTaller: Persona | null; creadoPor: Persona | null;
   detalles: DetalleOds[]; total: number; abonos: Abono[]; totalAbonos: number; pendiente: number; solapamientosMantenidos?: string[]; horas?: number;
-  estadoVehiculo?: EstadoVehiculo | null; evidencias?: EvidenciaOds[]; solicitudes?: SolicitudOds[];
+  estadoVehiculo?: EstadoVehiculo | null; evidencias?: EvidenciaOds[]; solicitudes?: SolicitudOds[]; notaVenta?: NotaOrden | null;
   comprobantes: string[]; conComprobante: boolean; ultimaBitacora: { texto: string; fecha: string; actor: string } | null; bitacora: { texto: string; fecha: string; actor: string }[];
 }
+/** RF-088: nota de venta. `NotaOrden` es la vigente que viaja con la orden; `NotaVenta`, la completa. */
+export type TipoIgv = 'GRAVADO' | 'EXONERADO' | 'INAFECTO';
+export interface DetalleNota { id: string; tipo: string; descripcion: string; referencia: string | null; cantidad: number; precio: number; descuentoPct: number; tipoIgv: TipoIgv; total: number }
+export interface NotaOrden { id: string; codigo: string; condicion: 'CONTADO' | 'CREDITO'; fechaEmision: string; fechaVencimiento: string | null; local: string; observaciones: string | null; comentario: string | null; detalles: DetalleNota[]; exonerada: number; inafecta: number; gravada: number; igv: number; total: number; conDetraccion: boolean; detraccionPct: number; detraccion: number }
+export interface NotaVenta extends Omit<NotaOrden, 'local'> { serie: string; numero: number; estado: 'EMITIDA' | 'ANULADA'; local: { id: string; nombre: string }; pagado: number; saldo: number; emitidaPor: string; anuladaPor: string | null; motivoAnulacion: string | null }
 /** RF-018: solicitud de corrección o reapertura de una ODS cerrada. */
 export interface SolicitudOds { id: string; tipo: 'REAPERTURA' | 'CORRECCION'; motivo: string; estadoDestino: string | null; cambios: Record<string, unknown> | null; estado: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA'; solicitadaPor: string; resueltaPor: string | null; respuesta: string | null; fecha: string; resuelta: string | null }
 export type EstadoVehiculo = Record<string, string | string[]>;
@@ -52,7 +57,7 @@ export interface EvidenciaOds { id: string; nombre: string; tipo: string; tamano
 export interface Empresa { nombre: string; ruc: string | null; direccion: string | null; telefono: string | null; correo: string | null; lema: string | null; cuentasBancarias: string | null; terminosRecepcion: string | null; razonSocial?: string | null; pieTicket?: string | null; anchoTicketMm?: number }
 export interface LocalEmpresa { id: string; nombre: string; direccion: string | null; telefono: string | null; serieNotaVenta: string | null; serieBoleta: string | null; serieFactura: string | null }
 export interface ConfigEmpresa extends Empresa { locales: LocalEmpresa[] }
-export interface CatalogosOds { tiposAtencion: string[]; decisiones: string[]; estados: { id: string; nombre: string }[]; metodosPago: string[]; tecnicos: Persona[]; jefes: Persona[]; logisticos?: Persona[]; cajeras?: Persona[]; empresa?: Empresa }
+export interface CatalogosOds { tiposAtencion: string[]; decisiones: string[]; estados: { id: string; nombre: string }[]; metodosPago: string[]; tecnicos: Persona[]; jefes: Persona[]; logisticos?: Persona[]; cajeras?: Persona[]; empresa?: Empresa; locales?: { id: string; nombre: string; serieNotaVenta: string | null }[]; localId?: string | null }
 
 // ───── Slice S5: maestros ─────
 export interface Proveedor { id: string; tipoDocumento: TipoDocumento; documento: string; nombre: string; nombreComercial: string | null; pais: string; movil: string | null; direccionFiscal: string | null; email: string | null; contacto: string | null; comentario: string | null; rubro: string | null; activo: boolean; creadoEn: string }
@@ -139,6 +144,8 @@ export const api = {
   editarOrden: (id: string, d: Record<string, unknown>) => pedir<Orden>('/ordenes/' + id, { method: 'PATCH', body: JSON.stringify(d) }),
   guardarDetalles: (id: string, detalles: DetalleOds[], solapamientosMantenidos?: string[]) => pedir<Orden>(`/ordenes/${id}/detalles`, { method: 'PUT', body: JSON.stringify({ detalles, ...(solapamientosMantenidos ? { solapamientosMantenidos } : {}) }) }),
   descuentoOrden: (id: string, porcentaje: number) => pedir<Orden>(`/ordenes/${id}/descuento`, { method: 'POST', body: JSON.stringify({ porcentaje }) }),
+  emitirNotaVenta: (ordenId: string, d: Record<string, unknown>) => pedir<NotaVenta>(`/ordenes/${ordenId}/nota-venta`, { method: 'POST', body: JSON.stringify(d) }),
+  anularNotaVenta: (id: string, motivo: string) => pedir<NotaVenta>(`/notas-venta/${id}/anular`, { method: 'POST', body: JSON.stringify({ motivo }) }),
   solicitarOds: (id: string, d: Record<string, unknown>) => pedir<Orden>(`/ordenes/${id}/solicitudes`, { method: 'POST', body: JSON.stringify(d) }),
   resolverSolicitudOds: (id: string, sid: string, d: Record<string, unknown>) => pedir<Orden>(`/ordenes/${id}/solicitudes/${sid}/resolver`, { method: 'POST', body: JSON.stringify(d) }),
   abonar: (id: string, d: { metodo: string; concepto: string; valor: number }) => pedir<Orden>(`/ordenes/${id}/abonos`, { method: 'POST', body: JSON.stringify(d) }),

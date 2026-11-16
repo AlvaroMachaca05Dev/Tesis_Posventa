@@ -5,6 +5,8 @@ import FormAbono from './FormAbono';
 import FormFechas from './FormFechas';
 import VistaPreviaPdf from './VistaPreviaPdf';
 import FormSolicitud from './FormSolicitud';
+import FormNota from '../facturacion/FormNota';
+import { generarPdfNota } from '../facturacion/pdfNota';
 import { FormatoPdf, generarPdf, TITULO_VISTA } from './pdfOrden';
 import { Paginacion, usePaginacion } from '../comun/Paginacion';
 import { ESTADOS, fecha, hace, Nivel, soles } from './ordenServicio.util';
@@ -21,6 +23,20 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
   const [menu, setMenu] = useState<{ id: string; tipo: 'estado' | 'imprimir' | 'abono' | 'comprobantes' | 'bitacora' | 'fechas' } | null>(null);
   const [vista, setVista] = useState<{ titulo: string; url: string } | null>(null);
   const [solicitud, setSolicitud] = useState<Orden | null>(null);
+  const [nota, setNota] = useState<Orden | null>(null);
+  const empresaVacia = { nombre: '', ruc: null, direccion: null, telefono: null, correo: null, lema: null, cuentasBancarias: null, terminosRecepcion: null };
+  // PDF o ticket de la nota de venta vigente, en el mismo modal de vista previa.
+  function imprimirNota(o: Orden, formato: 'PDF' | 'Ticket') {
+    if (!o.notaVenta) return;
+    try {
+      const bytes = generarPdfNota(formato, o, o.notaVenta, cat?.empresa ?? empresaVacia);
+      setNota(null);
+      cerrarVista();
+      setVista({ titulo: `${formato === 'Ticket' ? 'Ticket' : 'Nota de venta'} ${o.notaVenta.codigo}`, url: URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })) });
+    } catch (x) {
+      falla(x);
+    }
+  }
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
@@ -77,6 +93,7 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
         {puedeEditar && <button type="button" className="primario chico" onClick={() => setAbierta('nueva')}>+ Nuevo</button>}
       </div>
       {vista && <VistaPreviaPdf titulo={vista.titulo} url={vista.url} alCerrar={cerrarVista} />}
+      {nota && cat && <FormNota orden={nota} cat={cat} puedeAnular={nivel === 'A'} alImprimir={(f) => imprimirNota(nota, f)} alCerrar={() => setNota(null)} alHecho={async (m) => { setNota(null); await ok(m); }} />}
       {solicitud && cat && <FormSolicitud orden={solicitud} cat={cat} alCancelar={() => setSolicitud(null)} alGuardar={async (m) => { setSolicitud(null); await ok(m); }} />}
       <div className="estados" role="tablist">
         {ESTADOS.map((e) => (
@@ -124,7 +141,7 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
             {o.ultimaBitacora && <div className="suave">💬 {o.ultimaBitacora.actor}: {o.ultimaBitacora.texto} ({hace(o.ultimaBitacora.fecha)})</div>}
           </div>
           <div className="acciones-ods">
-            <button type="button" className="ac" aria-label="Facturar" title="Facturar: la nota de venta llega con el slice comercial" disabled>$</button>
+            <button type="button" className="ac" aria-label="Facturar" title={o.notaVenta ? `Nota de venta ${o.notaVenta.codigo}` : 'Emitir nota de venta'} disabled={!o.notaVenta && (!puedeEditar || o.estado === 'Cerrada')} onClick={() => { setMenu(null); setNota(o); }}>$</button>
             <button type="button" className="ac" aria-label="Editar" title="Editar" onClick={() => setAbierta(o)}>✎</button>
             <span className="rel">
               <button type="button" className="ac" aria-label="Fechas de inicio y cierre" title="Fechas de inicio y cierre" disabled={!superadmin} onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'fechas' ? null : { id: o.id, tipo: 'fechas' })}>📅</button>

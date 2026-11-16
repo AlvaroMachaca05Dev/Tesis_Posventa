@@ -1,0 +1,127 @@
+import { FormEvent, useMemo, useState } from 'react';
+import { api, CatalogosOds, Orden, TipoIgv } from '../comun/api';
+import { soles } from '../ordenServicio/ordenServicio.util';
+
+const TIPOS: [TipoIgv, string][] = [['GRAVADO', 'Gravado'], ['EXONERADO', 'Exonerado'], ['INAFECTO', 'Inafecto']];
+const r2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+const dia = (iso: string) => new Date(iso).toLocaleDateString('es-PE');
+
+/** Mismas reglas que el servidor (RN-15), para mostrar los totales antes de emitir. */
+export function totalesDe(lineas: { tipo: string; total: number; tipoIgv: TipoIgv }[]) {
+  const suma = (t: TipoIgv) => r2(lineas.filter((l) => l.tipoIgv === t).reduce((a, l) => a + l.total, 0));
+  const exonerada = suma('EXONERADO'), inafecta = suma('INAFECTO'), conIgv = suma('GRAVADO');
+  const gravada = r2(conIgv / 1.18);
+  const total = r2(exonerada + inafecta + conIgv);
+  return { exonerada, inafecta, gravada, igv: r2(conIgv - gravada), total, proponeDetraccion: lineas.some((l) => l.tipo === 'servicio') && total > 700, detraccion: Math.floor(r2(total * 0.12) + 0.5) };
+}
+
+/**
+ * Nota de venta de una orden (RF-088), en una sola pantalla y sin pestañas (DEC-81).
+ * Si la orden aún no tiene nota, se emite; si ya la tiene, se muestra con Imprimir y Anular.
+ */
+export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar, alHecho }: {
+  orden: Orden; cat: CatalogosOds; puedeAnular: boolean; alImprimir: (formato: 'PDF' | 'Ticket') => void; alCerrar: () => void; alHecho: (m: string) => Promise<void> | void;
+}) {
+  const nota = orden.notaVenta ?? null;
+  const locales = cat.locales ?? [];
+  const [localId, setLocalId] = useState(cat.localId ?? locales[0]?.id ?? '');
+  const [condicion, setCondicion] = useState<'CONTADO' | 'CREDITO'>('CONTADO');
+  const [vence, setVence] = useState('');
+  const [observaciones, setObservaciones] = useState(orden.observaciones ?? '');
+  const [comentario, setComentario] = useState('');
+  const [tipos, setTipos] = useState<Record<string, TipoIgv>>(() => Object.fromEntries(orden.detalles.map((d, i) => [d.id ?? String(i), d.impuesto === 'NINGUNO' ? 'INAFECTO' : 'GRAVADO'])));
+  const [detraccion, setDetraccion] = useState<boolean | null>(null); // null = la que propone el sistema
+  const [error, setError] = useState('');
+
+  const lineas = nota ? nota.detalles : orden.detalles.map((d, i) => ({ id: d.id ?? String(i), tipo: d.tipo, descripcion: d.descripcion, referencia: d.referencia, cantidad: d.cantidad, precio: d.precio, descuentoPct: d.descuentoPct, tipoIgv: tipos[d.id ?? String(i)], total: d.total }));
+  const calculo = useMemo(() => totalesDe(lineas), [lineas]);
+  const t = nota ?? calculo;
+  const conDetraccion = nota ? nota.conDetraccion : detraccion ?? calculo.proponeDetraccion;
+  const montoDetraccion = nota ? nota.detraccion : conDetraccion ? calculo.detraccion : 0;
+  const serie = locales.find((l) => l.id === localId)?.serieNotaVenta ?? null;
+
+  async function emitir(e: FormEvent) {
+    e.preventDefault();
+    try {
+      const n = await api.emitirNotaVenta(orden.id, { localId, condicion, ...(condicion === 'CREDITO' ? { fechaVencimiento: vence ? new Date(`${vence}T12:00:00`).toISOString() : '' } : {}), observaciones, comentario, tiposIgv: tipos, conDetraccion });
+      await alHecho(`Nota de venta ${n.codigo} emitida.`);
+    } catch (x) {
+      setError((x as Error).message);
+    }
+  }
+  async function anular() {
+    if (!nota) return;
+    const motivo = window.prompt(`¿Por qué anulas la nota de venta ${nota.codigo}? El número no se volverá a usar.`);
+    if (!motivo) return;
+    try { await api.anularNotaVenta(nota.id, motivo); await alHecho(`Nota de venta ${nota.codigo} anulada.`); } catch (x) { setError((x as Error).message); }
+  }
+
+  const fila = (etiqueta: string, valor: string, clase = '') => <div className={'suma ' + clase}><span>{etiqueta}</span>{' '}<b>{valor}</b></div>;
+  const titulo = nota ? `Nota de venta ${nota.codigo}` : `Nueva nota de venta · ODS ${orden.codigo}`;
+  return (
+    <div className="fondo-modal">
+      <form className="modal-form modal-nota" role="dialog" aria-modal="true" aria-label={titulo} onSubmit={emitir}>
+        <div className="fila entre"><h2>{titulo}</h2><button type="button" className="cerrar" aria-label="Cerrar" onClick={alCerrar}>×</button></div>
+        {error && <p className="error" role="alert">{error}</p>}
+        <div className="dos-col tres">
+          <div className="campo"><label htmlFor="n-local">Local *</label>
+            {nota ? <input id="n-local" value={nota.local} disabled /> : (
+              <select id="n-local" value={localId} onChange={(e) => setLocalId(e.target.value)} required>{locales.map((l) => <option key={l.id} value={l.id}>{l.nombre}</option>)}</select>
+            )}</div>
+          <div className="campo"><label htmlFor="n-condicion">Condición *</label>
+            <select id="n-condicion" value={nota ? nota.condicion : condicion} disabled={!!nota} onChange={(e) => setCondicion(e.target.value as 'CONTADO' | 'CREDITO')}><option value="CONTADO">Contado</option><option value="CREDITO">Crédito</option></select></div>
+          <div className="campo"><label htmlFor="n-vence">{`Fecha de vencimiento${(nota ? nota.condicion : condicion) === 'CREDITO' ? ' *' : ''}`}</label>
+            {nota ? <input id="n-vence" value={nota.fechaVencimiento ? dia(nota.fechaVencimiento) : '—'} disabled /> : <input id="n-vence" type="date" value={vence} disabled={condicion !== 'CREDITO'} required={condicion === 'CREDITO'} onChange={(e) => setVence(e.target.value)} />}</div>
+          <div className="campo"><label htmlFor="n-cliente">Cliente</label><input id="n-cliente" value={`${orden.cliente.documento} · ${orden.cliente.nombre}`} disabled /></div>
+          <div className="campo"><label htmlFor="n-placa">Placa</label><input id="n-placa" value={orden.vehiculo.placa} disabled /></div>
+          <div className="campo"><label htmlFor="n-emision">Fecha de emisión</label><input id="n-emision" value={dia(nota ? nota.fechaEmision : new Date().toISOString())} disabled /></div>
+          <div className="campo ancha"><label htmlFor="n-obs">Observaciones</label><input id="n-obs" value={nota ? nota.observaciones ?? '' : observaciones} disabled={!!nota} onChange={(e) => setObservaciones(e.target.value)} /></div>
+          <div className="campo"><label htmlFor="n-com">Comentario</label><input id="n-com" value={nota ? nota.comentario ?? '' : comentario} disabled={!!nota} onChange={(e) => setComentario(e.target.value)} /></div>
+        </div>
+        {!nota && !serie && <p className="error" role="alert">Este local no tiene serie de nota de venta. Asígnala en Empresa y parámetros.</p>}
+        <div className="tabla">
+          <table>
+            <thead><tr><th>#</th><th>Descripción</th><th className="der">Cant.</th><th className="der">Precio</th><th>Tipo de IGV</th><th className="der">Total</th></tr></thead>
+            <tbody>
+              {lineas.map((l, i) => (
+                <tr key={l.id}>
+                  <td>{i + 1}</td>
+                  <td>{l.referencia ? `${l.referencia} · ` : ''}{l.descripcion}</td>
+                  <td className="der">{l.cantidad}</td>
+                  <td className="der">{soles(l.precio)}</td>
+                  <td>
+                    <select aria-label={`Tipo de IGV de ${l.descripcion}`} value={l.tipoIgv} disabled={!!nota} onChange={(e) => setTipos({ ...tipos, [l.id]: e.target.value as TipoIgv })}>
+                      {TIPOS.map(([v, n]) => <option key={v} value={v}>{n}</option>)}
+                    </select>
+                  </td>
+                  <td className="der">{soles(l.total)}</td>
+                </tr>
+              ))}
+              {lineas.length === 0 && <tr><td colSpan={6} className="suave">La orden no tiene ítems.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        <div className="pie-nota">
+          <label className="check"><input type="checkbox" checked={conDetraccion} disabled={!!nota} onChange={(e) => setDetraccion(e.target.checked)} /> Detracción de 12 % (mantenimiento y reparación de bienes muebles)</label>
+          <div className="totales-nota" aria-label="Totales">
+            {fila('Exonerada', soles(t.exonerada))}
+            {fila('Inafecta', soles(t.inafecta))}
+            {fila('Gravada', soles(t.gravada))}
+            {fila('IGV (18 %)', soles(t.igv))}
+            {fila('Total', soles(t.total), 'total')}
+            {fila('Detracción', soles(montoDetraccion))}
+            {fila('Total pagado', soles(orden.totalAbonos), 'pagado')}
+            {fila('Saldo', soles(r2(t.total - orden.totalAbonos)), 'saldo')}
+          </div>
+        </div>
+        <div className="fila fin">
+          {nota && puedeAnular && <button type="button" className="peligro" onClick={() => void anular()}>Anular</button>}
+          {nota && <button type="button" onClick={() => alImprimir('Ticket')}>Ticket</button>}
+          {nota && <button type="button" onClick={() => alImprimir('PDF')}>PDF</button>}
+          <button type="button" onClick={alCerrar}>Salir</button>
+          {!nota && <button type="submit" className="primario chico" disabled={!serie || lineas.length === 0}>Emitir</button>}
+        </div>
+      </form>
+    </div>
+  );
+}
