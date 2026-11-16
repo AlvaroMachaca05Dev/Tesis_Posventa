@@ -77,3 +77,33 @@ it('Emitir comprobante: carga los ítems de una cotización vigente, con su clie
   expect(within(d).getByLabelText('Totales')).toHaveTextContent('Total S/ 118.00');
   expect(within(d).queryByRole('option', { name: /COT-000002/ })).toBeNull(); // la vencida no se ofrece
 });
+
+it('Cotizaciones: el formato es simple (sin tipo de IGV ni desglose, solo total y si los precios incluyen IGV) y el menú ofrece emitir, duplicar, editar y eliminar', async () => {
+  window.location.hash = '#/cotizaciones';
+  render(<App />);
+  const vigente = (await screen.findByText('COT-000001')).closest('tr')!;
+  await userEvent.click(within(vigente).getByRole('button', { name: 'Acciones' }));
+  for (const n of ['Emitir comprobante', 'Duplicar', 'Editar', 'Eliminar']) expect(within(vigente).getByRole('button', { name: n })).toBeInTheDocument();
+  await userEvent.click(within(vigente).getByRole('button', { name: 'Duplicar' }));
+  const d = await screen.findByRole('dialog', { name: 'Emitir nueva cotización' });
+  expect(within(d).getByLabelText('Detalle del ítem 1')).toHaveValue('Cambio de aceite');
+  expect(within(d).queryByLabelText('Tipo de IGV del ítem 1')).toBeNull();
+  const totales = within(d).getByLabelText('Totales');
+  expect(totales).toHaveTextContent('Total S/ 118.00');
+  expect(totales).not.toHaveTextContent('Gravada');
+  expect(totales).toHaveTextContent('Precios incluyen IGV');
+  await userEvent.click(within(d).getByLabelText('Los precios incluyen el IGV'));
+  expect(totales).toHaveTextContent('Precios no incluyen IGV');
+});
+
+it('Cotizaciones: «Emitir comprobante» abre «Emitir nuevo comprobante» (sin número de orden) con la cotización cargada', async () => {
+  window.location.hash = '#/cotizaciones';
+  render(<App />);
+  const vigente = (await screen.findByText('COT-000001')).closest('tr')!;
+  await userEvent.click(within(vigente).getByRole('button', { name: 'Acciones' }));
+  await userEvent.click(within(vigente).getByRole('button', { name: 'Emitir comprobante' }));
+  const d = await screen.findByRole('dialog', { name: 'Emitir nuevo comprobante' });
+  expect(within(d).getByRole('heading', { level: 2 })).toHaveTextContent(/^Emitir nuevo comprobante$/);
+  expect(within(d).getByLabelText('Cargar ítems desde una cotización')).toHaveValue('k1');
+  expect(within(d).getByLabelText('Detalle del ítem 1')).toHaveValue('Cambio de aceite');
+});

@@ -31,26 +31,26 @@ const lineasDeCot = (c: Cotizacion): Linea[] => c.detalles.map((d) => ({
   precio: String(d.precio), descuentoPct: String(d.descuentoPct), tipoIgv: d.tipoIgv, servicioId: d.servicioId ?? null, productoId: d.productoId ?? null, origen: 'cotizacion' as const,
 }));
 
-export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', alCerrar, alHecho }: { cat: CatalogosOds; ordenInicial?: Orden; modo?: 'comprobante' | 'cotizacion'; alCerrar: () => void; alHecho: (m: string) => Promise<void> | void }) {
+export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cotizacionInicial, editarId, alCerrar, alHecho }: { cat: CatalogosOds; ordenInicial?: Orden; modo?: 'comprobante' | 'cotizacion'; cotizacionInicial?: Cotizacion; editarId?: string; alCerrar: () => void; alHecho: (m: string) => Promise<void> | void }) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const esCot = modo === 'cotizacion';
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
-  const [cot, setCot] = useState<Cotizacion | null>(null);
-  const [elegidaCot, setElegidaCot] = useState('');
-  const [formaPago, setFormaPago] = useState('');
-  const [conIgv, setConIgv] = useState(true);
+  const [cot, setCot] = useState<Cotizacion | null>(esCot ? null : cotizacionInicial ?? null);
+  const [elegidaCot, setElegidaCot] = useState(esCot ? '' : cotizacionInicial?.id ?? '');
+  const [formaPago, setFormaPago] = useState(cotizacionInicial?.formaPago ?? '');
+  const [conIgv, setConIgv] = useState(cotizacionInicial?.conIgv ?? true);
   const [catalogo, setCatalogo] = useState<CatalogoOds>({ servicios: [], productos: [] });
-  const [clienteId, setClienteId] = useState(ordenInicial?.cliente.id ?? '');
-  const [vehiculoId, setVehiculoId] = useState(ordenInicial?.vehiculo.id ?? '');
+  const [clienteId, setClienteId] = useState(ordenInicial?.cliente.id ?? cotizacionInicial?.cliente.id ?? '');
+  const [vehiculoId, setVehiculoId] = useState(ordenInicial?.vehiculo.id ?? cotizacionInicial?.vehiculo?.id ?? '');
   const [orden, setOrden] = useState<Orden | null>(ordenInicial ?? null);
   const [elegida, setElegida] = useState(ordenInicial?.id ?? '');
-  const [lineas, setLineas] = useState<Linea[]>(() => (ordenInicial ? lineasDe(ordenInicial) : [vacia()]));
-  const [condicion, setCondicion] = useState<'CONTADO' | 'CREDITO'>('CONTADO');
+  const [lineas, setLineas] = useState<Linea[]>(() => (ordenInicial ? lineasDe(ordenInicial) : cotizacionInicial ? lineasDeCot(cotizacionInicial) : [vacia()]));
+  const [condicion, setCondicion] = useState<'CONTADO' | 'CREDITO'>(cotizacionInicial?.condicion ?? 'CONTADO');
   // El vencimiento (en la cotización, «válida hasta») se puede elegir siempre y por defecto es hoy, igual que la emisión.
-  const [vence, setVence] = useState(hoyIso());
-  const [observaciones, setObservaciones] = useState(ordenInicial?.observaciones ?? '');
+  const [vence, setVence] = useState(editarId && cotizacionInicial ? cotizacionInicial.validaHasta.slice(0, 10) : hoyIso());
+  const [observaciones, setObservaciones] = useState(ordenInicial?.observaciones ?? cotizacionInicial?.observaciones ?? '');
   const [comentario, setComentario] = useState('');
   const [detraccion, setDetraccion] = useState<boolean | null>(null);
   const [pagos, setPagos] = useState<Pago[]>([]);
@@ -65,6 +65,7 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', alC
       .then(([c, v, o, k, cs]) => {
         setClientes(c); setVehiculos(v); setCatalogo(k); setCotizaciones((cs as Cotizacion[]).filter((x) => x.estado === 'VIGENTE'));
         const libres = o.filter((x) => !x.conComprobante && x.estado !== 'Cerrada' && x.decision !== 'No aprobada' && x.detalles.length > 0);
+        if (cotizacionInicial && !esCot) setCotizaciones((xs) => (xs.some((x) => x.id === cotizacionInicial.id) ? xs : [cotizacionInicial, ...xs]));
         setOrdenes(ordenInicial && !libres.some((x) => x.id === ordenInicial.id) ? [ordenInicial, ...libres] : libres);
       })
       .catch((e) => setError((e as Error).message));
@@ -123,8 +124,9 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', alC
       const items = lineas.filter((l) => l.descripcion.trim()).map((l) => ({ tipo: l.tipo, referencia: l.referencia, descripcion: l.descripcion, cantidad: num(l.cantidad), precio: num(l.precio), descuentoPct: num(l.descuentoPct), tipoIgv: l.tipoIgv, servicioId: l.servicioId, productoId: l.productoId }));
       const fecha = vence ? new Date(`${vence}T12:00:00`).toISOString() : '';
       if (esCot) {
-        const c = await api.crearCotizacion({ clienteId, vehiculoId: vehiculoId || undefined, validaHasta: fecha, condicion, formaPago: formaPago || undefined, conIgv, observaciones, comentario, conDetraccion, items });
-        await alHecho(`Cotización ${c.codigo} emitida.`);
+        const datos = { clienteId, vehiculoId: vehiculoId || undefined, validaHasta: fecha, condicion, formaPago: formaPago || undefined, conIgv, observaciones, comentario, conDetraccion: false, items };
+        const c = editarId ? await api.editarCotizacion(editarId, datos) : await api.crearCotizacion(datos);
+        await alHecho(`Cotización ${c.codigo} ${editarId ? 'guardada' : 'emitida'}.`);
         return;
       }
       const n = await api.emitirNotaDirecta({ clienteId, vehiculoId: vehiculoId || undefined, ordenId: orden?.id, condicion, fechaVencimiento: fecha, observaciones, comentario, conDetraccion, pagos, items });
@@ -136,8 +138,8 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', alC
   const puede = (esCot || !!serie) && !!clienteId && lineas.some((l) => l.descripcion.trim());
   return (
     <div className="fondo-modal">
-      <form className="modal-ods modal-venta" role="dialog" aria-modal="true" aria-label={esCot ? 'Emitir nueva cotización' : 'Emitir nuevo comprobante'} onSubmit={emitir}>
-        <div className="fila entre"><h2>{esCot ? 'Emitir nueva cotización' : orden ? `Emitir nuevo comprobante · ODS ${orden.codigo}` : 'Emitir nuevo comprobante'}</h2><button type="button" className="cerrar" aria-label="Cerrar" onClick={alCerrar}>×</button></div>
+      <form className="modal-ods modal-venta" role="dialog" aria-modal="true" aria-label={esCot ? (editarId ? 'Editar cotización' : 'Emitir nueva cotización') : 'Emitir nuevo comprobante'} onSubmit={emitir}>
+        <div className="fila entre"><h2>{esCot ? (editarId ? 'Editar cotización' : 'Emitir nueva cotización') : 'Emitir nuevo comprobante'}</h2><button type="button" className="cerrar" aria-label="Cerrar" onClick={alCerrar}>×</button></div>
         {error && <p className="error" role="alert">{error}</p>}
         {!esCot && (
           <section className="bloque-nota cargar-items">
@@ -199,7 +201,7 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', alC
         {!esCot && !serie && <p className="error" role="alert">{!cat.localId ? 'Tu usuario no tiene un local asignado: la serie sale del local, así que no puedes emitir.' : 'Este local no tiene serie de nota de venta. Asígnala en Empresa y parámetros.'}</p>}
         <div className="tabla">
           <table>
-            <thead><tr><th>#</th><th>Tipo</th><th>Código</th><th>Detalle</th><th className="der">Cant.</th><th>Tipo de IGV</th><th className="der">Precio</th><th className="der">Desc. %</th><th className="der">Total</th><th /></tr></thead>
+            <thead><tr><th>#</th><th>Tipo</th><th>Código</th><th>Detalle</th><th className="der">Cant.</th>{!esCot && <th>Tipo de IGV</th>}<th className="der">Precio</th><th className="der">Desc. %</th><th className="der">Total</th><th /></tr></thead>
             <tbody>
               {lineas.map((l, i) => (
                 <tr key={l.clave}>
@@ -208,7 +210,7 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', alC
                   <td><input aria-label={`Código del ítem ${i + 1}`} value={l.referencia} onChange={(e) => cambiar(l.clave, { referencia: e.target.value })} /></td>
                   <td><input aria-label={`Detalle del ítem ${i + 1}`} list={`cat-${l.tipo}`} value={l.descripcion} placeholder="Escribe para buscar…" onChange={(e) => escribir(l, e.target.value)} /></td>
                   <td className="der"><input aria-label={`Cantidad del ítem ${i + 1}`} className="corto" inputMode="decimal" value={l.cantidad} disabled={l.tipo === 'servicio'} onChange={(e) => cambiar(l.clave, { cantidad: e.target.value })} /></td>
-                  <td><select aria-label={`Tipo de IGV del ítem ${i + 1}`} value={l.tipoIgv} onChange={(e) => cambiar(l.clave, { tipoIgv: e.target.value as TipoIgv })}>{TIPOS.map(([v, n]) => <option key={v} value={v}>{n}</option>)}</select></td>
+                  {!esCot && <td><select aria-label={`Tipo de IGV del ítem ${i + 1}`} value={l.tipoIgv} onChange={(e) => cambiar(l.clave, { tipoIgv: e.target.value as TipoIgv })}>{TIPOS.map(([v, n]) => <option key={v} value={v}>{n}</option>)}</select></td>}
                   <td className="der"><input aria-label={`Precio del ítem ${i + 1}`} className="corto" inputMode="decimal" value={l.precio} onChange={(e) => cambiar(l.clave, { precio: e.target.value })} /></td>
                   <td className="der"><input aria-label={`Descuento del ítem ${i + 1}`} className="corto" inputMode="decimal" value={l.descuentoPct} onChange={(e) => cambiar(l.clave, { descuentoPct: e.target.value })} /></td>
                   <td className="der">{soles(totalDe(l))}</td>
@@ -243,10 +245,11 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', alC
             </section>
           </section>}
           <div>
-            <label className="check"><input type="checkbox" checked={conDetraccion} onChange={(e) => setDetraccion(e.target.checked)} /> Detracción de 12 %</label>
+            {!esCot && <label className="check"><input type="checkbox" checked={conDetraccion} onChange={(e) => setDetraccion(e.target.checked)} /> Detracción de 12 %</label>}
             <div className="totales-nota" aria-label="Totales">
-              {fila('Exonerada', soles(calculo.exonerada))}{fila('Inafecta', soles(calculo.inafecta))}{fila('Gravada', soles(calculo.gravada))}{fila('IGV (18 %)', soles(calculo.igv))}
-              {fila('Total', soles(calculo.total), 'total')}{fila('Detracción', soles(conDetraccion ? calculo.detraccion : 0))}
+              {!esCot && <>{fila('Exonerada', soles(calculo.exonerada))}{fila('Inafecta', soles(calculo.inafecta))}{fila('Gravada', soles(calculo.gravada))}{fila('IGV (18 %)', soles(calculo.igv))}</>}
+              {fila('Total', soles(calculo.total), 'total')}{!esCot && fila('Detracción', soles(conDetraccion ? calculo.detraccion : 0))}
+              {esCot && <div className="suave">{conIgv ? 'Precios incluyen IGV' : 'Precios no incluyen IGV'}</div>}
               {!esCot && fila('Total pagado', soles(pagado), 'pagado')}{!esCot && fila('Saldo', soles(r2(calculo.total - pagado)), 'saldo')}
             </div>
           </div>

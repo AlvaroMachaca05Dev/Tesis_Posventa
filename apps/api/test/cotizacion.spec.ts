@@ -11,7 +11,7 @@ let app: INestApplication;
 const CLAVE = process.env.SEED_PASSWORD as string;
 const tokens: Record<string, string> = {};
 const tokenDe = async (c: string) => (tokens[c] ??= (await request(app.getHttpServer()).post('/auth/login').send({ correo: c, password: CLAVE })).body.token as string);
-const como = async (c: string, metodo: 'get' | 'post', ruta: string, cuerpo?: object) => {
+const como = async (c: string, metodo: 'get' | 'post' | 'patch' | 'delete', ruta: string, cuerpo?: object) => {
   const t = await tokenDe(c);
   const r = request(app.getHttpServer())[metodo](ruta).set('Authorization', `Bearer ${t}`);
   return cuerpo ? r.send(cuerpo) : r;
@@ -60,5 +60,21 @@ describe('cotizaciones', () => {
     const a = await como('admin@demo.local', 'post', `/cotizaciones/${c.id}/anular`, { motivo: 'El cliente desistió' });
     expect(a.body).toMatchObject({ estado: 'ANULADA', motivoAnulacion: 'El cliente desistió' });
     expect((await como(CAJERA, 'get', `/cotizaciones/${c.id}`)).body.estado).toBe('ANULADA');
+  });
+});
+
+describe('editar y eliminar cotizaciones', () => {
+  it('se edita conservando el código, no se edita anulada y se elimina solo con nivel «todo»', async () => {
+    const c = (await como(CAJERA, 'post', '/cotizaciones', { clienteId, items: [item()] })).body;
+    const e = await como(CAJERA, 'patch', `/cotizaciones/${c.id}`, { clienteId, items: [item({ precio: 236 }), item({ descripcion: 'Otro' })] });
+    expect(e.status).toBe(200);
+    expect(e.body).toMatchObject({ codigo: c.codigo, total: 354 });
+    expect(e.body.detalles).toHaveLength(2);
+    expect((await como(CAJERA, 'delete', `/cotizaciones/${c.id}`)).status).toBeGreaterThanOrEqual(403);
+    expect((await como('admin@demo.local', 'delete', `/cotizaciones/${c.id}`)).status).toBe(200);
+    expect((await como(CAJERA, 'get', `/cotizaciones/${c.id}`)).status).toBe(404);
+    const a = (await como(CAJERA, 'post', '/cotizaciones', { clienteId, items: [item()] })).body;
+    await como('admin@demo.local', 'post', `/cotizaciones/${a.id}/anular`, { motivo: 'x' });
+    expect((await como(CAJERA, 'patch', `/cotizaciones/${a.id}`, { clienteId, items: [item()] })).status).toBe(409);
   });
 });

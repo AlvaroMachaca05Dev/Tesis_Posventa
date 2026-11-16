@@ -18,6 +18,8 @@ const cuadro = (p: Pagina, x: number, y: number, w: number, h: number, relleno?:
 
 function hoja(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
   const p = new Pagina(612, 792);
+  const esCot = titulo === 'COTIZACION';
+  const incluyeIgv = (n as { conIgv?: boolean }).conIgv !== false;
   // Cabecera: logo, datos de la empresa y cuadro del comprobante
   p.imagen(L, 19, 207, 67);
   p.texto(336, 50, mayus(e.nombre), { f: 'B', tam: 7.5, alinear: 'centro' });
@@ -37,18 +39,22 @@ function hoja(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
   p.campo(L + 8, y + 11 + paso * 3, 'DIRECCIÓN:', o.cliente.direccionFiscal ?? '', 8.5, 365, paso);
   p.campo(L + 8, y + 11 + paso * 4, 'CELULAR:', o.cliente.movil ?? '', 8.5, 365, paso);
   cuadro(p, 419, y, R - 419, 5 * paso + 8);
-  const der: [string, string][] = [['FECHA EMISION:', dia(n.fechaEmision)], ['MONEDA:', 'SOLES'], ['CONDICION:', n.condicion === 'CREDITO' ? 'CRÉDITO' : 'CONTADO'], ['VENCE:', n.fechaVencimiento ? dia(n.fechaVencimiento) : ''], ['ODS:', o.codigo]];
+  const der: [string, string][] = esCot
+    ? [['FECHA EMISION:', dia(n.fechaEmision)], ['FECHA VENC.:', n.fechaVencimiento ? dia(n.fechaVencimiento) : ''], ['MONEDA:', 'SOLES'], ['', ''], ['', '']]
+    : [['FECHA EMISION:', dia(n.fechaEmision)], ['MONEDA:', 'SOLES'], ['CONDICION:', n.condicion === 'CREDITO' ? 'CRÉDITO' : 'CONTADO'], ['VENCE:', n.fechaVencimiento ? dia(n.fechaVencimiento) : ''], ['ODS:', o.codigo]];
   der.forEach(([a, b], i) => p.campo(425, y + 11 + i * paso, a, b, 8.5, 150, paso));
   y += 5 * paso + 8 + 6;
+  if (o.vehiculo.placa) {
   cuadro(p, L, y, W, 19);
   p.campo(L + 8, y + 12, 'VEHICULO:', [o.vehiculo.placa, mayus(o.vehiculo.marca), mayus(o.vehiculo.modelo), o.km != null ? `${o.km} km` : ''].filter(Boolean).join(' · '), 8.5, W - 16, paso);
   y += 25;
+  }
 
   // Ítems
   cuadro(p, L, y, W, 23, GRIS);
   const col = { num: L + 8, cod: L + 22, desc: L + 112, cant: 395, uni: 445, igv: 458, tot: R - 4 };
   const th = (x: number, t: string, a: 'izq' | 'centro' | 'der' = 'izq') => p.texto(x, y + 15, t, { f: 'B', tam: 8.5, alinear: a });
-  th(col.num, '#'); th(col.cod, 'CODIGO'); th(col.desc + 90, 'DETALLE', 'centro'); th(col.cant, 'CANT.', 'der'); th(col.uni, 'PRECIO', 'der'); th(col.igv, 'IGV'); th(col.tot, 'TOTAL', 'der');
+  th(col.num, '#'); th(col.cod, 'CODIGO'); th(col.desc + 90, 'DETALLE', 'centro'); th(col.cant, 'CANT.', 'der'); th(col.uni, 'PRECIO', 'der'); if (!esCot) th(col.igv, 'IGV'); th(col.tot, 'TOTAL', 'der');
   y += 25;
   n.detalles.forEach((d, i) => {
     const desc = dividir(d.descripcion, 'N', 8.5, 220);
@@ -60,7 +66,7 @@ function hoja(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
     desc.forEach((t, k) => p.texto(col.desc, b + k * paso, t, { tam: 8.5 }));
     p.texto(col.cant, b, dinero(d.cantidad), { tam: 8.5, alinear: 'der' });
     p.texto(col.uni, b, dinero(d.cantidad ? d.total / d.cantidad : d.precio), { tam: 8.5, alinear: 'der' });
-    p.texto(col.igv, b, IGV_CORTO[d.tipoIgv] ?? '', { tam: 8.5 });
+    if (!esCot) p.texto(col.igv, b, IGV_CORTO[d.tipoIgv] ?? '', { tam: 8.5 });
     p.texto(col.tot, b, dinero(d.total), { tam: 8.5, alinear: 'der' });
     y += h + 2;
   });
@@ -83,17 +89,19 @@ function hoja(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
     p.linea(L + 8, y + 16, L + 377, y + 16, { gris: 0.55, grosor: 0.5 });
     cuentas.forEach((t, i) => p.texto(L + 8, y + 25 + i * 8, t, { tam: 6.6 }));
   }
-  const filas: [string, string, boolean][] = [['OP. EXONERADA', dinero(n.exonerada), false], ['OP. INAFECTA', dinero(n.inafecta), false], ['OP. GRAVADA', dinero(n.gravada), false], ['IGV 18 %', dinero(n.igv), false], ['TOTAL S/', dinero(n.total), true]];
-  if (n.conDetraccion) filas.push([`DETRACCION ${n.detraccionPct} %`, dinero(n.detraccion), false]);
+  const filas: [string, string, boolean][] = esCot ? [['TOTAL S/', dinero(n.total), true]] : [['OP. EXONERADA', dinero(n.exonerada), false], ['OP. INAFECTA', dinero(n.inafecta), false], ['OP. GRAVADA', dinero(n.gravada), false], ['IGV 18 %', dinero(n.igv), false], ['TOTAL S/', dinero(n.total), true]];
+  if (!esCot && n.conDetraccion) filas.push([`DETRACCION ${n.detraccionPct} %`, dinero(n.detraccion), false]);
   cuadro(p, 419, yPie, R - 419, filas.length * 12 + 10);
   filas.forEach(([a, b, negrita], i) => {
     p.texto(427, yPie + 14 + i * 12, a, { f: 'B', tam: 8 });
     p.texto(R - 10, yPie + 14 + i * 12, b, { f: negrita ? 'B' : 'N', tam: 8.5, alinear: 'der' });
   });
+  if (esCot) p.texto(419 + (R - 419) / 2, yPie + 12 * 1 + 28, incluyeIgv ? 'PRECIOS INCLUYEN IGV' : 'PRECIOS NO INCLUYEN IGV', { f: 'B', tam: 7.5, alinear: 'centro' });
   return [p];
 }
 
 function ticket(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
+  const esCot = titulo === 'COTIZACION';
   const ancho = Math.round((e.anchoTicketMm ?? 80) * 2.8346), m = 12, tam = 9.5, paso = 11.5, util = ancho - m * 2;
   type Fila = { t: string; f?: 'N' | 'B'; a?: 'izq' | 'centro'; par?: string };
   const filas: Fila[] = [];
@@ -119,12 +127,13 @@ function ticket(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
     dividir(nombre, 'N', tam, descMax).forEach((l, i) => filas.push({ t: `${i === 0 ? dinero(d.cantidad) : ''}\t${l}`, par: i === 0 ? dinero(d.total) : '' }));
   }
   separador();
-  if (n.exonerada) par('Op. exonerada', dinero(n.exonerada));
-  if (n.inafecta) par('Op. inafecta', dinero(n.inafecta));
-  par('Op. gravada', dinero(n.gravada));
-  par('IGV 18 %', dinero(n.igv));
+  if (!esCot && n.exonerada) par('Op. exonerada', dinero(n.exonerada));
+  if (!esCot && n.inafecta) par('Op. inafecta', dinero(n.inafecta));
+  if (!esCot) par('Op. gravada', dinero(n.gravada));
+  if (!esCot) par('IGV 18 %', dinero(n.igv));
   par('Total S/', dinero(n.total), 'B');
-  if (n.conDetraccion) par(`Detracción ${n.detraccionPct} %`, dinero(n.detraccion));
+  if (esCot) centro((n as { conIgv?: boolean }).conIgv !== false ? 'Precios incluyen IGV' : 'Precios no incluyen IGV');
+  if (!esCot && n.conDetraccion) par(`Detracción ${n.detraccionPct} %`, dinero(n.detraccion));
   separador();
   if (e.pieTicket) { filas.push({ t: '' }); centro(e.pieTicket); }
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
 import { PrismaService } from '../comun/prisma.service';
@@ -38,11 +38,8 @@ export class CotizacionController {
     return x;
   }
 
-  @Post()
-  @Requiere('cotizaciones', 'E')
-  async crear(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Body() b: Record<string, unknown>) {
-    const organizacionId = empresaDe(s);
-    if (!s.localId) throw new ConflictException('Tu usuario no tiene un local asignado: la cotización se emite desde un local.');
+  /** Valida y arma los datos de una cotización (los mismos al crearla y al editarla). */
+  private async leer(organizacionId: string, b: Record<string, unknown>) {
     const cliente = await this.prisma.cliente.findFirst({ where: { id: String(b?.clienteId ?? ''), organizacionId } });
     if (!cliente) throw new BadRequestException('Elige el cliente de la cotización.');
     const vehiculoId = b?.vehiculoId ? String(b.vehiculoId) : null;
@@ -57,20 +54,49 @@ export class CotizacionController {
     if (formaPago && !METODOS.includes(formaPago)) throw new BadRequestException('La forma de pago no es válida.');
     const t = totalesNota(lineas);
     const conDetraccion = b?.conDetraccion === undefined ? proponeDetraccion(lineas, t.total) : b.conDetraccion === true;
+    return { clienteId: cliente.id, vehiculoId, lineas, validaHasta, condicion, formaPago, conIgv: b?.conIgv !== false, conDetraccion, observaciones: texto(b?.observaciones, 1000), comentario: texto(b?.comentario, 1000), t };
+  }
+
+  @Post()
+  @Requiere('cotizaciones', 'E')
+  async crear(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    if (!s.localId) throw new ConflictException('Tu usuario no tiene un local asignado: la cotización se emite desde un local.');
+    const { lineas, t, ...d } = await this.leer(organizacionId, b);
     const id = await this.prisma.$transaction(async (tx) => {
       const c = await tx.correlativoSerie.upsert({ where: { organizacionId_serie: { organizacionId, serie: 'COT' } }, create: { organizacionId, serie: 'COT', ultimo: 1 }, update: { ultimo: { increment: 1 } } });
-      const x = await tx.cotizacion.create({
-        data: {
-          organizacionId, localId: s.localId as string, clienteId: cliente.id, vehiculoId, serie: 'COT', numero: c.ultimo, codigo: `COT-${String(c.ultimo).padStart(6, '0')}`,
-          validaHasta, condicion, formaPago, conIgv: b?.conIgv !== false, conDetraccion, observaciones: texto(b?.observaciones, 1000), comentario: texto(b?.comentario, 1000),
-          ...t, creadaPorId: real.id, detalles: { create: lineas },
-        },
-      });
+      const x = await tx.cotizacion.create({ data: { organizacionId, localId: s.localId as string, ...d, serie: 'COT', numero: c.ultimo, codigo: `COT-${String(c.ultimo).padStart(6, '0')}`, ...t, creadaPorId: real.id, detalles: { create: lineas } } });
       return x.id;
     });
     const res = resumenCotizacion(await this.cargar(id, organizacionId));
     await auditar(this.prisma, real, s, 'cotizacion', id, null, res, 'Cotización emitida');
     return res;
+  }
+
+  /** Una cotización no es un comprobante: se puede editar (mientras no esté anulada) y conserva su código. */
+  @Patch(':id')
+  @Requiere('cotizaciones', 'E')
+  async editar(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    const antes = await this.cargar(id, organizacionId);
+    if (antes.estado === 'ANULADA') throw new ConflictException('La cotización está anulada: no se puede editar.');
+    const { lineas, t, ...d } = await this.leer(organizacionId, b);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.detalleCotizacion.deleteMany({ where: { cotizacionId: id } });
+      await tx.cotizacion.update({ where: { id }, data: { ...d, ...t, detalles: { create: lineas } } });
+    });
+    const res = resumenCotizacion(await this.cargar(id, organizacionId));
+    await auditar(this.prisma, real, s, 'cotizacion', id, resumenCotizacion(antes), res, 'Cotización editada');
+    return res;
+  }
+
+  @Delete(':id')
+  @Requiere('cotizaciones', 'A')
+  async eliminar(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const x = await this.cargar(id, empresaDe(s));
+    await this.prisma.cotizacion.delete({ where: { id } });
+    await auditar(this.prisma, real, s, 'cotizacion', id, resumenCotizacion(x), null, 'Cotización eliminada');
+    return { ok: true };
   }
 
   @Get()

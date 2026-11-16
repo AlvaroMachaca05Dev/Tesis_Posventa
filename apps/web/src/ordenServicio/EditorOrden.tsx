@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { AlertaSolape, api, CatalogoOds, CatalogosOds, Cliente, DetalleOds, Grupo, Marca, Orden, Pais, Vehiculo } from '../comun/api';
+import { AlertaSolape, api, CatalogoOds, CatalogosOds, Cliente, Cotizacion, DetalleOds, Grupo, Marca, Orden, Pais, Vehiculo } from '../comun/api';
 import { FormCliente } from '../cliente/Clientes';
 import { FormVehiculo } from '../vehiculo/Vehiculos';
 import EstadoVehiculoModal from './EstadoVehiculo';
@@ -20,6 +20,21 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
   const cajeraDefecto = p.cat.cajeras?.find((c) => c.id === p.usuarioId)?.id ?? p.cat.cajeras?.[0]?.id ?? null;
   const nuevoItem = (tipo: DetalleOds['tipo'], tecnico = cab.tecnicoId): DetalleOds => ({ ...itemVacio(), tipo, tecnicoId: tipo === 'producto' ? cajeraDefecto : tecnico || null });
   const [items, setItems] = useState<DetalleOds[]>(p.orden?.detalles ?? [nuevoItem('servicio')]);
+  // Cotización previa: sus ítems se cargan a la orden (el vehículo no se toma de ella) y el cliente solo si aún no hay uno.
+  const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
+  const [cotizacionId, setCotizacionId] = useState('');
+  useEffect(() => { api.cotizaciones().then((xs) => setCotizaciones(xs.filter((x) => x.estado === 'VIGENTE'))).catch(() => undefined); }, []);
+  function enlazarCotizacion(id: string) {
+    setCotizacionId(id);
+    const c = cotizaciones.find((x) => x.id === id);
+    if (!c) return;
+    if (!cab.clienteId) setCab((x) => ({ ...x, clienteId: c.cliente.id, vehiculoId: '' }));
+    const nuevos = c.detalles.map((d) => {
+      const base: DetalleOds = { ...itemVacio(), tipo: d.tipo === 'servicio' ? 'servicio' : 'producto', descripcion: d.descripcion, referencia: d.referencia, cantidad: d.cantidad, precio: d.precio, descuentoPct: d.descuentoPct, impuesto: d.tipoIgv === 'INAFECTO' ? 'NINGUNO' : 'IGV', servicioId: d.servicioId, productoId: d.productoId, tecnicoId: d.tipo === 'servicio' ? cab.tecnicoId || null : cajeraDefecto };
+      return { ...base, total: totalLinea(base) };
+    });
+    setItems((xs) => [...xs.filter((x) => x.descripcion.trim()), ...nuevos]);
+  }
   const [fotos, setFotos] = useState<File[]>([]);
   const [vistaCliente, setVistaCliente] = useState(false);
   const [pct, setPct] = useState('');
@@ -205,7 +220,7 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
       <div className="modal-ods" role="dialog" aria-modal="true" aria-label={o ? `Editar orden de servicio ${o.codigo}` : 'Nueva orden de servicio'}>
         <div className="cab-ods">
           <h2>{o ? `Orden de servicio ${o.codigo}` : 'Nueva orden de servicio'}</h2>
-          <label htmlFor="o-cot" className="cot">¿Deseas enlazar una cotización previa?<select id="o-cot" disabled><option>Ninguna</option></select></label>
+          <label htmlFor="o-cot" className="cot">¿Deseas enlazar una cotización previa?<select id="o-cot" value={cotizacionId} disabled={bloqueada} onChange={(e) => enlazarCotizacion(e.target.value)}><option value="">Ninguna</option>{cotizaciones.map((c) => <option key={c.id} value={c.id}>{c.codigo} · {c.cliente.nombre} · {soles(c.total)}</option>)}</select></label>
           {sel('o-estado', 'Estado', cab.estado, ESTADOS.map((e) => [e.id, e.nombre]), (x) => setCab({ ...cab, estado: x }), !p.puedeEditar)}
           {cab.estado === 'Cerrada' && <span className="suave nota-cierre">Sin nota de venta</span>}
           <button type="button" onClick={() => p.alCerrar()}>Salir</button>

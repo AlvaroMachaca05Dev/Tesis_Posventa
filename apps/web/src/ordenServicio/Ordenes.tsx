@@ -119,11 +119,10 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
             <div><b>Consecutivo:</b> <span>{'#' + o.codigo}</span> <button type="button" className={'etq' + (o.conComprobante ? ' si' : '')} onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'comprobantes' ? null : { id: o.id, tipo: 'comprobantes' })}>{o.conComprobante ? 'Con comprobante' : 'Sin comprobante'}</button></div>
             {menu?.id === o.id && menu.tipo === 'comprobantes' && <div className="sub">{o.comprobantes.length ? o.comprobantes.join(', ') : 'Esta ODS todavía no tiene comprobantes.'}</div>}
             <div><b>Fecha de inicio:</b> {fecha(o.fechaInicio)} · <b>Fecha de cierre:</b> {fecha(o.fechaCierre)}</div>
-            <div><b>Cliente:</b> {o.cliente.nombre} ({o.cliente.documento})</div>
-            <div><b>Vehículo:</b> {[o.vehiculo.marca && `Marca: ${o.vehiculo.marca}`, o.vehiculo.modelo && `Modelo: ${o.vehiculo.modelo}`, o.vehiculo.anio && `Año: ${o.vehiculo.anio}`, `Placa: ${o.vehiculo.placa}`, o.vehiculo.nroVin && `VIN: ${o.vehiculo.nroVin}`, o.km != null && `Kilometraje: ${o.km}`].filter(Boolean).join(', ')}</div>
-            <div><b>Tipo de atención:</b> {o.tipoAtencion === 'Otro' && o.tipoAtencionDetalle ? o.tipoAtencionDetalle : o.tipoAtencion}</div>
+            <div><b>Cliente:</b> {o.cliente.nombre} ({o.cliente.documento}) · <b>Vehículo:</b> {[o.vehiculo.marca && `Marca: ${o.vehiculo.marca}`, o.vehiculo.modelo && `Modelo: ${o.vehiculo.modelo}`, o.vehiculo.anio && `Año: ${o.vehiculo.anio}`, `Placa: ${o.vehiculo.placa}`, o.vehiculo.nroVin && `VIN: ${o.vehiculo.nroVin}`, o.km != null && `Kilometraje: ${o.km}`].filter(Boolean).join(', ')}</div>
+            <div><b>Tipo de atención:</b> {o.tipoAtencion === 'Otro' && o.tipoAtencionDetalle ? o.tipoAtencionDetalle : o.tipoAtencion} · <b>Técnico:</b> {o.tecnico?.nombre ?? 'Sin asignar'}</div>
             {o.observaciones && <div><b>Comentarios:</b> {o.observaciones}</div>}
-            <div><b>Técnico:</b> {o.tecnico?.nombre ?? 'Sin asignar'} · <b>Usuario:</b> {o.creadoPor?.nombre ?? '—'} · <b>Total:</b> {soles(o.total)}</div>
+            <div><b>Usuario:</b> {o.creadoPor?.nombre ?? '—'} · <b>Total:</b> {soles(o.total)}</div>
             {(() => {
               // RF-018: la solicitud pendiente de la ODS cerrada, con Autorizar y Rechazar para quien puede resolverla.
               const q = o.solicitudes?.find((x) => x.estado === 'PENDIENTE');
