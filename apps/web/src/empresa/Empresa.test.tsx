@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from '../App';
 
+vi.mock('../comun/imagen', () => ({ aJpeg: async () => ({ base64: '/9j/AAAA', ancho: 300, alto: 100 }) }));
+
 type Peticion = { metodo: string; ruta: string; cuerpo: any };
 const llamadas: Peticion[] = [];
 const empresa = {
@@ -77,4 +79,13 @@ it('con permiso solo de ver no hay botón Guardar y los campos están bloqueados
   expect(await screen.findByLabelText('Razón social')).toBeDisabled();
   expect(screen.queryByRole('button', { name: 'Guardar' })).toBeNull();
   expect(within(screen.getByRole('tablist')).getAllByRole('tab')).toHaveLength(3);
+});
+
+it('Logo: se sube una imagen (ya convertida a JPEG) y se guarda con sus medidas; con logo aparece «Quitar logo»', async () => {
+  simular();
+  render(<App />);
+  const entrada = await screen.findByLabelText('Subir logo');
+  await userEvent.upload(entrada, new File(['x'], 'logo.png', { type: 'image/png' }));
+  await waitFor(() => expect(llamadas.find((l) => l.metodo === 'PATCH' && l.ruta === '/empresa')?.cuerpo).toEqual({ logo: { base64: '/9j/AAAA', ancho: 300, alto: 100 } }));
+  expect(await screen.findByText('Logo guardado.')).toBeInTheDocument();
 });

@@ -26,6 +26,9 @@ model Organizacion {
   terminosRecepcion  String?
   razonSocial        String?
   pieTicket          String?
+  logoJpeg           String?            @db.Text // logo horizontal en JPEG (base64) para los PDF y tickets
+  logoAncho          Int?
+  logoAlto           Int?
   anchoTicketMm      Int                @default(80)
   locales            Local[]
   roles              Rol[]

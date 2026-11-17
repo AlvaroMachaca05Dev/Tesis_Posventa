@@ -19,6 +19,7 @@ export class EmpresaController {
     return {
       nombre: e.nombre, razonSocial: e.razonSocial, ruc: e.ruc, direccion: e.direccion, telefono: e.telefono, correo: e.correo, lema: e.lema,
       cuentasBancarias: e.cuentasBancarias, terminosRecepcion: e.terminosRecepcion, pieTicket: e.pieTicket, anchoTicketMm: e.anchoTicketMm,
+      logo: e.logoJpeg ? { base64: e.logoJpeg, ancho: e.logoAncho, alto: e.logoAlto } : null,
       locales: e.locales.map((l) => ({ id: l.id, nombre: l.nombre, direccion: l.direccion, telefono: l.telefono, serieNotaVenta: l.serieNotaVenta, serieBoleta: l.serieBoleta, serieFactura: l.serieFactura })),
     };
   }
@@ -57,6 +58,19 @@ export class EmpresaController {
       const a = Number(c.anchoTicketMm);
       if (!Number.isInteger(a) || a < 48 || a > 110) throw new BadRequestException('El ancho del ticket va de 48 a 110 mm.');
       d.anchoTicketMm = a;
+    }
+    if (c.logo !== undefined) {
+      if (c.logo === null) Object.assign(d, { logoJpeg: null, logoAncho: null, logoAlto: null });
+      else {
+        const l = c.logo as { base64?: unknown; ancho?: unknown; alto?: unknown };
+        const base64 = typeof l.base64 === 'string' ? l.base64 : '';
+        const ancho = Number(l.ancho), alto = Number(l.alto);
+        // El logo va como JPEG (el PDF lo incrusta tal cual): empieza con «/9j/» en base64 y no pasa de unos 400 KB.
+        if (!base64.startsWith('/9j/') || !/^[A-Za-z0-9+/=]+$/.test(base64)) throw new BadRequestException('El logo debe ser una imagen JPEG.');
+        if (base64.length > 550_000) throw new BadRequestException('El logo es muy pesado: usa una imagen de hasta 400 KB.');
+        if (!Number.isInteger(ancho) || !Number.isInteger(alto) || ancho < 1 || alto < 1 || ancho > 4000 || alto > 4000) throw new BadRequestException('Las medidas del logo no son válidas.');
+        Object.assign(d, { logoJpeg: base64, logoAncho: ancho, logoAlto: alto });
+      }
     }
     const antes = await this.leer(organizacionId);
     await this.prisma.organizacion.update({ where: { id: organizacionId }, data: d });

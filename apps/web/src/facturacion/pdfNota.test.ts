@@ -20,6 +20,18 @@ const nota: NotaOrden = {
 };
 const texto = (b: Uint8Array) => new TextDecoder('latin1').decode(b);
 
+describe('logo de la empresa en el PDF', () => {
+  it('con logo propio se incrusta el JPEG tal cual (DCTDecode) y con las medidas del logo; sin logo se usa el de respaldo', () => {
+    const jpeg = btoa('\xFF\xD8\xFF\xE0jpeg-de-prueba');
+    const propio = texto(generarPdfNota('PDF', orden, nota, { ...empresa, logo: { base64: jpeg, ancho: 600, alto: 100 } }));
+    expect(propio).toContain('/Filter /DCTDecode');
+    expect(propio).toContain('/Width 600 /Height 100');
+    const respaldo = texto(generarPdfNota('PDF', orden, nota, empresa));
+    expect(respaldo).toContain('/Filter /FlateDecode');
+    expect(respaldo).not.toContain('DCTDecode');
+  });
+});
+
 describe('totales de la nota en pantalla (mismas reglas que el servidor)', () => {
   it('gravado incluye el IGV; exonerado e inafecto aparte; detracción de 12 % redondeada si hay servicio y supera S/ 700', () => {
     const t = totalesDe([{ tipo: 'servicio', total: 800, tipoIgv: 'GRAVADO' }, { tipo: 'producto', total: 100, tipoIgv: 'EXONERADO' }]);

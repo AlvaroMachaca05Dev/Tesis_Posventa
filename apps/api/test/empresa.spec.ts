@@ -52,6 +52,18 @@ describe('configuración de la empresa', () => {
     expect(cat.body.empresa).toMatchObject({ razonSocial: 'Taller Demo S.A.C.', pieTicket: 'Gracias por su visita', anchoTicketMm: 58 });
     expect(await prisma.auditoria.count({ where: { tabla: 'organizacion', motivo: 'Configuración de la empresa modificada' } })).toBeGreaterThan(0);
   });
+  it('el logo se guarda como JPEG, llega a los catálogos de la orden para el PDF y se puede quitar; otros formatos y tamaños se rechazan', async () => {
+    const jpeg = '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
+    const ok = await como(ADMIN, 'patch', '/empresa', { logo: { base64: jpeg, ancho: 400, alto: 120 } });
+    expect(ok.status).toBe(200);
+    expect(ok.body.logo).toEqual({ base64: jpeg, ancho: 400, alto: 120 });
+    expect((await como(CAJERA, 'get', '/ordenes/catalogos')).body.empresa.logo).toMatchObject({ ancho: 400, alto: 120 });
+    expect((await como(ADMIN, 'patch', '/empresa', { logo: { base64: 'iVBORw0KGgo=', ancho: 10, alto: 10 } })).status).toBe(400);
+    expect((await como(ADMIN, 'patch', '/empresa', { logo: { base64: jpeg, ancho: 0, alto: 10 } })).status).toBe(400);
+    expect([400, 413]).toContain((await como(ADMIN, 'patch', '/empresa', { logo: { base64: '/9j/' + 'A'.repeat(600_000), ancho: 10, alto: 10 } })).status);
+    const sin = await como(ADMIN, 'patch', '/empresa', { logo: null });
+    expect(sin.body.logo).toBeNull();
+  });
   it('valida el RUC, el correo, el nombre y el ancho del ticket (400)', async () => {
     expect((await como(ADMIN, 'patch', '/empresa', { ruc: '123' })).status).toBe(400);
     expect((await como(ADMIN, 'patch', '/empresa', { correo: 'no-es-correo' })).status).toBe(400);

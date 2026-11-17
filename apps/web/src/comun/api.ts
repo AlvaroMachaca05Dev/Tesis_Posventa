@@ -56,7 +56,7 @@ export interface SolicitudOds { id: string; tipo: 'REAPERTURA' | 'CORRECCION'; m
 export type EstadoVehiculo = Record<string, string | string[]>;
 export interface EvidenciaOds { id: string; nombre: string; tipo: string; tamano: number; fecha: string }
 /** Datos de la empresa que salen en la cabecera y el pie de los PDF de la orden. */
-export interface Empresa { nombre: string; ruc: string | null; direccion: string | null; telefono: string | null; correo: string | null; lema: string | null; cuentasBancarias: string | null; terminosRecepcion: string | null; razonSocial?: string | null; pieTicket?: string | null; anchoTicketMm?: number }
+export interface Empresa { nombre: string; ruc: string | null; direccion: string | null; telefono: string | null; correo: string | null; lema: string | null; cuentasBancarias: string | null; terminosRecepcion: string | null; razonSocial?: string | null; pieTicket?: string | null; anchoTicketMm?: number; logo?: { base64: string; ancho: number; alto: number } | null }
 export interface LocalEmpresa { id: string; nombre: string; direccion: string | null; telefono: string | null; serieNotaVenta: string | null; serieBoleta: string | null; serieFactura: string | null }
 export interface ConfigEmpresa extends Empresa { locales: LocalEmpresa[] }
 export interface CatalogosOds { tiposAtencion: string[]; decisiones: string[]; estados: { id: string; nombre: string }[]; metodosPago: string[]; tecnicos: Persona[]; jefes: Persona[]; logisticos?: Persona[]; cajeras?: Persona[]; empresa?: Empresa; locales?: { id: string; nombre: string; serieNotaVenta: string | null }[]; localId?: string | null }

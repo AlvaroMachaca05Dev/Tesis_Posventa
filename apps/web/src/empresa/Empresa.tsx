@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { api, ConfigEmpresa, LocalEmpresa } from '../comun/api';
+import { aJpeg } from '../comun/imagen';
 
 type Nivel = 'A' | 'E' | 'V';
 type Pestana = 'datos' | 'impresion' | 'locales';
@@ -41,6 +42,12 @@ function Datos({ cfg, puedeEditar, alGuardar, alFallar }: Parte) {
   const [d, setD] = useState({ nombre: cfg.nombre, razonSocial: cfg.razonSocial ?? '', ruc: cfg.ruc ?? '', direccion: cfg.direccion ?? '', telefono: cfg.telefono ?? '', correo: cfg.correo ?? '', lema: cfg.lema ?? '' });
   const poner = (k: keyof typeof d, v: string) => setD((x) => ({ ...x, [k]: v }));
   const enviar = async (e: FormEvent) => { e.preventDefault(); try { alGuardar(await api.editarEmpresa(d), 'Datos de la empresa guardados.'); } catch (x) { alFallar(x); } };
+  async function subirLogo(f: File) {
+    try { alGuardar(await api.editarEmpresa({ logo: await aJpeg(f) }), 'Logo guardado.'); } catch (x) { alFallar(x); }
+  }
+  async function quitarLogo() {
+    try { alGuardar(await api.editarEmpresa({ logo: null }), 'Logo quitado.'); } catch (x) { alFallar(x); }
+  }
   const campo = (k: keyof typeof d, etiqueta: string, extra: Record<string, unknown> = {}) => (
     <div className="campo"><label htmlFor={`e-${k}`}>{etiqueta}</label><input id={`e-${k}`} value={d[k]} disabled={!puedeEditar} onChange={(e) => poner(k, e.target.value)} {...extra} /></div>
   );
@@ -55,6 +62,15 @@ function Datos({ cfg, puedeEditar, alGuardar, alFallar }: Parte) {
         {campo('direccion', 'Dirección')}
         <div className="campo ancha"><label htmlFor="e-lema">Lema de la cabecera</label><input id="e-lema" value={d.lema} disabled={!puedeEditar} onChange={(e) => poner('lema', e.target.value)} /></div>
       </div>
+      <section className="bloque-nota logo-empresa"><h3>Logo de la empresa (horizontal)</h3>
+        {cfg.logo ? <img className="logo-vista" alt="Logo de la empresa" src={`data:image/jpeg;base64,${cfg.logo.base64}`} /> : <p className="suave">Sin logo.</p>}
+        {puedeEditar && (
+          <div className="fila">
+            <label className="boton-archivo">Subir logo<input type="file" accept="image/*" aria-label="Subir logo" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) await subirLogo(f); }} /></label>
+            {cfg.logo && <button type="button" onClick={() => void quitarLogo()}>Quitar logo</button>}
+          </div>
+        )}
+      </section>
       {puedeEditar && <div className="fila fin"><button type="submit" className="primario chico">Guardar</button></div>}
     </form>
   );

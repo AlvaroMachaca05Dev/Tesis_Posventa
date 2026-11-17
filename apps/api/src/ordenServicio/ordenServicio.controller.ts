@@ -45,7 +45,7 @@ export const ESTADOS = [
   { id: 'Entrega', nombre: 'Entrega' },
   { id: 'Cerrada', nombre: 'Cerrado' },
 ];
-const METODOS = ['Efectivo', 'Yape', 'Plin', 'Transferencia', 'Tarjeta', 'Otro'];
+const METODOS = ['Efectivo', 'Yape', 'Transferencia', 'Tarjeta', 'Otro'];
 const r2 = (x: number) => Math.round((x + Number.EPSILON) * 100) / 100;
 const r6 = (x: number) => Math.round((x + Number.EPSILON) * 1e6) / 1e6;
 const r3 = (x: number) => Math.round((x + Number.EPSILON) * 1000) / 1000;
@@ -206,7 +206,7 @@ export class OrdenesController {
   /** Datos de la empresa para la cabecera y el pie de los PDF de la orden. */
   private async datosEmpresa(organizacionId: string) {
     const e = await this.prisma.organizacion.findUniqueOrThrow({ where: { id: organizacionId } });
-    return { nombre: e.nombre, razonSocial: e.razonSocial, ruc: e.ruc, direccion: e.direccion, telefono: e.telefono, correo: e.correo, lema: e.lema, cuentasBancarias: e.cuentasBancarias, terminosRecepcion: e.terminosRecepcion, pieTicket: e.pieTicket, anchoTicketMm: e.anchoTicketMm };
+    return { nombre: e.nombre, razonSocial: e.razonSocial, ruc: e.ruc, direccion: e.direccion, telefono: e.telefono, correo: e.correo, lema: e.lema, cuentasBancarias: e.cuentasBancarias, terminosRecepcion: e.terminosRecepcion, pieTicket: e.pieTicket, anchoTicketMm: e.anchoTicketMm, logo: e.logoJpeg ? { base64: e.logoJpeg, ancho: e.logoAncho, alto: e.logoAlto } : null };
   }
 
   @Get('catalogos')

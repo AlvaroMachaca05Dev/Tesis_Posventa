@@ -82,7 +82,7 @@ function codificar(t: string) {
 const n2 = (x: number) => (Math.round(x * 100) / 100).toString();
 const gris = (g: number) => n2(g);
 
-export interface ImagenRgb { ancho: number; alto: number; base64: string; predictor: boolean }
+export interface ImagenRgb { ancho: number; alto: number; base64: string; predictor: boolean; jpeg?: boolean }
 
 export class Pagina {
   ops: string[] = [];
@@ -151,8 +151,9 @@ export function construirPdf(paginas: Pagina[], imagen?: ImagenRgb): Uint8Array 
   obj(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
   if (usaImagen && imagen) {
     const datos = atob(imagen.base64);
-    const parms = imagen.predictor ? `/DecodeParms << /Predictor 15 /Colors 3 /Columns ${imagen.ancho} /BitsPerComponent 8 >> ` : '';
-    obj(5, `<< /Type /XObject /Subtype /Image /Width ${imagen.ancho} /Height ${imagen.alto} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode ${parms}/Length ${datos.length} >>\nstream\n${datos}\nendstream`);
+    const filtro = imagen.jpeg ? 'DCTDecode' : 'FlateDecode';
+    const parms = imagen.predictor && !imagen.jpeg ? `/DecodeParms << /Predictor 15 /Colors 3 /Columns ${imagen.ancho} /BitsPerComponent 8 >> ` : '';
+    obj(5, `<< /Type /XObject /Subtype /Image /Width ${imagen.ancho} /Height ${imagen.alto} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /${filtro} ${parms}/Length ${datos.length} >>\nstream\n${datos}\nendstream`);
   }
   paginas.forEach((p, i) => {
     const contenido = p.ops.join('\n');
@@ -168,4 +169,14 @@ export function construirPdf(paginas: Pagina[], imagen?: ImagenRgb): Uint8Array 
   const bytes = new Uint8Array(out.length);
   for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 255;
   return bytes;
+}
+
+/** Logo de la empresa si subió uno (JPEG, se incrusta tal cual); si no, el de respaldo. */
+export function logoEmpresa(e: { logo?: { base64: string; ancho: number; alto: number } | null }, respaldo: ImagenRgb): ImagenRgb {
+  return e.logo ? { ancho: e.logo.ancho, alto: e.logo.alto, base64: e.logo.base64, predictor: false, jpeg: true } : respaldo;
+}
+/** Medidas del logo dentro de la caja de la cabecera (207 x 67), sin deformarlo. */
+export function medidasLogo(img: ImagenRgb, maxW = 207, maxH = 67) {
+  const k = Math.min(maxW / img.ancho, maxH / img.alto);
+  return { w: img.ancho * k, h: img.alto * k };
 }

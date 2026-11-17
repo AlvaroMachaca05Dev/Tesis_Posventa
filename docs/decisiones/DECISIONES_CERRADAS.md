@@ -191,4 +191,6 @@ Decididas por **Álvaro Machaca** al revisar la tesis con los materiales del cur
 
 | DEC-108 | **Módulo de marcas de vehículo:** tabla con marca y modelos (uno por línea al editar), «+ Nuevo», editar y eliminar. Al renombrar una marca sus vehículos la siguen; una marca con vehículos no se elimina. El permiso es el del módulo «Marcas de vehículo». | `apps/web/src/vehiculo/Marcas.tsx`, `apps/api/src/vehiculo/vehiculo.controller.ts` |
 
+| DEC-109 | **Logo de la empresa:** se sube en «Empresa y parámetros → Datos de la empresa» (horizontal), se convierte a JPEG sobre fondo blanco en el navegador (hasta 400 KB) y se guarda en la organización; los PDF lo incrustan tal cual y lo ajustan a la caja de la cabecera sin deformarlo. Sin logo propio se usa el de respaldo. Plin sale de los métodos de pago de la orden. El servidor admite JSON de hasta 1 MB. | `apps/web/src/comun/imagen.ts`, `apps/api/src/empresa/empresa.controller.ts`, migración `20261118090000_logo_empresa` |
+
 Pendiente de confirmar por el investigador (no son decisiones cerradas): periodo 2017-2026 de la búsqueda de literatura, prioridades MoSCoW por slice, estados propuestos de la nota de venta y de la cotización vencida, y requisitos mínimos del servidor.

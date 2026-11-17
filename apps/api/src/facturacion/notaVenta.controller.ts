@@ -27,7 +27,7 @@ export function resumenNota(x: Nota) {
     conDetraccion: x.conDetraccion, detraccionPct: n(x.detraccionPct), detraccionExacta: n(x.detraccionExacta), detraccion: n(x.detraccion),
     // La detracción la deposita la empresa: el saldo es el total menos lo pagado (DEC-82).
     pagado, saldo: x.estado === 'EMITIDA' ? r2(n(x.total) - pagado) : 0,
-    pagos: x.abonos.map((a) => ({ id: a.id, fecha: a.fecha.toISOString(), metodo: a.metodo, concepto: a.concepto, valor: n(a.valor) })),
+    pagos: [...(x.orden?.abonos ?? []), ...x.abonos].sort((a, b) => a.fecha.getTime() - b.fecha.getTime()).map((a) => ({ id: a.id, fecha: a.fecha.toISOString(), metodo: a.metodo, concepto: a.concepto, valor: n(a.valor) })),
     emitidaPor: x.emitidaPor.nombre, anuladaPor: x.anuladaPor?.nombre ?? null, motivoAnulacion: x.motivoAnulacion, anuladaEn: x.anuladaEn?.toISOString() ?? null,
   };
 }

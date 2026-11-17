@@ -1,5 +1,5 @@
 import type { Empresa, Orden } from '../comun/api';
-import { anchoTexto, construirPdf, dividir, ImagenRgb, Pagina } from '../comun/pdf';
+import { anchoTexto, construirPdf, dividir, ImagenRgb, logoEmpresa, medidasLogo, Pagina } from '../comun/pdf';
 import { LOGO_PDF } from './logoPdf';
 
 /** Formatos de impresión de una orden: la hoja de la ODS, la hoja de recepción con términos y el ticket angosto. */
@@ -23,7 +23,7 @@ function cuadro(p: Pagina, x: number, y: number, w: number, h: number, relleno?:
 
 /** Cabecera común: logo, datos de la empresa y el cuadro con el número del documento. */
 function cabecera(p: Pagina, e: Empresa, titulo: string, subtitulo: string, subtituloGrande: boolean) {
-  p.imagen(L, 19, 207, 67);
+  { const m = medidasLogo(logoEmpresa(e, LOGO)); p.imagen(L, 19 + (67 - m.h) / 2, m.w, m.h); }
   const cx = 336;
   p.texto(cx, 50, mayus(e.nombre), { f: 'B', tam: 7.5, alinear: 'centro' });
   const lineas = [e.razonSocial, e.lema, e.direccion, e.telefono ? `TLF : ${e.telefono}` : '', e.correo ? `Email: ${e.correo}` : ''].filter(Boolean) as string[];
@@ -259,7 +259,7 @@ function hojaTicket(o: Orden, e: Empresa) {
 /** PDF de la orden en el formato pedido; devuelve los bytes del archivo. */
 export function generarPdf(formato: FormatoPdf, o: Orden, e: Empresa): Uint8Array {
   const paginas = formato === 'Recepción' ? hojaRecepcion(o, e) : formato === 'Ticket' ? hojaTicket(o, e) : hojaOds(o, e);
-  return construirPdf(paginas, LOGO);
+  return construirPdf(paginas, logoEmpresa(e, LOGO));
 }
 
 export const TITULO_VISTA: Record<FormatoPdf, string> = { PDF: 'Orden de servicio', Recepción: 'Recepción', Ticket: 'Ticket' };

@@ -149,7 +149,9 @@ describe('la ODS con nota de venta', () => {
     const nota = (await como(CAJERA, 'post', `/ordenes/${o.id}/nota-venta`, {})).body;
     expect((await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [servicio(10)] })).status).toBe(409);
     await como(CAJERA, 'post', `/ordenes/${o.id}/abonos`, { metodo: 'Efectivo', valor: 150 });
-    expect((await como(CAJERA, 'get', `/notas-venta/${nota.id}`)).body).toMatchObject({ pagado: 150, saldo: 50 });
+    const conPago = (await como(CAJERA, 'get', `/notas-venta/${nota.id}`)).body;
+    expect(conPago).toMatchObject({ pagado: 150, saldo: 50 });
+    expect(conPago.pagos).toEqual([expect.objectContaining({ metodo: 'Efectivo', valor: 150 })]);
     const c = await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'Cerrada' });
     expect(c.status).toBe(200);
     expect(c.body.estado).toBe('Cerrada');

@@ -341,5 +341,9 @@ body.arrastrando-columna * { cursor: col-resize !important; }
 .pagos-nota { flex:1; min-width:300px; }
 .modal-venta { max-width:1500px; }
 .con-boton { display:flex; gap:0; } .con-boton select { flex:1; border-top-right-radius:0; border-bottom-right-radius:0; } .con-boton button { border-top-left-radius:0; border-bottom-left-radius:0; font-weight:700; }
+.cargar-items .con-boton select { min-width:0; } .cargar-items .con-boton button { flex:0 0 auto; white-space:nowrap; } .cargar-items .con-boton button + button { border-left:1px solid var(--borde); }
+@media (max-width: 760px) { .cargar-items .dos-col { grid-template-columns:1fr; display:grid; } }
 .modal-venta .tabla input.corto { width:80px; text-align:right; } .modal-venta .tabla td input, .modal-venta .tabla td select { width:100%; box-sizing:border-box; } .modal-venta .tabla td input.corto { width:80px; }
 .enlace { all:unset; cursor:pointer; text-decoration:underline; }
+.logo-vista { max-width:320px; max-height:110px; background:#fff; border-radius:8px; padding:6px; display:block; margin-bottom:8px; }
+.boton-archivo { background:#18233a; color:var(--texto); border:1px solid var(--borde); border-radius:8px; padding:6px 12px; cursor:pointer; }

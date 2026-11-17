@@ -1,5 +1,5 @@
 import type { Empresa, NotaOrden, Orden } from '../comun/api';
-import { anchoTexto, construirPdf, dividir, ImagenRgb, Pagina } from '../comun/pdf';
+import { anchoTexto, construirPdf, dividir, ImagenRgb, logoEmpresa, medidasLogo, Pagina } from '../comun/pdf';
 import { LOGO_PDF } from '../ordenServicio/logoPdf';
 
 /** PDF y ticket de la nota de venta (RF-088), con el mismo escritor y los mismos datos de empresa que la ODS (DEC-98, DEC-101). */
@@ -21,7 +21,7 @@ function hoja(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
   const esCot = titulo === 'COTIZACION';
   const incluyeIgv = (n as { conIgv?: boolean }).conIgv !== false;
   // Cabecera: logo, datos de la empresa y cuadro del comprobante
-  p.imagen(L, 19, 207, 67);
+  { const m = medidasLogo(logoEmpresa(e, LOGO)); p.imagen(L, 19 + (67 - m.h) / 2, m.w, m.h); }
   p.texto(336, 50, mayus(e.nombre), { f: 'B', tam: 7.5, alinear: 'centro' });
   ([e.razonSocial, e.lema, e.direccion, e.telefono ? `TLF : ${e.telefono}` : '', e.correo ? `Email: ${e.correo}` : ''].filter(Boolean) as string[]).forEach((t, i) => p.texto(336, 59 + i * 6.6, t, { tam: 5.2, alinear: 'centro' }));
   cuadro(p, 420, 36, R - 420, 51, GRIS);
@@ -155,5 +155,5 @@ function ticket(o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA') {
 
 /** PDF (hoja carta) o ticket de la nota de venta vigente de la orden. */
 export function generarPdfNota(formato: 'PDF' | 'Ticket', o: Orden, n: NotaOrden, e: Empresa, titulo = 'NOTA DE VENTA'): Uint8Array {
-  return construirPdf(formato === 'Ticket' ? ticket(o, n, e, titulo) : hoja(o, n, e, titulo), LOGO);
+  return construirPdf(formato === 'Ticket' ? ticket(o, n, e, titulo) : hoja(o, n, e, titulo), logoEmpresa(e, LOGO));
 }
