@@ -1,10 +1,14 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { api, Cliente, Grupo, Marca, Pais, Vehiculo } from '../comun/api';
+
+/** El grupo G4 es diésel; G1 a G3, gasolina. */
+const combustibleDe = (v: Vehiculo) => (v.grupo === 'G4' ? 'Diésel' : v.grupo ? 'Gasolina' : '');
 import { FormCliente } from '../cliente/Clientes';
 import { leerFiltro, olvidarFiltro } from '../comun/filtroPendiente';
 import { useColumnasRedimensionables } from '../comun/useColumnasRedimensionables';
 import { FilaFiltros, useFiltros } from '../comun/FiltrosColumna';
 import { MenuAcciones } from '../comun/TablaMaestro';
+import { useConfirmar } from '../comun/Confirmar';
 import { Paginacion, usePaginacion } from '../comun/Paginacion';
 
 type Nivel = 'A' | 'E' | 'V';
@@ -31,12 +35,12 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
     api.grupos().then((g) => setGrupos(g.filter((x) => x.activo))).catch(() => setGrupos([]));
   }, [cargar]);
 
-  const COLUMNAS = ['Cliente', 'Número de documento', 'Placa', 'Marca', 'Modelo', 'Año', 'Color', 'Grupo', 'Nro. serie', 'Nro. VIN', 'Nro. motor', 'Último kilometraje', 'Registro'];
+  const COLUMNAS = ['Cliente', 'Número de documento', 'Placa', 'Marca', 'Modelo', 'Año', 'Color', 'Combustible', 'Uso', 'Aceite', 'Plan', 'Nro. serie', 'Nro. VIN', 'Nro. motor', 'Último kilometraje', 'Registro'];
   // Si se llegó desde «Vehículos» de un cliente, el filtro de Número de documento ya viene escrito.
   const [filtroInicial] = useState(() => leerFiltro('vehiculos', COLUMNAS));
   useEffect(() => { olvidarFiltro(); }, []);
   const { filtros, setFiltros, pasa } = useFiltros<Vehiculo>([
-    (v) => v.cliente.nombre, (v) => v.cliente.documento, (v) => v.placa, (v) => v.marca ?? '', (v) => v.modelo ?? '', (v) => String(v.anio ?? ''), (v) => v.color ?? '', (v) => v.grupo ?? 'Sin grupo',
+    (v) => v.cliente.nombre, (v) => v.cliente.documento, (v) => v.placa, (v) => v.marca ?? '', (v) => v.modelo ?? '', (v) => String(v.anio ?? ''), (v) => v.color ?? '', (v) => combustibleDe(v), (v) => v.uso ?? '', (v) => v.aceite ?? '', (v) => v.planCodigo ?? 'Sin plan',
     (v) => v.nroSerie ?? '', (v) => v.nroVin ?? '', (v) => v.nroMotor ?? '', (v) => String(v.kmActual ?? ''), (v) => fecha(v.creadoEn),
   ], filtroInicial);
   const filtrados = vehiculos.filter(pasa);
@@ -60,10 +64,16 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
     setMensaje('');
     setError(m);
   };
+  const { preguntar, modal: confirmacion } = useConfirmar();
+  async function eliminar(v: Vehiculo) {
+    if ((await preguntar({ titulo: `¿Eliminar el vehículo ${v.placa}?`, mensaje: 'Se borra con sus lecturas de kilometraje. Si tiene órdenes o comprobantes no se puede eliminar.' })) === null) return;
+    try { await api.eliminarVehiculo(v.id); await exito(`Vehículo ${v.placa} eliminado.`); } catch (e) { fallo((e as Error).message); }
+  }
 
   return (
     <div className="panel ancho">
       <h1>Vehículos</h1>
+      {confirmacion}
       {puedeEditar && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Nuevo</button></div>}
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !editando && !lectura && <p className="error" role="alert">{error}</p>}
@@ -81,7 +91,10 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
               {cabecera('Modelo', 'media')}
               {cabecera('Año', 'corta')}
               {cabecera('Color', 'corta')}
-              {cabecera('Grupo', 'corta')}
+              {cabecera('Combustible', 'corta')}
+              {cabecera('Uso', 'corta')}
+              {cabecera('Aceite', 'corta')}
+              {cabecera('Plan', 'corta')}
               {cabecera('Nro. serie', 'corta')}
               {cabecera('Nro. VIN', 'corta')}
               {cabecera('Nro. motor', 'corta')}
@@ -98,6 +111,7 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
                     <MenuAcciones>
                       <button type="button" onClick={() => { setLectura(null); setEditando(v); }}>Editar</button>
                       <button type="button" onClick={() => { setEditando(null); setLectura(v); }}>Registrar km</button>
+                      <button type="button" className="peligro" onClick={() => void eliminar(v)}>Eliminar</button>
                     </MenuAcciones>
                   </td>
                 )}
@@ -108,7 +122,10 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
                 <td className="media">{v.modelo ?? '—'}</td>
                 <td className="corta">{v.anio ?? '—'}</td>
                 <td className="suave corta">{v.color ?? '—'}</td>
-                <td className="corta">{v.grupo ?? <span className="suave">Sin grupo</span>}</td>
+                <td className="corta">{combustibleDe(v) || '—'}</td>
+                <td className="corta">{v.uso ?? <span className="suave">—</span>}</td>
+                <td className="corta">{v.aceite ?? <span className="suave">—</span>}</td>
+                <td className="corta">{v.planCodigo ? <span className="pill" title={v.plan ?? ''}>{v.planCodigo}</span> : <span className="suave">Sin plan</span>}{v.planCodigo && (!v.uso || !v.aceite) && <span className="suave"> · por confirmar</span>}</td>
                 <td className="corta">{v.nroSerie || '—'}</td>
                 <td className="corta">{v.nroVin || '—'}</td>
                 <td className="corta">{v.nroMotor || '—'}</td>
@@ -127,8 +144,11 @@ export default function Vehiculos({ nivel }: { nivel: Nivel }) {
   );
 }
 
-export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; grupos: Grupo[]; error?: string; alCancelar: () => void; alGuardar: (m: string, vehiculo?: Vehiculo) => Promise<void>; alFallar: (m: string) => void; alCrearMarca?: (m: Marca) => void }) {
+export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; grupos: Grupo[]; error?: string; inicial?: { uso?: string; aceite?: string; grupoId?: string }; alCancelar: () => void; alGuardar: (m: string, vehiculo?: Vehiculo) => Promise<void>; alFallar: (m: string) => void; alCrearMarca?: (m: Marca) => void }) {
   const v = p.vehiculo;
+  // Uso y tipo de aceite: con el combustible (del grupo) definen el plan preventivo del vehículo.
+  const [uso, setUso] = useState(v?.uso ?? p.inicial?.uso ?? '');
+  const [aceite, setAceite] = useState(v?.aceite ?? p.inicial?.aceite ?? '');
   // Alta rápida desde este modal: «+» junto al cliente abre el formulario de cliente y «+» junto a la marca pide solo el nombre.
   const [nuevoCliente, setNuevoCliente] = useState(false);
   const [paises, setPaises] = useState<Pais[]>([]);
@@ -156,7 +176,7 @@ export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; gr
   const [comentario, setComentario] = useState(v?.comentario ?? '');
   const [codigoMotor, setCodigoMotor] = useState(v?.codigoMotor ?? '');
   // Grupo: «Automático» lo asigna el sistema por la familia del motor o por marca, modelo y año (RF-100).
-  const [grupoId, setGrupoId] = useState(v?.grupoFuente === 'MANUAL' ? v.grupoId ?? '' : '');
+  const [grupoId, setGrupoId] = useState(v?.grupoFuente === 'MANUAL' ? v.grupoId ?? '' : p.inicial?.grupoId ?? '');
   const modelos = marcas.find((m) => m.nombre.toLowerCase() === marca.trim().toLowerCase())?.modelos ?? [];
 
   // Se busca al cliente por documento o nombre; se ve a quién está enlazado antes de elegirlo.
@@ -216,10 +236,16 @@ export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; gr
   async function enviar(e: FormEvent) {
     e.preventDefault();
     if (!cliente) return p.alFallar('Elige el cliente: búscalo por documento o por nombre.');
-    const datos = { clienteId: cliente.id, placa, marca, modelo, anio: anio ? Number(anio) : null, color, nroSerie: serie, nroVin: vin, nroMotor: motor, comentario, codigoMotor, grupoId };
+    const datos = { clienteId: cliente.id, placa, marca, modelo, anio: anio ? Number(anio) : null, color, nroSerie: serie, nroVin: vin, nroMotor: motor, comentario, codigoMotor, grupoId, uso: uso || null, aceite: aceite || null };
     try {
       if (v) {
-        const guardado = await api.editarVehiculo(v.id, datos);
+        let guardado;
+        try { guardado = await api.editarVehiculo(v.id, datos); }
+        catch (er) {
+          // Cambio de plan de un vehículo ya asignado: se confirma y queda como tramo nuevo de la línea de tiempo.
+          if (!/pasa de/.test((er as Error).message) || !window.confirm((er as Error).message)) throw er;
+          guardado = await api.editarVehiculo(v.id, { ...datos, confirmarCambioPlan: true });
+        }
         await p.alGuardar('Vehículo guardado.', guardado);
       } else {
         const creado = await api.crearVehiculo(datos);
@@ -284,6 +310,14 @@ export function FormVehiculo(p: { vehiculo: Vehiculo | null; marcas: Marca[]; gr
             <select id="v-grupo" value={grupoId} onChange={(e) => setGrupoId(e.target.value)}>
               <option value="">{v?.grupo && v.grupoFuente !== 'MANUAL' ? `Automático (${v.grupo})` : 'Automático'}</option>
               {p.grupos.map((g) => <option key={g.id} value={g.id}>{`${g.codigo} · ${g.nombre}`}</option>)}
+            </select></div>
+          <div className="campo"><label htmlFor="v-uso">Uso</label>
+            <select id="v-uso" value={uso} onChange={(e) => setUso(e.target.value)}>
+              <option value="">Sin definir</option><option value="Particular">Particular</option><option value="Profesional">Profesional</option>
+            </select></div>
+          <div className="campo"><label htmlFor="v-aceite">Tipo de aceite</label>
+            <select id="v-aceite" value={aceite} onChange={(e) => setAceite(e.target.value)}>
+              <option value="">Sin definir</option>{['Mineral', 'Semisintético', 'Sintético', 'Full sintético'].map((x) => <option key={x} value={x}>{x}</option>)}
             </select></div>
           <div className="campo ancha"><label htmlFor="v-com">Comentarios</label>
             <textarea id="v-com" rows={2} value={comentario} onChange={(e) => setComentario(e.target.value)} /></div>

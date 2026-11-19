@@ -16,6 +16,8 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: { correo?: string; password?: string }) {
     const correo = String(body?.correo ?? '').trim().toLowerCase();
+    // Un correo válido no pasa de 254 caracteres y la contraseña se acota: así un texto enorme no se guarda ni se procesa.
+    if (correo.length > 254 || String(body?.password ?? '').length > 200) throw new UnauthorizedException('Credenciales inválidas.');
     if (correo && this.intentos.bloqueado(correo)) throw new HttpException('Demasiados intentos fallidos. Espera 15 minutos y vuelve a intentar.', HttpStatus.TOO_MANY_REQUESTS);
     const u = correo ? await this.prisma.usuario.findUnique({ where: { correo }, include: { roles: { include: { rol: true } } } }) : null;
     // Mismo error si no existe, está desactivado o la contraseña no coincide.
@@ -35,8 +37,10 @@ export class SesionController {
 
   /** Quién soy, con qué roles y qué módulos puedo usar (alimenta el menú). */
   @Get('me')
-  me(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Req() req: { actuandoComo: boolean }) {
+  async me(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Req() req: { actuandoComo: boolean }) {
+    const org = s.organizacionId ? await this.prisma.organizacion.findUnique({ where: { id: s.organizacionId }, select: { nombre: true, logoPng: true } }) : null;
     return {
+      empresa: org ? { nombre: org.nombre, logoPng: org.logoPng } : null,
       usuario: { id: s.id, nombre: s.nombre, correo: s.correo, organizacionId: s.organizacionId },
       roles: s.roles,
       permisos: s.permisos,

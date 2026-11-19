@@ -7,11 +7,17 @@ import Empresa from '../empresa/Empresa';
 import Comprobantes from '../facturacion/Comprobantes';
 import Cotizaciones from '../facturacion/Cotizaciones';
 import Marcas from '../vehiculo/Marcas';
+import Compras from '../compras/Compras';
+import Cuentas from '../compras/Cuentas';
 import Ordenes from '../ordenServicio/Ordenes';
 import Proveedores from '../maestros/Proveedores';
 import Catalogo from '../maestros/Catalogo';
 import Grupos from '../maestros/Grupos';
 import Solapamientos from '../maestros/Solapamientos';
+import Planes from '../maestros/Planes';
+import LineaTemporal from '../vehiculo/LineaTemporal';
+import Locales from '../maestros/Locales';
+import Categorias from '../maestros/Categorias';
 
 const NIVEL: Record<string, string> = { A: 'Ver, editar y acciones sensibles', E: 'Ver y editar', V: 'Solo ver' };
 const CONSULTA_MOVIL = '(max-width: 900px)';
@@ -132,7 +138,7 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
     <div className={clase}>
       {movil && cajon && <div className="velo" onClick={() => setCajon(false)} />}
       <aside>
-        <div className="marca">R<b>MOTRIZ</b></div>
+        <div className={"marca" + (me.empresa?.logoPng ? " con-logo" : "")}>{me.empresa?.logoPng ? <img src={`data:image/png;base64,${me.empresa.logoPng}`} alt={me.empresa.nombre} /> : <>R<b>MOTRIZ</b></>}</div>
         <nav aria-label="Menú">
           {sueltos.length > 0 && <div className="grupo">{sueltos.map(enlace)}</div>}
           {grupos.map((g) => {
@@ -207,11 +213,18 @@ export default function Shell({ me, onCambio, onSalir }: { me: Me; onCambio: () 
           {mostrado?.id === 'catalogo' && <Catalogo nivel={mostrado.nivel} />}
           {mostrado?.id === 'grupos' && <Grupos nivel={mostrado.nivel} />}
           {mostrado?.id === 'solapes' && <Solapamientos nivel={mostrado.nivel} />}
+          {mostrado?.id === 'planes' && <Planes nivel={mostrado.nivel} />}
+          {mostrado?.id === 'timeline' && <LineaTemporal />}
+          {mostrado?.id === 'locales' && <Locales nivel={mostrado.nivel} />}
+          {mostrado?.id === 'categorias' && <Categorias nivel={mostrado.nivel} />}
           {mostrado?.id === 'ajustes' && <Empresa nivel={mostrado.nivel} />}
           {mostrado?.id === 'notas' && <Comprobantes nivel={mostrado.nivel} />}
           {mostrado?.id === 'marcasv' && <Marcas nivel={mostrado.nivel} />}
           {mostrado?.id === 'cotizaciones' && <Cotizaciones nivel={mostrado.nivel} />}
-          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods', 'proveedores', 'catalogo', 'grupos', 'solapes', 'ajustes', 'notas', 'cotizaciones', 'marcasv'].includes(mostrado.id) && (
+          {mostrado?.id === 'compras' && <Compras nivel={mostrado.nivel} />}
+          {mostrado?.id === 'cobrar' && <Cuentas key="cobrar" tipo="cobrar" nivel={mostrado.nivel} />}
+          {mostrado?.id === 'pagar' && <Cuentas key="pagar" tipo="pagar" nivel={mostrado.nivel} />}
+          {mostrado && !['usuarios', 'clientes', 'vehiculos', 'ods', 'proveedores', 'catalogo', 'grupos', 'solapes', 'ajustes', 'notas', 'cotizaciones', 'marcasv', 'compras', 'cobrar', 'pagar', 'planes', 'locales', 'categorias', 'timeline'].includes(mostrado.id) && (
             <div className="panel">
               <h1>{mostrado.label}</h1>
               <p className="sub">Nivel de tu rol: {NIVEL[mostrado.nivel]}.</p>

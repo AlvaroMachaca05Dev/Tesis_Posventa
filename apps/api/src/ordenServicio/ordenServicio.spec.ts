@@ -67,8 +67,8 @@ describe('crear ODS (RF-011, DEC-67, DEC-71)', () => {
     const b = await prisma.bitacora.findFirst({ where: { ordenId: r.body.id } });
     expect(b?.texto).toContain('En proceso');
   });
-  it('crear ya cerrada solo si la decisión es «No aprobada», con fecha de cierre; estados y decisiones fuera de la lista se rechazan', async () => {
-    expect((await nueva(await vehiculo(), { estado: 'Cerrada', decision: 'Pendiente de aprobación' })).status).toBe(409);
+  it('crear ya cerrada con cualquier decisión (queda sin comprobante), con fecha de cierre; estados y decisiones fuera de la lista se rechazan', async () => {
+    expect((await nueva(await vehiculo(), { estado: 'Cerrada', decision: 'Pendiente de aprobación' })).status).toBe(201);
     const c = await nueva(await vehiculo(), { estado: 'Cerrada', decision: 'No aprobada' });
     expect(c.status).toBe(201);
     expect(c.body.fechaCierre).not.toBeNull();
@@ -164,12 +164,8 @@ describe('estados, decisión y cierre (RF-016, RF-017, DEC-61, DEC-72)', () => {
     expect((await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'Entrega' })).body.estado).toBe('Entrega');
     expect((await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'Recepcion' })).body.estado).toBe('Recepcion');
   });
-  it('sin nota de venta solo se cierra una ODS «No aprobada»; al cerrar se pone la fecha de cierre y al reabrir se borra', async () => {
+  it('se cierra sin nota de venta con cualquier decisión (RN-06); al cerrar se pone la fecha de cierre y al reabrir se borra', async () => {
     const o = (await nueva(await vehiculo())).body;
-    const no = await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'Cerrada' });
-    expect(no.status).toBe(409);
-    expect(no.body.message).toMatch(/No aprobada/);
-    await como(CAJERA, 'patch', `/ordenes/${o.id}`, { decision: 'No aprobada' });
     const c = await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'Cerrada' });
     expect(c.status).toBe(200);
     expect(c.body.fechaCierre).toBeTruthy();

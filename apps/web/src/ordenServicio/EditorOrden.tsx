@@ -1,19 +1,24 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { Fragment, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertaSolape, api, CatalogoOds, CatalogosOds, Cliente, Cotizacion, DetalleOds, Grupo, Marca, Orden, Pais, Vehiculo } from '../comun/api';
 import { FormCliente } from '../cliente/Clientes';
 import { FormVehiculo } from '../vehiculo/Vehiculos';
 import EstadoVehiculoModal from './EstadoVehiculo';
 import FormAbono from './FormAbono';
 import Ingreso from './Ingreso';
-import { baseLinea, conSolape, ESTADOS, fecha, itemVacio, leerNumero, pctManual, r2, r3, r6, soles, totalLinea, totalSinSolape } from './ordenServicio.util';
+import { useConfirmar } from '../comun/Confirmar';
+import ModalGarantia from './ModalGarantia';
+import { FichaServicio, tieneFicha } from '../comun/FichaServicio';
+import { baseLinea, COBRO_REVISION_GRATIS, conSolape, ESTADOS, fecha, itemVacio, leerNumero, pctManual, r2, r3, r6, revisionGratis, soles, totalLinea, totalSinSolape } from './ordenServicio.util';
 
 /** Crear o editar la ODS en una sola pantalla: datos del comprobante, ítems, TOTAL y abonos. */
 export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds; clientes: Cliente[]; vehiculos: Vehiculo[]; puedeEditar: boolean; usuarioId?: string; alCerrar: (m?: string) => void }) {
   const [o, setO] = useState<Orden | null>(p.orden);
+  const { preguntar, modal: confirmacion } = useConfirmar();
   const [cab, setCab] = useState(() => ({
     clienteId: p.orden?.cliente.id ?? '', vehiculoId: p.orden?.vehiculo.id ?? '', tipoAtencion: p.orden?.tipoAtencion ?? p.cat.tiposAtencion[0], km: p.orden?.km != null ? String(p.orden.km) : '',
     tecnicoId: p.orden?.tecnico?.id ?? '', jefeTallerId: p.orden?.jefeTaller?.id ?? '', estado: p.orden?.estado ?? 'Recepcion', decision: p.orden?.decision ?? p.cat.decisiones[0],
     tipoAtencionDetalle: p.orden?.tipoAtencionDetalle ?? '', observaciones: p.orden?.observaciones ?? '', recomendaciones: p.orden?.recomendaciones ?? '',
+    garantiaDeId: p.orden?.garantia?.ordenId ?? '', garantiaDetalleIds: (p.orden?.garantia?.servicios.map((x) => x.id) ?? []) as string[],
   }));
   const [editarOtro, setEditarOtro] = useState(false);
   // Responsable por defecto: en servicios, el técnico de la ODS; en productos, la cajera que la registra (o la primera cajera).
@@ -65,9 +70,39 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
   const clientesTodos = useMemo(() => [...p.clientes, ...clientesExtra.filter((c) => !p.clientes.some((x) => x.id === c.id))], [p.clientes, clientesExtra]);
   const vehiculosTodos = useMemo(() => [...p.vehiculos, ...vehiculosExtra.filter((v) => !p.vehiculos.some((x) => x.id === v.id))], [p.vehiculos, vehiculosExtra]);
   const bloqueada = !p.puedeEditar || o?.estado === 'Cerrada';
+  // Garantía: los servicios van en S/ 0.00 y se puede enlazar la orden de origen con los servicios que originaron la garantía.
+  const esGarantia = cab.tipoAtencion === 'Garantía';
+  const [origenes, setOrigenes] = useState<Orden[]>([]);
+  useEffect(() => {
+    if (!esGarantia || !cab.clienteId) { setOrigenes([]); return; }
+    let vigente = true;
+    api.ordenes({ clienteId: cab.clienteId, n: '200' }).then((xs) => { if (vigente) setOrigenes(xs.filter((x) => x.id !== o?.id && x.tipoAtencion !== 'Garantía')); }).catch(() => undefined);
+    return () => { vigente = false; };
+  }, [esGarantia, cab.clienteId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (esGarantia && items.some((d) => d.precio || d.total || d.descuentoPct)) setItems((xs) => xs.map((d) => ({ ...d, precio: 0, descuentoPct: 0, descuentoMonto: 0, total: 0 })));
+  }, [esGarantia, items]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Al elegir el tipo Garantía se abre el modal para escoger la orden de origen y sus servicios; el cuadro de la cabecera permite editarlo.
+  const [verGarantia, setVerGarantia] = useState(false);
+  const eraGarantia = useRef(esGarantia);
+  useEffect(() => {
+    if (esGarantia && !eraGarantia.current && !cab.garantiaDeId && !bloqueada) setVerGarantia(true);
+    eraGarantia.current = esGarantia;
+  }, [esGarantia]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Ficha del servicio: recuadro ocultable bajo la línea con lo que incluye (sin precios) y las acciones a realizar.
+  const [fichas, setFichas] = useState<string[]>([]);
+  const fichaDe = (d: DetalleOds) => (d.tipo === 'servicio' && d.servicioId ? catalogo.servicios.find((x) => x.id === d.servicioId) : undefined);
+  const origen = origenes.find((x) => x.id === cab.garantiaDeId) ?? null;
+  const serviciosOrigen = origen ? origen.detalles.filter((d) => d.tipo === 'servicio' && d.id) : (o?.garantia && o.garantia.ordenId === cab.garantiaDeId ? o.garantia.servicios.map((x) => ({ id: x.id, descripcion: x.descripcion, total: x.total, tecnicoId: x.tecnico?.id ?? null })) : []);
+  const nombreTecnico = (id?: string | null) => p.cat.tecnicos.find((t) => t.id === id)?.nombre ?? p.cat.jefes.find((t) => t.id === id)?.nombre ?? 'Sin técnico';
+  const garantiaDe = esGarantia ? { garantiaDeId: cab.garantiaDeId || null, garantiaDetalleIds: cab.garantiaDeId ? cab.garantiaDetalleIds : [] } : {};
   const vehiculosCliente = useMemo(() => vehiculosTodos.filter((v) => !cab.clienteId || v.cliente.id === cab.clienteId), [vehiculosTodos, cab.clienteId]);
   const v = vehiculosTodos.find((x) => x.id === cab.vehiculoId) ?? (o ? { ...o.vehiculo } : null);
   const total = r2(items.reduce((a, d) => a + totalLinea(d), 0));
+  // Aprobación por ítem (opción de la empresa, desactivada por defecto): se cobra y se imprime solo lo aprobado.
+  const aprobItem = !!p.cat.empresa?.aprobacionPorItem;
+  const totalAprobado = r2(items.reduce((a, d) => a + (d.aprobado === false ? 0 : totalLinea(d)), 0));
+  const aprobar = (i: number, v: boolean) => setItems((xs) => xs.map((d, j) => (j === i ? { ...d, aprobado: v } : d)));
   const horasTotal = r2(items.reduce((a, d) => a + (d.tipo === 'servicio' ? d.horas ?? 0 : 0), 0));
   const etiquetaCat = (x: { codigo: string; nombre: string }) => `${x.codigo} · ${x.nombre}`;
   // Sin tildes ni mayúsculas, para que la búsqueda encuentre «refrigeracion» al escribir «refrigeración».
@@ -82,6 +117,21 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
     const traza = [sv.grupo ? `Precio de ${sv.grupo} ${sv.codigo}: ${sv.horas} h, S/ ${sv.precio}` : `Estándar ${sv.codigo}: ${sv.horas} h, S/ ${sv.precio}`];
     // RF-009: la Referencia toma el código del servicio al elegirlo.
     setItems((xs) => xs.map((x, j) => (j === i ? { ...x, tipo: 'servicio', descripcion: sv.nombre, referencia: sv.codigo, servicioId: sv.id, productoId: null, precio: sv.precio, precioGrupo: sv.precio, horas: sv.horas, cantidad: sv.horas, trazaPrecio: traza, descuentoPct: 0, descuentoMonto: 0, solapamientoId: null, total: totalLinea({ ...x, precio: sv.precio, descuentoPct: 0 }) } : x)));
+    // Repuestos sugeridos del servicio: se agregan como líneas de producto (la cajera las quita o elige el producto exacto, p. ej. el aceite que corresponde).
+    if (sv.repuestos?.length) {
+      setItems((xs) => {
+        const nuevas: DetalleOds[] = [];
+        for (const rep of sv.repuestos) {
+          const r = normalizar(rep);
+          if (xs.some((x) => x.tipo === 'producto' && normalizar(x.descripcion).startsWith(r))) continue;
+          const candidatos = catalogo.productos.filter((p) => normalizar(p.nombre) === r || normalizar(p.nombre).startsWith(r + ' '));
+          const pr = candidatos.length === 1 ? candidatos[0] : null;
+          const base: DetalleOds = { ...itemVacio(), tipo: 'producto', descripcion: pr ? pr.nombre : rep, referencia: pr ? pr.referencia ?? pr.codigo : null, productoId: pr?.id ?? null, precio: pr?.precio ?? 0, costo: pr?.costo ?? null, tecnicoId: cajeraDefecto };
+          nuevas.push({ ...base, total: totalLinea(base) });
+        }
+        return nuevas.length ? [...xs, ...nuevas] : xs;
+      });
+    }
     setBuscando(null);
   }
   async function alCrearCliente(_m: string, creado?: Cliente) {
@@ -176,7 +226,7 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
     if (!cab.vehiculoId) return setError('Elige el vehículo.');
     try {
       // La «decisión del cliente» se quita de la pantalla (va a cambiar a aprobación por ítem): al cerrar sin nota de venta se marca sola.
-      const n = await api.crearOrden({ vehiculoId: cab.vehiculoId, tipoAtencion: cab.tipoAtencion, tipoAtencionDetalle: cab.tipoAtencion === 'Otro' ? cab.tipoAtencionDetalle : null, km: cab.km || null, tecnicoId: cab.tecnicoId || null, jefeTallerId: cab.jefeTallerId || null, observaciones: cab.observaciones, recomendaciones: cab.recomendaciones, estado: cab.estado, decision: cab.estado === 'Cerrada' ? 'No aprobada' : cab.decision });
+      const n = await api.crearOrden({ vehiculoId: cab.vehiculoId, tipoAtencion: cab.tipoAtencion, tipoAtencionDetalle: cab.tipoAtencion === 'Otro' ? cab.tipoAtencionDetalle : null, ...garantiaDe, km: cab.km || null, tecnicoId: cab.tecnicoId || null, jefeTallerId: cab.jefeTallerId || null, observaciones: cab.observaciones, recomendaciones: cab.recomendaciones, estado: cab.estado, decision: cab.decision });
       const llenos = items.filter((d) => d.descripcion.trim());
       const r = llenos.length ? await api.guardarDetalles(n.id, llenos, mantenidos) : n;
       for (const f of fotos) await api.subirEvidencia(n.id, f);
@@ -186,9 +236,9 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
   async function guardar() {
     if (!o) return crear();
     try {
-      const cambios: Record<string, unknown> = { vehiculoId: cab.vehiculoId, tipoAtencion: cab.tipoAtencion, tipoAtencionDetalle: cab.tipoAtencion === 'Otro' ? cab.tipoAtencionDetalle : null, km: cab.km || null, tecnicoId: cab.tecnicoId || null, jefeTallerId: cab.jefeTallerId || null, decision: cab.estado === 'Cerrada' ? 'No aprobada' : cab.decision, observaciones: cab.observaciones, recomendaciones: cab.recomendaciones };
+      const cambios: Record<string, unknown> = { vehiculoId: cab.vehiculoId, tipoAtencion: cab.tipoAtencion, tipoAtencionDetalle: cab.tipoAtencion === 'Otro' ? cab.tipoAtencionDetalle : null, ...garantiaDe, km: cab.km || null, tecnicoId: cab.tecnicoId || null, jefeTallerId: cab.jefeTallerId || null, decision: cab.decision, observaciones: cab.observaciones, recomendaciones: cab.recomendaciones };
       if (cab.estado !== o.estado) {
-        if (o.estado === 'Cerrada' && !window.confirm('La ODS sale de «Cerrado»: se borrará su fecha de cierre. ¿Continuar?')) return;
+        if (o.estado === 'Cerrada' && (await preguntar({ titulo: 'La ODS sale de «Cerrado»', mensaje: 'Se borrará su fecha de cierre.', boton: 'Continuar', peligro: false })) === null) return;
         cambios.estado = cab.estado;
       }
       let r = o;
@@ -217,6 +267,11 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
 
   return (
     <div className="fondo-modal">
+      {confirmacion}
+      {verGarantia && (
+        <ModalGarantia origenes={origenes} inicial={{ ordenId: cab.garantiaDeId, ids: cab.garantiaDetalleIds }} nombreResponsable={nombreTecnico}
+          alCancelar={() => setVerGarantia(false)} alAceptar={(v) => { setCab({ ...cab, garantiaDeId: v.ordenId, garantiaDetalleIds: v.ids }); setVerGarantia(false); }} />
+      )}
       <div className="modal-ods" role="dialog" aria-modal="true" aria-label={o ? `Editar orden de servicio ${o.codigo}` : 'Nueva orden de servicio'}>
         <div className="cab-ods">
           <h2>{o ? `Orden de servicio ${o.codigo}` : 'Nueva orden de servicio'}</h2>
@@ -253,6 +308,22 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
               <div className="fila-cab">
                 <label htmlFor="o-obs" className="ancha">Observaciones<textarea id="o-obs" rows={2} value={cab.observaciones} disabled={bloqueada} onChange={(e) => setCab({ ...cab, observaciones: e.target.value })} /></label>
                 <label htmlFor="o-rec" className="ancha">Recomendaciones<textarea id="o-rec" rows={2} value={cab.recomendaciones} disabled={bloqueada} onChange={(e) => setCab({ ...cab, recomendaciones: e.target.value })} /></label>
+                {esGarantia && (() => {
+                  const elegidos = serviciosOrigen.filter((sv) => cab.garantiaDetalleIds.includes(sv.id as string));
+                  return (
+                    <div className="origen-garantia" role="group" aria-label="Origen de la garantía">
+                      <span className="origen-cab">Origen de la garantía <button type="button" className="mini" aria-label={cab.garantiaDeId ? 'Editar el origen de la garantía' : 'Elegir el origen de la garantía'} title={cab.garantiaDeId ? 'Editar' : 'Elegir'} disabled={bloqueada || !cab.clienteId} onClick={() => setVerGarantia(true)}>✎</button></span>
+                      <div className="origen-caja">
+                        {cab.garantiaDeId ? (
+                          <>
+                            <b>#{origen?.codigo ?? o?.garantia?.codigo}</b>
+                            {elegidos.map((sv) => <span key={sv.id} title={sv.descripcion}>{sv.descripcion} · {soles(sv.total)}</span>)}
+                          </>
+                        ) : <span className="suave">Sin enlazar</span>}
+                      </div>
+                    </div>
+                  );
+                })()}
                 <label htmlFor="o-pct" className="desc chica descuento-der">Desc. (%) a todos<span className="fila"><input id="o-pct" inputMode="decimal" value={pct} disabled={bloqueada} onChange={(e) => setPct(e.target.value)} /><button type="button" disabled={bloqueada} onClick={() => void aplicarDescuento()}>Aplicar</button></span></label>
               </div>
             </div>
@@ -268,34 +339,44 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
               <table>
                 <thead>
                   <tr>
-                    <th>#</th><th>Tipo</th><th>Detalle</th>{!vistaCliente && <><th>Referencia</th><th>Costo</th><th>Rent. (%)</th></>}
-                    <th>Precio unit.</th><th>Desc. (%)</th>{!vistaCliente && <th>Responsable</th>}<th>Cant./H-H</th><th>Total</th><th aria-label="Quitar" />
+                    <th>#</th><th>Tipo</th><th aria-label="Ficha" /><th>Detalle</th>{!vistaCliente && <><th>Referencia</th><th>Costo</th><th>Rent. (%)</th></>}
+                    <th>Precio unit.</th><th>Desc. (%)</th>{!vistaCliente && <th>Responsable</th>}<th>Cant./H-H</th><th>Total</th>{aprobItem && <th>Aprobado</th>}<th aria-label="Quitar" />
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((d, i) => (
-                    <tr key={d.id ?? 'n' + i}>
+                  {items.map((d, i) => { const clave = d.id ?? 'n' + i; const fi = fichaDe(d); const hayFicha = tieneFicha(fi); return (
+                    <Fragment key={clave}>
+                    <tr>
                       <td>{i + 1}</td>
                       <td><select aria-label="Tipo" className="corto" value={d.tipo} disabled={bloqueada} onChange={(e) => cambiarItem(i, 'tipo', e.target.value)}><option value="servicio">Servicio</option><option value="producto">Producto</option></select></td>
+                      <td className="celda-ficha">{hayFicha && <button type="button" className="ficha-ojo" aria-expanded={fichas.includes(clave)} aria-label={`${fichas.includes(clave) ? 'Ocultar' : 'Ver'} ficha de ${d.descripcion}`} title={fichas.includes(clave) ? 'Ocultar ficha' : 'Ver ficha'} onClick={() => setFichas((xs) => (xs.includes(clave) ? xs.filter((x) => x !== clave) : [...xs, clave]))}><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.500 5 12 5zm0 11.500A4.500 4.500 0 1 1 12 7.500a4.500 4.500 0 0 1 0 9zm0-7a2.500 2.500 0 1 0 0 5 2.500 2.500 0 0 0 0-5z" /></svg></button>}</td>
                       <td>
                         <input aria-label="Detalle" className="largo" autoComplete="off" value={d.descripcion} disabled={bloqueada}
                           onChange={(e) => { cambiarItem(i, 'descripcion', e.target.value); void elegirDelCatalogo(i, e.target.value); }}
                           onFocus={(e) => { setBuscando(i); const r = e.currentTarget.getBoundingClientRect(); setPosBuscador({ top: r.bottom, left: r.left, width: Math.max(r.width, 440) }); }}
                           onBlur={() => setTimeout(() => setBuscando((x) => (x === i ? null : x)), 180)} />
+
                       </td>
                       {!vistaCliente && <>
                         <td><input aria-label="Referencia" className="medio" value={d.referencia ?? ''} disabled={bloqueada} onChange={(e) => cambiarItem(i, 'referencia', e.target.value)} /></td>
-                        <td><input aria-label="Costo" className="num" key={'costo-' + String(d.costo ?? '')} defaultValue={d.costo ?? ''} disabled={bloqueada} onBlur={(e) => cambiarItem(i, 'costo', e.target.value)} /></td>
-                        <td><input aria-label="Rentabilidad" className="num" key={'rentabilidadPct-' + String(d.rentabilidadPct ?? '')} defaultValue={d.rentabilidadPct ?? ''} disabled={bloqueada} onBlur={(e) => cambiarItem(i, 'rentabilidadPct', e.target.value)} /></td>
+                        <td><input aria-label="Costo" className="num" key={'costo-' + String(d.costo ?? '')} defaultValue={d.costo ?? ''} disabled={bloqueada || esGarantia} onBlur={(e) => cambiarItem(i, 'costo', e.target.value)} /></td>
+                        <td><input aria-label="Rentabilidad" className="num" key={'rentabilidadPct-' + String(d.rentabilidadPct ?? '')} defaultValue={d.rentabilidadPct ?? ''} disabled={bloqueada || esGarantia} onBlur={(e) => cambiarItem(i, 'rentabilidadPct', e.target.value)} /></td>
                       </>}
-                      <td><input aria-label="Precio unitario" className="num" key={'precio-' + String(d.precio)} defaultValue={d.precio ?? ''} disabled={bloqueada} onBlur={(e) => cambiarItem(i, 'precio', e.target.value)} />{d.precioGrupo != null && d.precioGrupo !== d.precio && <span className="precio-mod" title={(d.trazaPrecio ?? []).join('\n')}>Precio modificado (grupo {soles(d.precioGrupo)})</span>}</td>
-                      <td><input aria-label="Descuento" className="num" key={'descuentoPct-' + String(d.descuentoPct)} defaultValue={d.descuentoPct ? Number(d.descuentoPct.toFixed(2)) : 0} disabled={bloqueada} onBlur={(e) => cambiarItem(i, 'descuentoPct', e.target.value)} /></td>
+                      <td><input aria-label="Precio unitario" className="num" key={'precio-' + String(d.precio)} defaultValue={d.precio ?? ''} disabled={bloqueada || esGarantia} onBlur={(e) => cambiarItem(i, 'precio', e.target.value)} />{d.precioGrupo != null && d.precioGrupo !== d.precio && <span className="precio-mod" title={(d.trazaPrecio ?? []).join('\n')}>Precio modificado (grupo {soles(d.precioGrupo)})</span>}</td>
+                      <td><input aria-label="Descuento" className="num" key={'descuentoPct-' + String(d.descuentoPct)} defaultValue={d.descuentoPct ? Number(d.descuentoPct.toFixed(2)) : 0} disabled={bloqueada || esGarantia} onBlur={(e) => cambiarItem(i, 'descuentoPct', e.target.value)} /></td>
                       {!vistaCliente && <td><select aria-label="Responsable" className="resp" value={d.tecnicoId ?? ''} disabled={bloqueada} onChange={(e) => cambiarItem(i, 'tecnicoId', e.target.value)}>{responsables(d.tipo).map(([id, n]) => <option key={id} value={id}>{n}</option>)}</select></td>}
                       <td><input aria-label="Cantidad" className="num" key={'cantidad-' + String(d.cantidad)} defaultValue={d.cantidad ?? ''} disabled={bloqueada} onBlur={(e) => cambiarItem(i, 'cantidad', e.target.value)} /></td>
                       <td><input aria-label="Total" className="num" key={'total-' + String(d.total)} defaultValue={d.total ?? ''} disabled={bloqueada} onBlur={(e) => cambiarItem(i, 'total', e.target.value)} /></td>
+                      {aprobItem && <td className="celda-aprob"><input type="checkbox" aria-label={`Aprobado: ${d.descripcion || 'ítem ' + (i + 1)}`} checked={d.aprobado !== false} disabled={bloqueada} onChange={(e) => aprobar(i, e.target.checked)} /></td>}
                       <td>{!bloqueada && <button type="button" className="quitar" aria-label="Quitar ítem" onClick={() => setItems((xs) => xs.filter((_, j) => j !== i))}>🗑</button>}</td>
                     </tr>
-                  ))}
+                    {hayFicha && fichas.includes(clave) && fi && (
+                      <tr className="fila-ficha"><td colSpan={aprobItem ? 14 : 13}>
+                        <FichaServicio fi={fi} nombre={d.descripcion} />
+                      </td></tr>
+                    )}
+                    </Fragment>
+                  ); })}
                 </tbody>
               </table>
             </div>
@@ -306,6 +387,9 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
                   return (
                     <div key={a.clave} className="linea">
                       <span>{a.alerta}</span>
+                      {a.modo === 'AVISO' && a.indiceReducido >= 0 && !bloqueada && items[a.indiceReducido]?.referencia === 'SV002' && items[a.indiceReducido].total > COBRO_REVISION_GRATIS && (
+                        <button type="button" onClick={() => setItems((xs) => revisionGratis(xs, a.indiceReducido))}>Revisión gratis (cobrar {soles(COBRO_REVISION_GRATIS)})</button>
+                      )}
                       {a.modo === 'OPCIONAL' && a.indiceReducido >= 0 && !bloqueada && (
                         aplicado ? <button type="button" onClick={() => mantenerSolape(a)}>Quitar descuento</button>
                           : mantenidos.includes(a.clave) ? <span className="fila"><span className="pill">Montos mantenidos</span><button type="button" onClick={() => aplicarSolape(a)}>Aplicar {soles(a.monto)}</button></span>
@@ -339,10 +423,13 @@ export default function EditorOrden(p: { orden: Orden | null; cat: CatalogosOds;
               </div>
             )}
             {!bloqueada && <button type="button" className="agregar" onClick={() => setItems((xs) => [...xs, nuevoItem('servicio')])}>+ Agregar ítem</button>}
+            {!bloqueada && aprobItem && items.length > 1 && <button type="button" className="agregar" onClick={() => setItems((xs) => xs.map((d) => ({ ...d, aprobado: true })))}>✓ Aprobar todo</button>}
             <div className="pie-ods">
               <Ingreso orden={ob} bloqueada={bloqueada} pendientes={fotos} alPendientes={setFotos} puedeEditar={p.puedeEditar} alCambiar={setO} alFallar={(x) => setError((x as Error).message)} abrirEstado={() => setVerEstado(true)} />
               <section className="abonos">
-                <div className="total-ods"><span>TOTAL</span><b>{soles(total)}</b></div>
+                {aprobItem
+                  ? <div className="total-ods dos"><div><span>Total de la orden</span><b>{soles(total)}</b></div><div><span>Total aprobado</span><b>{soles(totalAprobado)}</b></div></div>
+                  : <div className="total-ods"><span>TOTAL</span><b>{soles(total)}</b></div>}
                 {horasTotal > 0 && <div className="suma"><span>Horas de servicio</span><span>{horasTotal} h</span></div>}
                 <div className="fila entre">
                   <h3>Abonos / pagos</h3>

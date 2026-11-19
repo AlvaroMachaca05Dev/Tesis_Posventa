@@ -1,6 +1,6 @@
 @startuml
 !include _estilo.iuml
-title Clases de planes preventivos, línea de tiempo y reajuste
+title Clases de planes preventivos, ficha del servicio, línea de tiempo y reajuste
 left to right direction
 enum EstadoProyeccion <<enumeration>> {
   PROXIMA
@@ -8,72 +8,92 @@ enum EstadoProyeccion <<enumeration>> {
   REALIZADA
   DESCARTADA
 }
-enum Decision <<enumeration>> {
-  ACEPTADA
-  POSTERGADA
-  RECHAZADA
-}
-class Plan {
+class PlanPreventivo {
+  -codigo: String {unique}
   -nombre: String
-  -vigente: Boolean = true
-  +versionar(): VersionPlan
-  +sugerirA(in grupo: GrupoVehicular): Vehiculo [0..*]
+  -combustible: String
+  -uso: String
+  -aceite: String = "M"
+  -ciclo: Visita [1..*] {ordered}
+  -activo: Boolean = true
+  +duplicar(): PlanPreventivo
+  +sugerirA(in v: Vehiculo): Boolean
 }
-class VersionPlan {
-  -numero: Integer {readOnly}
-  -fecha: DateTime {readOnly}
+class Visita <<datatype>> {
+  -orden: Integer
+  -paquete: String
+  -kmIntervalo: Integer
+  -conAfinamiento: Boolean = false
 }
-class Regla {
-  -kmIntervalo: Integer [0..1]
-  -mesesIntervalo: Integer [0..1]
-  +aplicable(in v: Vehiculo): Boolean
+class Servicio {
+  -codigo: String {unique}
+  -nombre: String
+  -etiqueta: String [0..1]
+  -lineaPlan: String [0..1]
+  -visita: String [0..1]
+  -subservicios: Subservicio [0..*]
+  -pasos: String [0..*]
+  /-horas: Decimal
 }
-class Asignacion {
-  -fechaInicio: DateTime
-  -estado: String
-  +proyectar(in kmActual: Integer): Proyeccion [0..*]
+class Subservicio <<datatype>> {
+  -nombre: String
+  -horas: Decimal
 }
-class Proyeccion {
-  -kmEstimado: Integer
-  -fechaEstimada: DateTime
-  -estado: EstadoProyeccion = PROXIMA
-  -origen: String
+class Vehiculo {
+  -codigoMotor: String [0..1]
+  -uso: String [0..1]
+  -aceite: String [0..1]
+  +asignarPlan(in p: PlanPreventivo): void
+  +cambiarUsoOAceite(in uso: String, in aceite: String): CambioPlanVehiculo
 }
-class Recomendacion {
-  -fundamento: String
-  -decision: Decision [0..1]
-  +decidir(in d: Decision, in motivo: String): void
+class CambioPlanVehiculo {
+  -antes: String
+  -despues: String
+  -corte: String
+  -km: Integer [0..1]
+  -usuario: String
+  -creadoEn: DateTime {readOnly}
 }
-class ServicioConfirmado {
-  -fecha: DateTime
-  -km: Integer
+class LineaTemporal <<utility>> {
+  {static} +generar(in v: Vehiculo, in lecturas: LecturaKm [0..*]): Tramo [1..*]
+  {static} +estado(in visita: Visita, in km: Integer): String
 }
-class Reajuste {
-  -motivo: String
-  -fecha: DateTime {readOnly}
-  +reajustarFuturo(in v: Vehiculo, in s: ServicioConfirmado): Proyeccion [0..*]
+class Tramo <<datatype>> {
+  -plan: String
+  -desde: String
+  -visitas: Visita [0..*]
 }
 class GrupoVehicular
-class Servicio
-class Vehiculo
 class LecturaKm
 class OrdenServicio
 class Usuario
-Plan "1" *-- "1..*" VersionPlan
-VersionPlan "1" *-- "1..*" Regla
-Regla "0..*" --> "1" Servicio
-Plan "0..*" --> "1" GrupoVehicular : aplica a
-Vehiculo "1" o-- "0..*" Asignacion
-Asignacion "0..*" --> "1" VersionPlan
-Asignacion "1" *-- "0..*" Proyeccion
-Proyeccion "0..*" --> "1" Servicio
-Proyeccion "1" o-- "0..*" Recomendacion
+class Proyeccion <<pendiente>> {
+  -kmEstimado: Integer
+  -fechaEstimada: DateTime
+  -estado: EstadoProyeccion = PROXIMA
+}
+class Reajuste <<pendiente>> {
+  -motivo: String
+  -fecha: DateTime {readOnly}
+  +reajustarFuturo(in v: Vehiculo, in o: OrdenServicio): Proyeccion [0..*]
+}
+PlanPreventivo "1" *-- "1..*" Visita
+Visita "0..*" --> "1" Servicio : paquete de la visita
+Servicio "1" *-- "0..*" Subservicio
+PlanPreventivo "0..1" o-- "0..*" Vehiculo : asignado
+PlanPreventivo ..> GrupoVehicular : sugiere por grupo
+Vehiculo "0..*" --> "0..1" GrupoVehicular
 Vehiculo "1" *-- "0..*" LecturaKm
-ServicioConfirmado "0..*" --> "1" OrdenServicio : origen
-Reajuste "0..*" --> "1" ServicioConfirmado : motivado por
+Vehiculo "1" *-- "0..*" CambioPlanVehiculo : parte la línea
+CambioPlanVehiculo "0..*" --> "1" Usuario : quién lo hizo
+LineaTemporal ..> Tramo : <<create>>
+LineaTemporal ..> CambioPlanVehiculo : <<call>>
+Tramo "1" o-- "0..*" Visita
+Vehiculo "1" *-- "0..*" Proyeccion
+Reajuste "0..*" --> "1" OrdenServicio : motivado por
 Reajuste "0..*" --> "1" Usuario : responsable
 Reajuste ..> Proyeccion : <<create>>
 Proyeccion ..> EstadoProyeccion
-Recomendacion ..> Decision
-note right of Reajuste : Solo crea proyecciones futuras.\nEl historial realizado\nnunca se modifica.
+note right of Reajuste : Pendiente: las reglas de reinicio\npor servicio y el reajuste de\nlas proyecciones futuras. El\nhistorial realizado nunca se modifica.
+note bottom of PlanPreventivo : Ocho planes por código: gasolina o diésel,\nparticular o profesional, aceite mineral (M)\no sintético (S): GP-M, GP-S, GR-M, GR-S,\nDP-M, DP-S, DR-M y DR-S (DEC-119).
 @enduml

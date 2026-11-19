@@ -4,7 +4,8 @@ import TablaMaestro from '../comun/TablaMaestro';
 import { TIPO_CORTO } from '../comun/documento';
 import VistaPreviaPdf from '../ordenServicio/VistaPreviaPdf';
 import { soles } from '../ordenServicio/ordenServicio.util';
-import FormNota from './FormNota';
+import FormNota, { mensajeEliminarComprobante } from './FormNota';
+import { useConfirmar } from '../comun/Confirmar';
 import FormVenta from './FormVenta';
 import { generarPdfNota } from './pdfNota';
 
@@ -17,10 +18,13 @@ export default function Comprobantes({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
   const [cat, setCat] = useState<CatalogosOds | null>(null);
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
-  const [nueva, setNueva] = useState(false);
+  // nueva: comprobante en blanco o copia de otro (duplicar).
+  const [nueva, setNueva] = useState<{ copia?: NotaVenta } | null>(null);
   const [orden, setOrden] = useState<Orden | null>(null);
   const [vista, setVista] = useState<{ titulo: string; url: string } | null>(null);
-  const cargar = useCallback(async () => setFilas(await api.notasVenta()), []);
+  // Los comprobantes eliminados no se muestran (quedan en la base para la auditoría y el stock).
+  const cargar = useCallback(async () => setFilas((await api.notasVenta()).filter((x) => x.estado === 'EMITIDA')), []);
+  const { preguntar, modal: confirmacion } = useConfirmar();
   useEffect(() => { Promise.all([cargar(), api.catalogosOds().then(setCat)]).catch((e) => setError((e as Error).message)); }, [cargar]);
 
   const cerrarVista = () => { if (vista) URL.revokeObjectURL(vista.url); setVista(null); };
@@ -34,9 +38,9 @@ export default function Comprobantes({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
     } catch (x) { setError((x as Error).message); }
   }
   async function anular(n: NotaVenta) {
-    const motivo = window.prompt(`¿Por qué anulas la nota de venta ${n.codigo}? El número no se volverá a usar.`);
-    if (!motivo) return;
-    try { await api.anularNotaVenta(n.id, motivo); setError(''); setMensaje(`Nota de venta ${n.codigo} anulada.`); await cargar(); } catch (x) { setError((x as Error).message); }
+    const motivo = await preguntar({ titulo: `¿Eliminar la nota de venta ${n.codigo}?`, motivo: 'obligatorio', mensaje: mensajeEliminarComprobante(n.pagado) });
+    if (motivo === null) return;
+    try { await api.anularNotaVenta(n.id, motivo); setError(''); setMensaje(`Nota de venta ${n.codigo} eliminada.`); await cargar(); } catch (x) { setError((x as Error).message); }
   }
   async function ver(n: NotaVenta) {
     try { if (n.orden) setOrden(await api.orden(n.orden.id)); } catch (x) { setError((x as Error).message); }
@@ -46,8 +50,9 @@ export default function Comprobantes({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
     <>
       {error && <p className="error" role="alert">{error}</p>}
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
+      {confirmacion}
       {vista && <VistaPreviaPdf titulo={vista.titulo} url={vista.url} alCerrar={cerrarVista} />}
-      {nueva && cat && <FormVenta cat={cat} alCerrar={() => setNueva(false)} alHecho={async (m) => { setNueva(false); setMensaje(m); await cargar(); }} />}
+      {nueva && cat && <FormVenta cat={cat} notaInicial={nueva.copia} alCerrar={() => setNueva(null)} alHecho={async (m) => { setNueva(null); setMensaje(m); await cargar(); }} />}
       {orden && cat && (
         <FormNota orden={orden} cat={cat} puedeAnular={nivel === 'A'}
           alImprimir={(f) => { const n = filas.find((x) => x.orden?.id === orden.id && x.estado === 'EMITIDA'); setOrden(null); if (n) void imprimir(n, f); }}
@@ -59,7 +64,7 @@ export default function Comprobantes({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
         uno="comprobante"
         filas={filas}
         puedeEditar={nivel !== 'V'}
-        alNuevo={() => setNueva(true)}
+        alNuevo={() => setNueva({})}
         alCambiar={cargar}
         guardar={async () => undefined}
         columnas={[
@@ -75,14 +80,14 @@ export default function Comprobantes({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
           { titulo: 'Total', texto: (x) => soles(x.total) },
           { titulo: 'Condición', texto: (x) => (x.condicion === 'CREDITO' ? 'Crédito' : 'Contado') },
           { titulo: 'Usuario', texto: (x) => x.emitidaPor, ancho: 18 },
-          { titulo: 'Anulado', texto: (x) => (x.estado === 'ANULADA' ? 'Sí' : 'No'), celda: (x) => <span className={'pill ' + (x.estado === 'ANULADA' ? 'rojo' : 'verde')}>{x.estado === 'ANULADA' ? 'Sí' : 'No'}</span> },
         ]}
         acciones={(x) => (
           <>
-            {x.estado === 'EMITIDA' && x.orden && <button type="button" onClick={() => void ver(x)}>Ver</button>}
+            {x.orden && <button type="button" onClick={() => void ver(x)}>Ver</button>}
             <button type="button" onClick={() => void imprimir(x, 'Ticket')}>Ticket</button>
             <button type="button" onClick={() => void imprimir(x, 'PDF')}>PDF</button>
-            {nivel === 'A' && x.estado === 'EMITIDA' && <button type="button" className="peligro" onClick={() => void anular(x)}>Anular</button>}
+            {nivel !== 'V' && <button type="button" onClick={() => setNueva({ copia: x })}>Duplicar</button>}
+            {nivel === 'A' && <button type="button" className="peligro" onClick={() => void anular(x)}>Eliminar</button>}
           </>
         )}
       />

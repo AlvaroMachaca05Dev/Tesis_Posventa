@@ -5,6 +5,7 @@ import { FilaFiltros, useFiltros } from '../comun/FiltrosColumna';
 import { dejarFiltro } from '../comun/filtroPendiente';
 import { useColumnasRedimensionables } from '../comun/useColumnasRedimensionables';
 import { MenuAcciones } from '../comun/TablaMaestro';
+import { useConfirmar } from '../comun/Confirmar';
 import { Paginacion, usePaginacion } from '../comun/Paginacion';
 
 type Nivel = 'A' | 'E' | 'V';
@@ -21,6 +22,7 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
   const [verEliminados, setVerEliminados] = useState(false);
+  const { preguntar, modal: confirmacion } = useConfirmar();
 
   const cargar = useCallback(async (texto: string) => {
     setClientes(await api.clientes(texto));
@@ -51,11 +53,11 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
   );
 
   async function cambiarEstado(c: Cliente) {
-    if (c.activo && !window.confirm(`¿Eliminar a ${c.nombre} de la lista activa? Sus vehículos y su historial se conservan y puedes restaurarlo.`)) return;
+    if (c.activo && (await preguntar({ titulo: `¿Eliminar a ${c.nombre}?`, mensaje: 'Si tiene vehículos, órdenes o comprobantes no se borra: sale de la lista activa y se puede restaurar.' })) === null) return;
     try {
-      await api.editarCliente(c.id, { activo: !c.activo });
+      const r = c.activo ? await api.eliminarCliente(c.id) : (await api.editarCliente(c.id, { activo: true }), null);
       setError('');
-      setMensaje(c.activo ? 'Cliente eliminado de la lista activa.' : 'Cliente restaurado.');
+      setMensaje(!r ? 'Cliente restaurado.' : r.eliminado ? 'Cliente eliminado.' : 'Tenía historial: el cliente salió de la lista activa.');
       await cargar('');
     } catch (err) {
       setMensaje('');
@@ -66,6 +68,7 @@ export default function Clientes({ nivel }: { nivel: Nivel }) {
   return (
     <div className="panel ancho">
       <h1>Clientes</h1>
+      {confirmacion}
       <div className="fila entre">
         <label className="check"><input type="checkbox" checked={verEliminados} onChange={(e) => setVerEliminados(e.target.checked)} /> Mostrar eliminados</label>
         {puedeEditar && <button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Nuevo</button>}

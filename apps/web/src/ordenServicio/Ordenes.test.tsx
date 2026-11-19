@@ -146,13 +146,13 @@ it('Editar: el ojo oculta costo, rentabilidad y referencia (vista del cliente)',
   expect(within(d).queryByDisplayValue('AMO-102')).toBeNull();
 });
 
-it('Estado: cerrar sin nota de venta muestra el aviso del servidor', async () => {
+it('Estado: si la orden no cuadra con su comprobante, muestra el aviso del servidor y no cierra', async () => {
   simular();
-  respuestas['PATCH /ordenes/o1'] = { status: 409, cuerpo: { message: 'Para cerrar sin nota de venta, la decisión del cliente debe ser «No aprobada».' } };
+  respuestas['PATCH /ordenes/o1'] = { status: 409, cuerpo: { message: 'La orden no cuadra con el comprobante NV01-000002: el total de la orden es S/ 100.00 y el del comprobante S/ 120.00. Corrige uno de los dos antes de cerrar.' } };
   render(<App />);
   await userEvent.click(within((await screen.findByText('#2026102800001')).closest('article')!).getByRole('button', { name: 'Estado de la orden' }));
   await userEvent.click(await screen.findByRole('menuitem', { name: 'Cerrado' }));
-  expect(await screen.findByRole('alert')).toHaveTextContent('No aprobada');
+  expect(await screen.findByRole('alert')).toHaveTextContent('no cuadra con el comprobante NV01-000002');
 });
 
 it('Nueva orden: pide cliente, vehículo y tipo de atención y la crea', async () => {
@@ -407,4 +407,35 @@ it('Orden con nota: «Facturar» la muestra bloqueada, con PDF, Ticket y Anular 
   const vista = await screen.findByRole('dialog', { name: 'Nota de venta NV01-000007' });
   expect(within(vista).getByTitle('Vista previa: Nota de venta NV01-000007')).toHaveAttribute('src', 'blob:nota');
   expect(creados[0].type).toBe('application/pdf');
+});
+
+it('Garantía: al elegir el tipo se abre un modal con la orden de origen y su detalle; se eligen servicios, se ve el cuadro en la cabecera y se envía el enlace con los montos en cero', async () => {
+  simular();
+  const origen = { ...orden, id: 'o9', codigo: '2026101000009', tipoAtencion: 'Mantenimiento correctivo', estado: 'Cerrada', detalles: [{ ...orden.detalles[0], id: 'sv1', tipo: 'servicio', descripcion: 'Cambio de embrague', referencia: 'EMB-1', precio: 300, total: 300, tecnicoId: null }, { ...orden.detalles[0], id: 'pr1', tipo: 'producto', descripcion: 'Aceite' }], total: 312 };
+  respuestas['GET /ordenes'] = { cuerpo: [orden, origen] };
+  respuestas['PATCH /ordenes/o1'] = { cuerpo: { ...orden, tipoAtencion: 'Garantía' } };
+  render(<App />);
+  await userEvent.click(within((await screen.findByText('#2026102800001')).closest('article')!).getByRole('button', { name: 'Editar' }));
+  const d = await screen.findByRole('dialog', { name: /Editar orden/ });
+  expect(screen.queryByRole('dialog', { name: 'Orden de origen de la garantía' })).toBeNull();
+  await userEvent.selectOptions(within(d).getByLabelText('Tipo de atención'), 'Garantía');
+  const m = await screen.findByRole('dialog', { name: 'Orden de origen de la garantía' });
+  await waitFor(() => expect(within(m).getByRole('option', { name: /2026101000009/ })).toBeInTheDocument());
+  expect(within(m).getByRole('button', { name: 'Aceptar' })).toBeDisabled();
+  await userEvent.selectOptions(within(m).getByLabelText('Orden de servicio'), 'o9');
+  const detalle = within(m).getByRole('group', { name: 'Detalle de la orden de origen' });
+  expect(within(detalle).getByText('EMB-1')).toBeInTheDocument();
+  expect(within(detalle).getByText('Aceite')).toBeInTheDocument();
+  expect(within(detalle).queryByLabelText('Elegir Aceite')).toBeNull();
+  await userEvent.click(within(detalle).getByLabelText('Elegir Cambio de embrague'));
+  await userEvent.click(within(m).getByRole('button', { name: 'Aceptar' }));
+  const cuadro = within(d).getByRole('group', { name: 'Origen de la garantía' });
+  expect(within(cuadro).getByText(/2026101000009/)).toBeInTheDocument();
+  expect(within(cuadro).getByText(/Cambio de embrague/)).toBeInTheDocument();
+  expect(within(cuadro).getByRole('button', { name: 'Editar el origen de la garantía' })).toBeInTheDocument();
+  await waitFor(() => expect(within(d).getByLabelText('Precio unitario')).toBeDisabled());
+  expect(within(d).getByLabelText('Precio unitario')).toHaveValue('0');
+  await userEvent.click(within(d).getByRole('button', { name: /Guardar/ }));
+  await waitFor(() => expect(llamadas.some((l) => l.metodo === 'PATCH' && l.ruta === '/ordenes/o1')).toBe(true));
+  expect(llamadas.find((l) => l.metodo === 'PATCH' && l.ruta === '/ordenes/o1')!.cuerpo).toMatchObject({ tipoAtencion: 'Garantía', garantiaDeId: 'o9', garantiaDetalleIds: ['sv1'] });
 });

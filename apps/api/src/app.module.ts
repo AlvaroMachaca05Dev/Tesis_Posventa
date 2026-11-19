@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { cabecerasSeguridad } from './comun/seguridad';
+import { cabecerasSeguridad, rechazarControl } from './comun/seguridad';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { AutenticacionGuard, PermisosGuard } from './comun/guardias';
@@ -15,6 +15,9 @@ import { MaestrosController } from './maestros/maestros.controller';
 import { EmpresaController } from './empresa/empresa.controller';
 import { NotaVentaController } from './facturacion/notaVenta.controller';
 import { CotizacionController } from './facturacion/cotizacion.controller';
+import { CompraController } from './compras/compra.controller';
+import { CuentasController } from './compras/cuentas.controller';
+import { PlanController } from './plan/plan.controller';
 
 @Module({
   imports: [
@@ -27,7 +30,7 @@ import { CotizacionController } from './facturacion/cotizacion.controller';
       },
     }),
   ],
-  controllers: [AuthController, SesionController, UsuariosController, ClienteController, ConsultaDocumentoController, VehiculoController, ConsultaVehicularController, OrdenesController, MaestrosController, EmpresaController, NotaVentaController, CotizacionController],
+  controllers: [AuthController, SesionController, UsuariosController, ClienteController, ConsultaDocumentoController, VehiculoController, ConsultaVehicularController, OrdenesController, MaestrosController, EmpresaController, NotaVentaController, CotizacionController, CuentasController, CompraController, PlanController],
   providers: [
     PrismaService,
     { provide: APP_GUARD, useClass: AutenticacionGuard },
@@ -36,6 +39,6 @@ import { CotizacionController } from './facturacion/cotizacion.controller';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(cabecerasSeguridad).forRoutes('*');
+    consumer.apply(cabecerasSeguridad, rechazarControl).forRoutes('*');
   }
 }

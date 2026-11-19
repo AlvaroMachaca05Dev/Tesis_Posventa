@@ -1,8 +1,8 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
 import { PrismaService } from '../comun/prisma.service';
-import { choqueUnico, empresaDe, texto } from '../comun/validacion';
+import { choqueUnico, eliminarRegistro, empresaDe, texto } from '../comun/validacion';
 import { datosTercero, revisarMovil } from '../comun/tercero';
 import { PAISES } from './paises';
 import { normalizarPlaca } from '../vehiculo/vehiculo.reglas';
@@ -125,5 +125,18 @@ export class ClienteController {
     } catch (e) {
       return choqueUnico(e, 'Ese documento ya existe en el sistema.');
     }
+  }
+
+  /** Sin vehículos, órdenes ni comprobantes se borra; con historial sale de la lista activa y se puede restaurar. */
+  @Delete('clientes/:id')
+  @Requiere('clientes', 'E')
+  async eliminarCliente(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const organizacionId = empresaDe(s);
+    const c = await this.prisma.cliente.findFirst({ where: { id, organizacionId } });
+    if (!c) throw new NotFoundException('Cliente no encontrado.');
+    if (c.esGenerico) throw new BadRequestException('«Clientes varios» no se puede eliminar.');
+    const r = await eliminarRegistro(() => this.prisma.cliente.delete({ where: { id } }), () => this.prisma.cliente.update({ where: { id }, data: { activo: false } }), 'El cliente tiene historial.');
+    await auditar(this.prisma, real, s, 'cliente', id, resumenCliente(c), null, r.eliminado ? 'Cliente eliminado' : 'Cliente dado de baja (tenía historial)');
+    return r;
   }
 }

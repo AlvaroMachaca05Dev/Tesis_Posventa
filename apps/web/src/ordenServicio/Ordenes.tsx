@@ -10,6 +10,7 @@ import FormVenta from '../facturacion/FormVenta';
 import { generarPdfNota } from '../facturacion/pdfNota';
 import { FormatoPdf, generarPdf, TITULO_VISTA } from './pdfOrden';
 import { Paginacion, usePaginacion } from '../comun/Paginacion';
+import { useConfirmar } from '../comun/Confirmar';
 import { ESTADOS, fecha, hace, Nivel, soles } from './ordenServicio.util';
 
 export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = false, usuarioId }: { nivel: Nivel; superadmin?: boolean; puedeAutorizar?: boolean; usuarioId?: string }) {
@@ -54,10 +55,11 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
   const { visibles: ordenesVisibles, pagina, setPagina, tam, setTam, total, totalPaginas, inicio, fin } = usePaginacion(ordenes);
   const ok = async (m: string) => { setError(''); setMensaje(m); setMenu(null); await cargar(); };
   const falla = (e: unknown) => { setMensaje(''); setError((e as Error).message); };
+  const { preguntar, modal: confirmacion } = useConfirmar();
 
   // RF-018: autorizar aplica la reapertura o la corrección; rechazar pide el motivo.
   async function resolver(o: Orden, solicitudId: string, aprobar: boolean) {
-    const respuesta = aprobar ? '' : window.prompt(`¿Por qué rechazas la solicitud de la ODS ${o.codigo}?`);
+    const respuesta = aprobar ? '' : await preguntar({ titulo: `¿Rechazar la solicitud de la ODS ${o.codigo}?`, motivo: 'obligatorio', boton: 'Rechazar' });
     if (respuesta === null) return;
     try { await api.resolverSolicitudOds(o.id, solicitudId, { aprobar, respuesta }); await ok(`ODS ${o.codigo}: solicitud ${aprobar ? 'autorizada' : 'rechazada'}.`); } catch (x) { falla(x); }
   }
@@ -65,7 +67,11 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
     try { await api.editarOrden(o.id, { estado: e }); await ok(`ODS ${o.codigo}: estado cambiado.`); } catch (x) { setMenu(null); falla(x); }
   }
   async function eliminar(o: Orden) {
-    const motivo = window.prompt(`¿Por qué eliminas la ODS ${o.codigo}? El número no se volverá a usar.`);
+    if (o.conComprobante) return falla(new Error(`La ODS ${o.codigo} tiene un comprobante vigente: elimínalo primero en «Emitir comprobante».`));
+    const motivo = await preguntar({
+      titulo: `¿Eliminar la ODS ${o.codigo}?`, motivo: 'obligatorio',
+      mensaje: <><p>La orden sale de la lista y su número no se vuelve a usar.</p>{o.totalAbonos > 0 && <p>Sus adelantos ({soles(o.totalAbonos)}) no se borran: quedan registrados como ingreso.</p>}</>,
+    });
     if (motivo === null) return;
     try { await api.eliminarOrden(o.id, motivo); await ok(`ODS ${o.codigo} eliminada.`); } catch (x) { falla(x); }
   }
@@ -113,16 +119,16 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
       </form>
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !abierta && <p className="error" role="alert">{error}</p>}
+      {confirmacion}
       {ordenesVisibles.map((o) => (
         <article key={o.id} className="tarjeta-ods">
           <div className="info">
             <div><b>Consecutivo:</b> <span>{'#' + o.codigo}</span> <button type="button" className={'etq' + (o.conComprobante ? ' si' : '')} onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'comprobantes' ? null : { id: o.id, tipo: 'comprobantes' })}>{o.conComprobante ? 'Con comprobante' : 'Sin comprobante'}</button></div>
             {menu?.id === o.id && menu.tipo === 'comprobantes' && <div className="sub">{o.comprobantes.length ? o.comprobantes.join(', ') : 'Esta ODS todavía no tiene comprobantes.'}</div>}
             <div><b>Fecha de inicio:</b> {fecha(o.fechaInicio)} · <b>Fecha de cierre:</b> {fecha(o.fechaCierre)}</div>
-            <div><b>Cliente:</b> {o.cliente.nombre} ({o.cliente.documento}) · <b>Vehículo:</b> {[o.vehiculo.marca && `Marca: ${o.vehiculo.marca}`, o.vehiculo.modelo && `Modelo: ${o.vehiculo.modelo}`, o.vehiculo.anio && `Año: ${o.vehiculo.anio}`, `Placa: ${o.vehiculo.placa}`, o.vehiculo.nroVin && `VIN: ${o.vehiculo.nroVin}`, o.km != null && `Kilometraje: ${o.km}`].filter(Boolean).join(', ')}</div>
-            <div><b>Tipo de atención:</b> {o.tipoAtencion === 'Otro' && o.tipoAtencionDetalle ? o.tipoAtencionDetalle : o.tipoAtencion} · <b>Técnico:</b> {o.tecnico?.nombre ?? 'Sin asignar'}</div>
+            <div><b>Cliente:</b> {o.cliente.nombre} ({o.cliente.documento}) · <b>Vehículo:</b> {[o.vehiculo.marca && `Marca: ${o.vehiculo.marca}`, o.vehiculo.modelo && `Modelo: ${o.vehiculo.modelo}`, o.vehiculo.anio && `Año: ${o.vehiculo.anio}`, `Placa: ${o.vehiculo.placa}`, o.km != null && `Kilometraje: ${o.km}`].filter(Boolean).join(', ')}</div>
+            <div><b>Tipo de atención:</b> {o.tipoAtencion === 'Otro' && o.tipoAtencionDetalle ? o.tipoAtencionDetalle : o.tipoAtencion} · <b>Técnico:</b> {o.tecnico?.nombre ?? 'Sin asignar'} · <b>Usuario:</b> {o.creadoPor?.nombre ?? '—'} · <b>Total:</b> {soles(o.total)}</div>
             {o.observaciones && <div><b>Comentarios:</b> {o.observaciones}</div>}
-            <div><b>Usuario:</b> {o.creadoPor?.nombre ?? '—'} · <b>Total:</b> {soles(o.total)}</div>
             {(() => {
               // RF-018: la solicitud pendiente de la ODS cerrada, con Autorizar y Rechazar para quien puede resolverla.
               const q = o.solicitudes?.find((x) => x.estado === 'PENDIENTE');
@@ -142,7 +148,7 @@ export default function Ordenes({ nivel, superadmin = false, puedeAutorizar = fa
             {o.ultimaBitacora && <div className="suave">💬 {o.ultimaBitacora.actor}: {o.ultimaBitacora.texto} ({hace(o.ultimaBitacora.fecha)})</div>}
           </div>
           <div className="acciones-ods">
-            <button type="button" className="ac" aria-label="Facturar" title={o.notaVenta ? `Nota de venta ${o.notaVenta.codigo}` : 'Emitir comprobante'} disabled={!o.notaVenta && (!puedeEditar || o.estado === 'Cerrada')} onClick={() => { setMenu(null); setNota(o); }}>$</button>
+            <button type="button" className="ac" aria-label="Facturar" title={o.notaVenta ? `Nota de venta ${o.notaVenta.codigo}` : 'Emitir comprobante'} disabled={!o.notaVenta && (!puedeEditar || o.estado === 'Cerrada' || o.tipoAtencion === 'Garantía')} onClick={() => { setMenu(null); setNota(o); }}>$</button>
             <button type="button" className="ac" aria-label="Editar" title="Editar" onClick={() => setAbierta(o)}>✎</button>
             <span className="rel">
               <button type="button" className="ac" aria-label="Fechas de inicio y cierre" title="Fechas de inicio y cierre" disabled={!superadmin} onClick={() => setMenu(menu?.id === o.id && menu.tipo === 'fechas' ? null : { id: o.id, tipo: 'fechas' })}>📅</button>

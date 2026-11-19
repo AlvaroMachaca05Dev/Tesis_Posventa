@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
 import { PrismaService } from '../comun/prisma.service';
-import { choqueUnico, empresaDe, texto } from '../comun/validacion';
+import { aNumero, choqueUnico, eliminarRegistro, empresaDe, texto } from '../comun/validacion';
 import { datosTercero, revisarMovil } from '../comun/tercero';
 import { calcularServicio, errorDocumento, errorTelefono, evaluarSolapamientos, HORAS_PREDETERMINADAS, Nivel, Regla, ReglaSolape, TipoRegla, validarRegla } from './maestros.reglas';
 
@@ -17,7 +17,7 @@ const UNIDADES = ['UND', 'LT', 'GL', 'KG', 'MT', 'JGO', 'PAR', 'KIT'];
 /** Número opcional: vacío = null; si viene, debe ser finito y estar en el rango. */
 function numero(v: unknown, campo: string, min = 0, max = 10_000_000): number | null {
   if (v === undefined || v === null || v === '') return null;
-  const n = Number(String(v).replace(',', '.'));
+  const n = aNumero(v);
   if (!Number.isFinite(n) || n < min || n > max) throw new BadRequestException(`${campo}: el valor no es válido.`);
   return Math.round(n * 1000) / 1000;
 }
@@ -42,11 +42,14 @@ const productoRes = (p: Prisma.ProductoGetPayload<{ include: typeof INCLUIR_PROD
     stock, stockTotal: Math.round(Object.values(stock).reduce((a, x) => a + x, 0) * 1000) / 1000,
   };
 };
+export const ETIQUETAS = ['Preventivo', 'Correctivo', 'Preventivo / correctivo', 'Adicional'];
 const servicioRes = (s: Prisma.ServicioGetPayload<{ include: { proveedor: true } }>) => ({
   id: s.id, codigo: s.codigo, nombre: s.nombre, categoria: s.categoria, descripcion: s.descripcion, trabajoMayor: s.trabajoMayor, externo: s.externo,
   proveedorId: s.proveedorId, proveedor: s.proveedor?.nombre ?? null, horasEstandar: num(s.horasEstandar) as number, horasFuente: s.horasFuente,
   precioEstandar: num(s.precioEstandar) as number, repuestos: s.repuestos, activo: s.activo,
   preciosGrupo: (s.preciosGrupo ?? {}) as Record<string, number | null>, horasGrupo: (s.horasGrupo ?? {}) as Record<string, number>,
+  etiqueta: s.etiqueta, lineaPlan: s.lineaPlan, visita: s.visita, eligeSistema: s.eligeSistema,
+  subservicios: (s.subservicios ?? []) as { nombre: string; horas: number; servicioId?: string }[], pasos: (s.pasos ?? []) as { operacion: string; incluye: { paso: string; accion: string; pct: number }[] }[],
 });
 const grupoRes = (g: Prisma.GrupoVehicularGetPayload<{ include: { _count: { select: { vehiculos: true; reglas: true; familias: true } } } }>) => ({
   id: g.id, codigo: g.codigo, nombre: g.nombre, descripcion: g.descripcion, activo: g.activo,
@@ -66,12 +69,12 @@ type SolapeFila = Prisma.SolapamientoGetPayload<object>;
 const solapeRes = (x: SolapeFila, nombres: Map<string, string>) => ({
   id: x.id, codigo: x.codigo, tipo: x.tipo, minimo: x.minimo, serviciosBase: x.serviciosBase, serviciosReducidos: x.serviciosReducidos,
   base: x.serviciosBase.map((i) => nombres.get(i) ?? '—'), reducidos: x.serviciosReducidos.map((i) => nombres.get(i) ?? '—'),
-  modo: x.modo, descuentoEstandar: num(x.descuentoEstandar) as number, descuentos: (x.descuentos ?? {}) as Record<string, number>,
+  modo: x.modo, descuentoEstandar: num(x.descuentoEstandar) as number, porcentaje: num(x.porcentaje), porcentajeDiesel: num(x.porcentajeDiesel), descuentos: (x.descuentos ?? {}) as Record<string, number>,
   horasCompartidas: num(x.horasCompartidas), alerta: x.alerta, nota: x.nota, estado: x.estado, activo: x.activo,
 });
 export const aSolape = (x: SolapeFila): ReglaSolape => ({
   id: x.id, codigo: x.codigo, tipo: x.tipo === 'CONJUNTO' ? 'CONJUNTO' : 'PAR', base: x.serviciosBase, reducidos: x.serviciosReducidos, minimo: x.minimo,
-  modo: x.modo as ReglaSolape['modo'], descuentoEstandar: Number(x.descuentoEstandar), descuentos: (x.descuentos ?? null) as Record<string, number> | null, alerta: x.alerta, activo: x.activo,
+  modo: x.modo as ReglaSolape['modo'], descuentoEstandar: Number(x.descuentoEstandar), porcentaje: num(x.porcentaje), porcentajeDiesel: num(x.porcentajeDiesel), descuentos: (x.descuentos ?? null) as Record<string, number> | null, alerta: x.alerta, activo: x.activo,
 });
 /** Servicio de la base a la forma de las reglas puras (con su tabla por grupo). */
 export const aServicio = (x: Prisma.ServicioGetPayload<object>) => ({
@@ -113,6 +116,66 @@ export class MaestrosController {
     } catch (e) {
       return choqueUnico(e, 'Ya existe un proveedor con ese documento.');
     }
+  }
+
+  /** Eliminar en los maestros: sin uso se borra; con historial sale de la lista activa (se restaura con «Restaurar»). */
+  @Delete('proveedores/:id')
+  @Requiere('proveedores', 'E')
+  async eliminarProveedor(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const organizacionId = empresaDe(s);
+    const p = await this.prisma.proveedor.findFirst({ where: { id, organizacionId } });
+    if (!p) throw new NotFoundException('Proveedor no encontrado.');
+    const r = await eliminarRegistro(() => this.prisma.proveedor.delete({ where: { id } }), () => this.prisma.proveedor.update({ where: { id }, data: { activo: false } }), 'El proveedor tiene historial.');
+    await auditar(this.prisma, real, s, 'proveedor', id, { nombre: p.nombre, documento: p.documento }, null, r.eliminado ? 'Proveedor eliminado' : 'Proveedor dado de baja (tenía historial)');
+    return r;
+  }
+
+  @Delete('productos/:id')
+  @Requiere('catalogo', 'E')
+  async eliminarProducto(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const organizacionId = empresaDe(s);
+    const p = await this.prisma.producto.findFirst({ where: { id, organizacionId } });
+    if (!p) throw new NotFoundException('Producto no encontrado.');
+    // Los ítems de órdenes y comprobantes guardan el id sin llave foránea: se revisan a mano para no dejarlos huérfanos.
+    const usado = (await Promise.all([
+      this.prisma.detalleODS.count({ where: { productoId: id } }), this.prisma.detalleNota.count({ where: { productoId: id } }),
+      this.prisma.detalleCotizacion.count({ where: { productoId: id } }), this.prisma.detalleCompra.count({ where: { productoId: id } }),
+      this.prisma.movimientoInventario.count({ where: { productoId: id } }), this.prisma.stockProducto.count({ where: { productoId: id, cantidad: { not: 0 } } }),
+    ])).some((x) => x > 0);
+    const baja = () => this.prisma.producto.update({ where: { id }, data: { activo: false } });
+    const r = usado ? (await baja(), { ok: true, eliminado: false })
+      : await eliminarRegistro(() => this.prisma.$transaction([this.prisma.stockProducto.deleteMany({ where: { productoId: id } }), this.prisma.producto.delete({ where: { id } })]), baja, 'El producto tiene historial.');
+    await auditar(this.prisma, real, s, 'producto', id, { codigo: p.codigo, nombre: p.nombre }, null, r.eliminado ? 'Producto eliminado' : 'Producto dado de baja (tenía historial)');
+    return r;
+  }
+
+  @Delete('servicios/:id')
+  @Requiere('catalogo', 'E')
+  async eliminarServicio(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const organizacionId = empresaDe(s);
+    const sv = await this.prisma.servicio.findFirst({ where: { id, organizacionId } });
+    if (!sv) throw new NotFoundException('Servicio no encontrado.');
+    const usado = (await Promise.all([
+      this.prisma.detalleODS.count({ where: { servicioId: id } }), this.prisma.detalleNota.count({ where: { servicioId: id } }),
+      this.prisma.detalleCotizacion.count({ where: { servicioId: id } }),
+      this.prisma.solapamiento.count({ where: { organizacionId, OR: [{ serviciosBase: { has: id } }, { serviciosReducidos: { has: id } }] } }),
+      this.prisma.reglaPrecio.count({ where: { organizacionId, servicios: { has: sv.codigo } } }),
+    ])).some((x) => x > 0);
+    const baja = () => this.prisma.servicio.update({ where: { id }, data: { activo: false } });
+    const r = usado ? (await baja(), { ok: true, eliminado: false }) : await eliminarRegistro(() => this.prisma.servicio.delete({ where: { id } }), baja, 'El servicio tiene historial.');
+    await auditar(this.prisma, real, s, 'servicio', id, { codigo: sv.codigo, nombre: sv.nombre }, null, r.eliminado ? 'Servicio eliminado' : 'Servicio dado de baja (tenía historial)');
+    return r;
+  }
+
+  @Delete('grupos/:id')
+  @Requiere('grupos', 'E')
+  async eliminarGrupo(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const organizacionId = empresaDe(s);
+    const g = await this.prisma.grupoVehicular.findFirst({ where: { id, organizacionId } });
+    if (!g) throw new NotFoundException('Grupo no encontrado.');
+    const r = await eliminarRegistro(() => this.prisma.grupoVehicular.delete({ where: { id } }), () => this.prisma.grupoVehicular.update({ where: { id }, data: { activo: false } }), 'El grupo tiene vehículos, familias o reglas.');
+    await auditar(this.prisma, real, s, 'grupo', id, { codigo: g.codigo, nombre: g.nombre }, null, r.eliminado ? 'Grupo eliminado' : 'Grupo dado de baja (tenía uso)');
+    return r;
   }
 
   @Patch('proveedores/:id')
@@ -207,7 +270,7 @@ export class MaestrosController {
     const viene = (k: string) => !parcial || b[k] !== undefined;
     if (viene('codigo')) d.codigo = codigo(b.codigo);
     if (viene('nombre')) d.nombre = requerido(b.nombre, 'el nombre del servicio', 200);
-    if (viene('categoria')) d.categoria = requerido(b.categoria, 'la categoría técnica', 60).toUpperCase();
+    if (viene('categoria')) d.categoria = requerido(b.categoria, 'la categoría', 60);
     if (viene('descripcion')) d.descripcion = texto(b.descripcion, 500);
     if (viene('trabajoMayor')) d.trabajoMayor = !!b.trabajoMayor;
     if (viene('externo')) d.externo = !!b.externo;
@@ -223,7 +286,33 @@ export class MaestrosController {
       if (p === null) throw new BadRequestException('Escribe el precio estándar.');
       d.precioEstandar = p;
     }
-    if (viene('preciosGrupo')) d.preciosGrupo = this.tablaGrupo(b.preciosGrupo, 'Precio', true);
+    if (viene('preciosGrupo')) {
+      d.preciosGrupo = this.tablaGrupo(b.preciosGrupo, 'Precio', true);
+      // El precio sube con el grupo: G1 ≤ G2 ≤ G3 ≤ G4 (puede ser igual, nunca menor).
+      const t = (d.preciosGrupo && d.preciosGrupo !== Prisma.DbNull ? d.preciosGrupo : {}) as Record<string, number | null>;
+      const orden = ['G1', 'G2', 'G3', 'G4'].map((g) => t[g]).filter((v): v is number => typeof v === 'number');
+      if (orden.some((v, i) => i > 0 && v < orden[i - 1])) throw new BadRequestException('El precio de un grupo no puede ser menor que el del grupo anterior (G1 ≤ G2 ≤ G3 ≤ G4).');
+    }
+    if (viene('etiqueta')) {
+      const e = b.etiqueta == null || b.etiqueta === '' ? null : texto(b.etiqueta, 40);
+      if (e && !ETIQUETAS.includes(e)) throw new BadRequestException('La etiqueta es Preventivo, Correctivo, Preventivo / correctivo o Adicional.');
+      d.etiqueta = e;
+    }
+    if (viene('lineaPlan')) d.lineaPlan = texto(b.lineaPlan, 120);
+    if (viene('visita')) d.visita = texto(b.visita, 120);
+    if (viene('subservicios')) {
+      const l = b.subservicios == null || b.subservicios === '' ? [] : b.subservicios;
+      if (!Array.isArray(l) || l.length > 80) throw new BadRequestException('La lista de servicios que incluye no es válida (hasta 80).');
+      const sub = l.map((x) => {
+        const o = (x ?? {}) as Record<string, unknown>;
+        const nombre = requerido(o.nombre, 'el nombre del servicio incluido', 200);
+        const h = numero(o.horas, 'Horas', 0, 200) ?? 0;
+        if (Math.round(h * 100) % 25 !== 0) throw new BadRequestException('Las horas van de 0,25 h en 0,25 h.');
+        const servicioId = o.servicioId == null || o.servicioId === '' ? undefined : String(o.servicioId).slice(0, 64);
+        return { nombre, horas: h, ...(servicioId ? { servicioId } : {}) };
+      });
+      d.subservicios = sub.length ? sub : Prisma.DbNull;
+    }
     if (viene('horasGrupo')) d.horasGrupo = this.tablaGrupo(b.horasGrupo, 'Horas', false);
     if (viene('repuestos')) {
       const r = Array.isArray(b.repuestos) ? b.repuestos : String(b.repuestos ?? '').split(/[,;\n]/);
@@ -291,6 +380,87 @@ export class MaestrosController {
     }
   }
 
+  // ═══════════════ Categorías del inventario ═══════════════
+  @Get('categorias-inventario')
+  @Requiere('catalogo', 'V')
+  async categorias(@SesionActual() s: Sesion, @Query('tipo') tipo?: string) {
+    const organizacionId = empresaDe(s);
+    const lista = await this.prisma.categoria.findMany({ where: { organizacionId, ...(tipo === 'producto' || tipo === 'servicio' ? { tipo: { in: [tipo, 'ambos'] } } : {}) }, orderBy: [{ tipo: 'asc' }, { nombre: 'asc' }] });
+    const [prods, servs] = await Promise.all([
+      this.prisma.producto.groupBy({ by: ['categoria'], where: { organizacionId }, _count: true }),
+      this.prisma.servicio.groupBy({ by: ['categoria'], where: { organizacionId }, _count: true }),
+    ]);
+    const uso = (t: string, n: string) => (t !== 'servicio' ? prods.find((x) => x.categoria === n)?._count ?? 0 : 0) + (t !== 'producto' ? servs.find((x) => x.categoria === n)?._count ?? 0 : 0);
+    return lista.map((c) => ({ id: c.id, tipo: c.tipo, nombre: c.nombre, activo: c.activo, usos: uso(c.tipo, c.nombre) }));
+  }
+
+  private datosCategoria(b: Record<string, unknown>, parcial: boolean) {
+    const d: { tipo?: string; nombre?: string; activo?: boolean } = {};
+    if (!parcial || b.tipo !== undefined) {
+      if (b.tipo !== 'producto' && b.tipo !== 'servicio' && b.tipo !== 'ambos') throw new BadRequestException('La categoría es de productos, de servicios o de ambos.');
+      d.tipo = b.tipo;
+    }
+    if (!parcial || b.nombre !== undefined) d.nombre = requerido(b.nombre, 'el nombre de la categoría', 60);
+    if (b.activo !== undefined) d.activo = !!b.activo;
+    return d;
+  }
+
+  @Post('categorias-inventario')
+  @Requiere('categorias', 'E')
+  async crearCategoria(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    const d = this.datosCategoria(b ?? {}, false);
+    try {
+      const x = await this.prisma.categoria.create({ data: { organizacionId, tipo: d.tipo!, nombre: d.nombre! } });
+      await auditar(this.prisma, real, s, 'categoria', x.id, null, { tipo: x.tipo, nombre: x.nombre }, 'Categoría creada');
+      return { id: x.id, tipo: x.tipo, nombre: x.nombre, activo: x.activo, usos: 0 };
+    } catch (e) {
+      return choqueUnico(e, 'Ya existe esa categoría.');
+    }
+  }
+
+  /** Renombrar una categoría actualiza también los productos o servicios que la usan. */
+  @Patch('categorias-inventario/:id')
+  @Requiere('categorias', 'E')
+  async editarCategoria(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    const antes = await this.prisma.categoria.findFirst({ where: { id, organizacionId } });
+    if (!antes) throw new NotFoundException('Categoría no encontrada.');
+    const d = this.datosCategoria(b ?? {}, true);
+    const nuevoTipo = d.tipo ?? antes.tipo;
+    if (nuevoTipo !== antes.tipo) {
+      const [np, ns] = await Promise.all([this.prisma.producto.count({ where: { organizacionId, categoria: antes.nombre } }), this.prisma.servicio.count({ where: { organizacionId, categoria: antes.nombre } })]);
+      if ((nuevoTipo === 'servicio' && np > 0) || (nuevoTipo === 'producto' && ns > 0)) throw new ConflictException('La categoría ya la usan ' + (nuevoTipo === 'servicio' ? 'productos' : 'servicios') + ': cámbiala a «ambos» o cambia esos ítems de categoría.');
+    }
+    try {
+      const x = await this.prisma.$transaction(async (tx) => {
+        const y = await tx.categoria.update({ where: { id }, data: { nombre: d.nombre, tipo: d.tipo, activo: d.activo } });
+        if (d.nombre && d.nombre !== antes.nombre) {
+          if (antes.tipo !== 'servicio') await tx.producto.updateMany({ where: { organizacionId, categoria: antes.nombre }, data: { categoria: d.nombre } });
+          if (antes.tipo !== 'producto') await tx.servicio.updateMany({ where: { organizacionId, categoria: antes.nombre }, data: { categoria: d.nombre } });
+        }
+        return y;
+      });
+      await auditar(this.prisma, real, s, 'categoria', id, { nombre: antes.nombre }, { nombre: x.nombre }, 'Categoría modificada');
+      return { id: x.id, tipo: x.tipo, nombre: x.nombre, activo: x.activo };
+    } catch (e) {
+      return choqueUnico(e, 'Ya existe esa categoría.');
+    }
+  }
+
+  @Delete('categorias-inventario/:id')
+  @Requiere('categorias', 'E')
+  async eliminarCategoria(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const organizacionId = empresaDe(s);
+    const antes = await this.prisma.categoria.findFirst({ where: { id, organizacionId } });
+    if (!antes) throw new NotFoundException('Categoría no encontrada.');
+    const usos = (await this.prisma.producto.count({ where: { organizacionId, categoria: antes.nombre } })) + (await this.prisma.servicio.count({ where: { organizacionId, categoria: antes.nombre } }));
+    if (usos > 0) throw new ConflictException(`La categoría la usan ${usos} ítem(s): cámbialos de categoría antes de eliminarla.`);
+    await this.prisma.categoria.delete({ where: { id } });
+    await auditar(this.prisma, real, s, 'categoria', id, { tipo: antes.tipo, nombre: antes.nombre }, null, 'Categoría eliminada');
+    return { ok: true };
+  }
+
   // ═══════════════ Grupos de vehículos (RF-100) ═══════════════
   private readonly conteo = { _count: { select: { vehiculos: true, reglas: true, familias: true } } } as const;
 
@@ -340,6 +510,79 @@ export class MaestrosController {
     return f.map((x) => ({ id: x.id, codigo: x.codigo, codigos: x.codigos, combustible: x.combustible, litros: x.litros, turbo: x.turbo, grupoId: x.grupoId, grupo: x.grupo?.codigo ?? null }));
   }
 
+  private datosFamilia(b: Record<string, unknown>, parcial: boolean) {
+    const d: Record<string, unknown> = {};
+    const viene = (k: string) => !parcial || b[k] !== undefined;
+    if (viene('codigo')) d.codigo = codigo(b.codigo);
+    if (viene('codigos')) {
+      const l = Array.isArray(b.codigos) ? b.codigos : String(b.codigos ?? '').split(/[,;\s]+/);
+      d.codigos = [...new Set(l.map((x) => String(x).trim().toUpperCase().replace(/[^A-Z0-9|-]/g, '')).filter(Boolean))].slice(0, 60);
+    }
+    if (viene('combustible')) d.combustible = texto(b.combustible, 30);
+    if (viene('litros')) d.litros = texto(b.litros, 10);
+    if (viene('turbo')) d.turbo = !!b.turbo;
+    return d;
+  }
+
+  private async grupoDeFamilia(organizacionId: string, v: unknown) {
+    if (v === undefined) return undefined;
+    if (v === null || v === '') return null;
+    const g = await this.prisma.grupoVehicular.findFirst({ where: { id: String(v), organizacionId } });
+    if (!g) throw new BadRequestException('Elige un grupo de la empresa.');
+    return g.id;
+  }
+
+  /** El combustible sale del grupo si no se escribió: G4 es diésel y G1 a G3 son gasolina. */
+  private async combustibleDelGrupo(grupoId: string | null | undefined) {
+    if (!grupoId) return null;
+    const g = await this.prisma.grupoVehicular.findUnique({ where: { id: grupoId } });
+    return g ? (g.codigo === 'G4' ? 'Diésel' : 'Gasolina') : null;
+  }
+
+  @Post('familias-motor')
+  @Requiere('grupos', 'E')
+  async crearFamilia(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    const d = this.datosFamilia(b ?? {}, false);
+    const grupoId = (await this.grupoDeFamilia(organizacionId, b?.grupoId)) ?? null;
+    if (!d.combustible) d.combustible = await this.combustibleDelGrupo(grupoId);
+    try {
+      const x = await this.prisma.familiaMotor.create({ data: { ...(d as { codigo: string }), organizacionId, grupoId, codigos: (d.codigos as string[]) ?? [], combustible: (d.combustible as string | null) ?? null, litros: (d.litros as string | null) ?? null, turbo: !!d.turbo } });
+      await auditar(this.prisma, real, s, 'familiaMotor', x.id, null, { codigo: x.codigo, codigos: x.codigos }, 'Familia de motor creada');
+      return { id: x.id, codigo: x.codigo };
+    } catch (e) {
+      return choqueUnico(e, 'Ya existe una familia con ese código.');
+    }
+  }
+
+  @Patch('familias-motor/:id')
+  @Requiere('grupos', 'E')
+  async editarFamilia(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
+    const organizacionId = empresaDe(s);
+    const antes = await this.prisma.familiaMotor.findFirst({ where: { id, organizacionId } });
+    if (!antes) throw new NotFoundException('Familia de motor no encontrada.');
+    const d = this.datosFamilia(b ?? {}, true);
+    const grupoId = await this.grupoDeFamilia(organizacionId, b?.grupoId);
+    if (d.combustible === null || (d.combustible === undefined && !antes.combustible)) d.combustible = await this.combustibleDelGrupo(grupoId !== undefined ? grupoId : antes.grupoId);
+    try {
+      const x = await this.prisma.familiaMotor.update({ where: { id }, data: { ...(d as object), ...(grupoId !== undefined ? { grupoId } : {}) } });
+      await auditar(this.prisma, real, s, 'familiaMotor', id, { codigo: antes.codigo, codigos: antes.codigos }, { codigo: x.codigo, codigos: x.codigos }, 'Familia de motor modificada');
+      return { id: x.id, codigo: x.codigo };
+    } catch (e) {
+      return choqueUnico(e, 'Ya existe una familia con ese código.');
+    }
+  }
+
+  @Delete('familias-motor/:id')
+  @Requiere('grupos', 'E')
+  async eliminarFamilia(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string) {
+    const antes = await this.prisma.familiaMotor.findFirst({ where: { id, organizacionId: empresaDe(s) } });
+    if (!antes) throw new NotFoundException('Familia de motor no encontrada.');
+    await this.prisma.familiaMotor.delete({ where: { id } });
+    await auditar(this.prisma, real, s, 'familiaMotor', id, { codigo: antes.codigo }, null, 'Familia de motor eliminada');
+    return { ok: true };
+  }
+
   // ═══════════════ Reglas de precio por grupo (RF-101, RN-09) ═══════════════
   private async datosRegla(organizacionId: string, b: Record<string, unknown>, actual?: ReglaFila) {
     const nivel = String(b.nivel ?? actual?.nivel ?? '') as Nivel;
@@ -368,7 +611,7 @@ export class MaestrosController {
       nivel, tipo, grupoId, servicios,
       horas: tomar('horas', -200, 200), precio: tomar('precio', -100000, 100000), porcentaje: tomar('porcentaje', -100, 1000),
       precioDesde: tomar('precioDesde', 0, 10_000_000), precioHasta: tomar('precioHasta', 0, 10_000_000),
-      orden: b.orden !== undefined ? Math.trunc(Number(b.orden) || 0) : actual?.orden ?? 0,
+      orden: b.orden !== undefined ? Math.trunc(aNumero(b.orden) || 0) : actual?.orden ?? 0,
       activa: b.activa !== undefined ? !!b.activa : actual?.activa ?? true,
       nota: b.nota !== undefined ? texto(b.nota, 300) : actual?.nota ?? null,
     };
@@ -460,10 +703,12 @@ export class MaestrosController {
     if (n !== base.length + red.length) throw new BadRequestException('Los servicios deben ser del catálogo de la empresa.');
     const modo = String(b.modo ?? actual?.modo ?? 'OPCIONAL');
     if (!['AUTOMATICO', 'OPCIONAL', 'AVISO'].includes(modo)) throw new BadRequestException('El modo es Automático, Opcional o Aviso.');
-    const minimo = b.minimo !== undefined && b.minimo !== '' ? Math.trunc(Number(b.minimo)) : actual?.minimo ?? 2;
+    const minimo = b.minimo !== undefined && b.minimo !== '' ? Math.trunc(aNumero(b.minimo)) : actual?.minimo ?? 2;
     if (!Number.isInteger(minimo) || minimo < 2 || minimo > 10) throw new BadRequestException('El mínimo de servicios va de 2 a 10.');
     const est = b.descuentoEstandar !== undefined ? numero(b.descuentoEstandar, 'Descuento') : num(actual?.descuentoEstandar);
-    if (modo !== 'AVISO' && (est === null || Math.round(est * 100) % 500 !== 0)) throw new BadRequestException('El descuento va en soles redondos, múltiplo de 5.');
+    const pct = b.porcentaje !== undefined ? (b.porcentaje === '' || b.porcentaje === null ? null : numero(b.porcentaje, 'Porcentaje', 0, 100)) : num(actual?.porcentaje);
+    const pctD = b.porcentajeDiesel !== undefined ? (b.porcentajeDiesel === '' || b.porcentajeDiesel === null ? null : numero(b.porcentajeDiesel, 'Porcentaje diésel', 0, 100)) : num(actual?.porcentajeDiesel);
+    if (modo !== 'AVISO' && !pct && (est === null || Math.round(est * 100) % 500 !== 0)) throw new BadRequestException('Indica el porcentaje o el descuento en soles redondos, múltiplo de 5.');
     let descuentos = (actual?.descuentos ?? {}) as Record<string, number>;
     if (b.descuentos !== undefined) {
       if (b.descuentos === null || typeof b.descuentos !== 'object' || Array.isArray(b.descuentos)) throw new BadRequestException('Los descuentos por grupo no son válidos.');
@@ -476,7 +721,7 @@ export class MaestrosController {
       }
     }
     return {
-      tipo, serviciosBase: base, serviciosReducidos: red, minimo, modo, descuentoEstandar: est ?? 0, descuentos,
+      tipo, serviciosBase: base, serviciosReducidos: red, minimo, modo, descuentoEstandar: est ?? 0, porcentaje: pct || null, porcentajeDiesel: pctD || null, descuentos,
       horasCompartidas: b.horasCompartidas !== undefined ? numero(b.horasCompartidas, 'Horas compartidas', 0, 200) : num(actual?.horasCompartidas),
       alerta: b.alerta !== undefined ? texto(b.alerta, 300) : actual?.alerta ?? null,
       nota: b.nota !== undefined ? texto(b.nota, 300) : actual?.nota ?? null,
@@ -557,6 +802,7 @@ export class MaestrosController {
             id: x.id, codigo: x.codigo, nombre: x.nombre, categoria: x.categoria,
             horas: c ? c.horas : Number(x.horasEstandar), precio: c ? c.precio : Number(x.precioEstandar),
             grupo: grupo ?? null, repuestos: x.repuestos,
+            etiqueta: x.etiqueta, descripcion: x.descripcion, subservicios: (x.subservicios ?? []) as { nombre: string; horas: number }[], pasos: (x.pasos ?? []) as { operacion: string; incluye: { paso: string; accion: string; pct: number }[] }[],
           };
         })
         .filter((x): x is NonNullable<typeof x> => x != null),

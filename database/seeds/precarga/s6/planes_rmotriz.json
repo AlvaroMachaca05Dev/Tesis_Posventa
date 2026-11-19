@@ -1,0 +1,164 @@
+{
+ "planes": [
+  {
+   "codigo": "GP-M",
+   "nombre": "Gasolina · uso particular · mineral o semisintético",
+   "combustible": "Gasolina",
+   "uso": "Particular",
+   "aceite": "M",
+   "ciclo": {
+    "km": 5000,
+    "meses": 4,
+    "secuencia": [
+     "SV094",
+     "SV094",
+     "SV095+AF",
+     "SV094",
+     "SV094",
+     "SV096+AF"
+    ],
+    "horizonte": 1,
+    "patron": "Cada 3 visitas: dos express y una visita con afinamiento; primero el menor y luego el mayor."
+   }
+  },
+  {
+   "codigo": "GP-S",
+   "nombre": "Gasolina · uso particular · sintético",
+   "combustible": "Gasolina",
+   "uso": "Particular",
+   "aceite": "S",
+   "ciclo": {
+    "km": 7500,
+    "meses": 6,
+    "secuencia": [
+     "SV094",
+     "SV095+AF",
+     "SV094",
+     "SV096+AF"
+    ],
+    "horizonte": 1,
+    "patron": "Cada 2 visitas: un express y una visita con afinamiento; primero el menor y luego el mayor."
+   }
+  },
+  {
+   "codigo": "GR-M",
+   "nombre": "Gasolina · uso profesional · mineral o semisintético",
+   "combustible": "Gasolina",
+   "uso": "Profesional",
+   "aceite": "M",
+   "ciclo": {
+    "km": 5000,
+    "meses": 1,
+    "secuencia": [
+     "SV094",
+     "SV094",
+     "SV095+AF",
+     "SV094",
+     "SV094",
+     "SV096+AF"
+    ],
+    "horizonte": 2,
+    "patron": "Cada 3 visitas: dos express y un menor o mayor, ambos con afinamiento."
+   }
+  },
+  {
+   "codigo": "GR-S",
+   "nombre": "Gasolina · uso profesional · sintético",
+   "combustible": "Gasolina",
+   "uso": "Profesional",
+   "aceite": "S",
+   "ciclo": {
+    "km": 7500,
+    "meses": 2,
+    "secuencia": [
+     "SV094",
+     "SV095+AF",
+     "SV094",
+     "SV096+AF"
+    ],
+    "horizonte": 2,
+    "patron": "Cada 2 visitas: un express y una visita con afinamiento; primero el menor y luego el mayor."
+   }
+  },
+  {
+   "codigo": "DP-M",
+   "nombre": "Diésel · uso particular · mineral o semisintético",
+   "combustible": "Diésel",
+   "uso": "Particular",
+   "aceite": "M",
+   "ciclo": {
+    "km": 5000,
+    "meses": 4,
+    "secuencia": [
+     "SV094",
+     "SV094",
+     "SV095",
+     "SV094",
+     "SV094",
+     "SV096"
+    ],
+    "horizonte": 1,
+    "patron": "Cada 3 visitas: dos express y una visita de menor o mayor; primero el menor y luego el mayor."
+   }
+  },
+  {
+   "codigo": "DP-S",
+   "nombre": "Diésel · uso particular · sintético",
+   "combustible": "Diésel",
+   "uso": "Particular",
+   "aceite": "S",
+   "ciclo": {
+    "km": 7500,
+    "meses": 6,
+    "secuencia": [
+     "SV094",
+     "SV095",
+     "SV094",
+     "SV096"
+    ],
+    "horizonte": 1,
+    "patron": "Cada 2 visitas: un express y una visita de menor o mayor; primero el menor y luego el mayor."
+   }
+  },
+  {
+   "codigo": "DR-M",
+   "nombre": "Diésel · uso profesional · mineral o semisintético",
+   "combustible": "Diésel",
+   "uso": "Profesional",
+   "aceite": "M",
+   "ciclo": {
+    "km": 5000,
+    "meses": 1,
+    "secuencia": [
+     "SV094",
+     "SV094",
+     "SV095",
+     "SV094",
+     "SV094",
+     "SV096"
+    ],
+    "horizonte": 2,
+    "patron": "Cada 3 visitas: dos express y un menor o mayor."
+   }
+  },
+  {
+   "codigo": "DR-S",
+   "nombre": "Diésel · uso profesional · sintético",
+   "combustible": "Diésel",
+   "uso": "Profesional",
+   "aceite": "S",
+   "ciclo": {
+    "km": 7500,
+    "meses": 2,
+    "secuencia": [
+     "SV094",
+     "SV095",
+     "SV094",
+     "SV096"
+    ],
+    "horizonte": 2,
+    "patron": "Cada 2 visitas: un express y una visita de menor o mayor."
+   }
+  }
+ ]
+}

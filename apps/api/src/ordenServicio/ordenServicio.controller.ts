@@ -6,6 +6,8 @@ import { PrismaService } from '../comun/prisma.service';
 import { KM_MAXIMO } from '../vehiculo/vehiculo.reglas';
 import { calcularServicio, claveSolape, evaluarSolapamientos, Nivel, TipoRegla } from '../maestros/maestros.reglas';
 import { aServicio, aSolape } from '../maestros/maestros.controller';
+import { aNumero, texto } from '../comun/validacion';
+import { cuadreOrdenComprobante, mensajeCuadre } from './cuadre';
 
 const fechaFiltro = (t: string | undefined, fin: boolean) => {
   if (!t) return undefined;
@@ -15,15 +17,12 @@ const fechaFiltro = (t: string | undefined, fin: boolean) => {
 };
 const kmValido = (v: unknown) => {
   if (v === undefined || v === null || v === '') return null;
-  const km = Number(v);
+  const km = aNumero(v);
   if (!Number.isInteger(km) || km < 0 || km > KM_MAXIMO) throw new BadRequestException('El kilometraje debe ser un número entero entre 0 y 3 000 000.');
   return km;
 };
-const textoLibre = (v: unknown, max = 1000) => {
-  const t = String(v ?? '').trim();
-  if (t.length > max) throw new BadRequestException(`El texto supera los ${max} caracteres.`);
-  return t || null;
-};
+// Mismo criterio que en todo el sistema: solo texto (o número), con tope de largo.
+const textoLibre = (v: unknown, max = 1000) => texto(v, max);
 
 export const TIPOS_ATENCION = ['Mantenimiento preventivo', 'Mantenimiento correctivo', 'Preventivo y correctivo', 'Auxilio mecánico', 'Evaluación y diagnóstico', 'Garantía', 'Siniestro', 'Inspección 360', 'Inspección por compra', 'Otro'];
 /** «Otro» necesita un texto propio; los demás tipos no lo usan (se guarda null). */
@@ -63,6 +62,7 @@ const INCLUIR = {
   evidencias: { orderBy: { creadoEn: 'asc' as const }, select: { id: true, nombre: true, tipo: true, tamano: true, creadoEn: true } },
   solicitudes: { orderBy: { creadoEn: 'desc' as const }, include: { solicitadaPor: true, resueltaPor: true } },
   notas: { orderBy: { creadoEn: 'desc' as const }, include: { detalles: { orderBy: { posicion: 'asc' as const } }, local: true } },
+  garantiaDe: { include: { detalles: { orderBy: { posicion: 'asc' as const }, include: { tecnico: true } } } },
 };
 // RF-018: quiénes autorizan la corrección o la reapertura de una ODS cerrada, y qué datos admite una corrección.
 const AUTORIZAN = ['Jefe de taller', 'Administrador', 'Superadministrador'];
@@ -92,9 +92,10 @@ function resumen(o: Orden) {
     servicioId: d.servicioId, productoId: d.productoId, horas: num(d.horas), precioGrupo: num(d.precioGrupo),
     // RF-101: el precio cambiado en la línea respecto al del grupo queda marcado
     precioModificado: d.precioGrupo != null && Number(d.precioGrupo) !== Number(d.precio),
-    trazaPrecio: (d.trazaPrecio ?? null) as string[] | null, descuentoMonto: num(d.descuentoMonto) ?? 0, solapamientoId: d.solapamientoId,
+    trazaPrecio: (d.trazaPrecio ?? null) as string[] | null, descuentoMonto: num(d.descuentoMonto) ?? 0, solapamientoId: d.solapamientoId, aprobado: d.aprobado,
   }));
   const total = r2(detalles.reduce((a, d) => a + (d.total ?? 0), 0));
+  const totalAprobado = r2(detalles.reduce((a, d) => a + (d.aprobado ? d.total ?? 0 : 0), 0));
   const abonos = o.abonos.map((a) => ({ id: a.id, fecha: a.fecha.toISOString(), metodo: a.metodo, concepto: a.concepto, valor: num(a.valor) as number }));
   const totalAbonos = r2(abonos.reduce((a, x) => a + x.valor, 0));
   const ultima = o.bitacora[0];
@@ -105,7 +106,7 @@ function resumen(o: Orden) {
     cliente: { id: o.cliente.id, nombre: o.cliente.nombre, documento: o.cliente.documento, tipoDocumento: o.cliente.tipoDocumento, movil: o.cliente.movil, direccionFiscal: o.cliente.direccionFiscal, pais: o.cliente.pais },
     vehiculo: { id: o.vehiculo.id, grupo: o.vehiculo.grupo?.activo ? o.vehiculo.grupo.codigo : null, placa: o.vehiculo.placa, marca: o.vehiculo.marca, modelo: o.vehiculo.modelo, anio: o.vehiculo.anio, color: o.vehiculo.color, nroSerie: o.vehiculo.nroSerie, nroVin: o.vehiculo.nroVin, nroMotor: o.vehiculo.nroMotor },
     tecnico: persona(o.tecnico), jefeTaller: persona(o.jefeTaller), creadoPor: persona(o.creadoPor),
-    detalles, total, abonos, totalAbonos, pendiente: r2(total - totalAbonos), solapamientosMantenidos: o.solapamientosMantenidos,
+    detalles, total, totalAprobado, abonos, totalAbonos, pendiente: r2(total - totalAbonos), solapamientosMantenidos: o.solapamientosMantenidos,
     horas: r2(detalles.reduce((a, d) => a + (d.tipo === 'servicio' ? d.horas ?? 0 : 0), 0)),
     estadoVehiculo: (o.estadoVehiculo ?? null) as Record<string, string | string[]> | null,
     evidencias: o.evidencias.map((e) => ({ id: e.id, nombre: e.nombre, tipo: e.tipo, tamano: e.tamano, fecha: e.creadoEn.toISOString() })),
@@ -122,6 +123,11 @@ function resumen(o: Orden) {
         conDetraccion: x.conDetraccion, detraccionPct: Number(x.detraccionPct), detraccion: Number(x.detraccion),
       };
     })(),
+    // Garantía enlazada: la orden de origen y los servicios que la originaron (con el técnico que los hizo).
+    garantia: o.garantiaDe ? {
+      ordenId: o.garantiaDe.id, codigo: o.garantiaDe.codigo, tipoAtencion: o.garantiaDe.tipoAtencion,
+      servicios: o.garantiaDe.detalles.filter((d) => o.garantiaDetalleIds.includes(d.id)).map((d) => ({ id: d.id, descripcion: d.descripcion, total: Number(d.total), tecnico: persona(d.tecnico) })),
+    } : null,
     ultimaBitacora: ultima ? { texto: ultima.texto, fecha: ultima.fecha.toISOString(), actor: ultima.actor.nombre } : null,
     bitacora: o.bitacora.slice(0, 20).map((b) => ({ texto: b.texto, fecha: b.fecha.toISOString(), actor: b.actor.nombre })),
     // RF-018: solicitudes de corrección o reapertura de la ODS cerrada, de la más reciente a la más antigua.
@@ -143,8 +149,8 @@ function linea(d: Record<string, unknown>, i: number) {
   const precio = r3(Number(d.precio ?? 0));
   // Con 6 decimales: un descuento en soles (solapamiento o total editado) se guarda como porcentaje y da el total exacto.
   const descuentoPct = r6(Number(d.descuentoPct ?? 0));
-  const costo = d.costo === undefined || d.costo === null || d.costo === '' ? null : r3(Number(d.costo));
-  const rentabilidadPct = d.rentabilidadPct === undefined || d.rentabilidadPct === null || d.rentabilidadPct === '' ? null : r3(Number(d.rentabilidadPct));
+  const costo = d.costo === undefined || d.costo === null || d.costo === '' ? null : r3(aNumero(d.costo));
+  const rentabilidadPct = d.rentabilidadPct === undefined || d.rentabilidadPct === null || d.rentabilidadPct === '' ? null : r3(aNumero(d.rentabilidadPct));
   if (![cantidad, precio, descuentoPct].every(Number.isFinite) || cantidad <= 0 || cantidad > 100000 || precio < 0 || precio > 10_000_000 || descuentoPct < 0 || descuentoPct > 100 || (costo != null && (!Number.isFinite(costo) || costo < 0))) {
     throw new BadRequestException(`Ítem ${i + 1}: cantidad, precio, costo o descuento no válidos.`);
   }
@@ -158,7 +164,9 @@ function linea(d: Record<string, unknown>, i: number) {
     servicioId: tipo === 'servicio' ? id('servicioId') : null, productoId: tipo === 'producto' ? id('productoId') : null,
     horas: null as number | null, precioGrupo: null as number | null, trazaPrecio: Prisma.DbNull as typeof Prisma.DbNull | string[],
     // Lo que trae la línea como descuento por solapamiento (ya incluido en el porcentaje); el servidor lo vuelve a calcular.
-    descuentoMonto: Math.max(0, Number(d.descuentoMonto) || 0), solapamientoId: id('solapamientoId'),
+    descuentoMonto: Math.max(0, aNumero(d.descuentoMonto) || 0), solapamientoId: id('solapamientoId'),
+    // Aprobación por ítem: si no viene, el ítem queda aprobado.
+    aprobado: d.aprobado !== false,
   };
 }
 
@@ -179,6 +187,25 @@ export class OrdenesController {
 
   private bitacora(db: Prisma.TransactionClient | PrismaClient, ordenId: string, real: Sesion, texto: string) {
     return db.bitacora.create({ data: { ordenId, actorId: real.id, texto } });
+  }
+
+  /**
+   * Garantía enlazada: la ODS de origen debe ser del mismo cliente (y no otra garantía) y los servicios elegidos deben ser servicios de esa orden.
+   * Sin orden de origen no hay nada que enlazar; con ella, al menos un servicio, para saber de quién es la garantía.
+   */
+  private async garantiaEnlazada(organizacionId: string, clienteId: string, propiaId: string | null, origen: unknown, detalles: unknown) {
+    if (origen === undefined || origen === null || origen === '') return { garantiaDeId: null, garantiaDetalleIds: [] as string[] };
+    if (typeof origen !== 'string' || origen.length > 64) throw new BadRequestException('La orden de origen no es válida.');
+    if (origen === propiaId) throw new BadRequestException('Una orden no puede ser garantía de sí misma.');
+    const ori = await this.prisma.ordenServicio.findFirst({ where: { id: origen, organizacionId, eliminada: false }, include: { detalles: true } });
+    if (!ori) throw new NotFoundException('La orden de origen de la garantía no existe.');
+    if (ori.clienteId !== clienteId) throw new ConflictException('La orden de origen es de otro cliente.');
+    if (ori.tipoAtencion === 'Garantía') throw new ConflictException('La orden de origen ya es una garantía: elige la orden original.');
+    if (!Array.isArray(detalles) || detalles.length === 0 || detalles.length > 100) throw new BadRequestException('Elige los servicios de la orden de origen por los que vuelve el vehículo.');
+    const ids = [...new Set(detalles.map((x) => (typeof x === 'string' ? x : '')))];
+    const validos = new Set(ori.detalles.filter((x) => x.tipo === 'servicio').map((x) => x.id));
+    if (ids.some((x) => !validos.has(x))) throw new BadRequestException('Solo se pueden elegir servicios de la orden de origen.');
+    return { garantiaDeId: ori.id, garantiaDetalleIds: ids };
   }
 
   /** Hasta dos ODS abiertas por vehículo y, como máximo, una de Garantía (DEC-71). Dentro de una transacción se bloquea el vehículo para que dos pedidos simultáneos no pasen el límite. */
@@ -206,7 +233,7 @@ export class OrdenesController {
   /** Datos de la empresa para la cabecera y el pie de los PDF de la orden. */
   private async datosEmpresa(organizacionId: string) {
     const e = await this.prisma.organizacion.findUniqueOrThrow({ where: { id: organizacionId } });
-    return { nombre: e.nombre, razonSocial: e.razonSocial, ruc: e.ruc, direccion: e.direccion, telefono: e.telefono, correo: e.correo, lema: e.lema, cuentasBancarias: e.cuentasBancarias, terminosRecepcion: e.terminosRecepcion, pieTicket: e.pieTicket, anchoTicketMm: e.anchoTicketMm, logo: e.logoJpeg ? { base64: e.logoJpeg, ancho: e.logoAncho, alto: e.logoAlto } : null };
+    return { nombre: e.nombre, razonSocial: e.razonSocial, ruc: e.ruc, direccion: e.direccion, telefono: e.telefono, correo: e.correo, lema: e.lema, cuentasBancarias: e.cuentasBancarias, terminosRecepcion: e.terminosRecepcion, pieTicket: e.pieTicket, anchoTicketMm: e.anchoTicketMm, aprobacionPorItem: e.aprobacionPorItem, logo: e.logoJpeg ? { base64: e.logoJpeg, ancho: e.logoAncho, alto: e.logoAlto } : null };
   }
 
   @Get('catalogos')
@@ -264,9 +291,7 @@ export class OrdenesController {
     if (!ESTADOS.some((x) => x.id === estado)) throw new BadRequestException('Estado no válido.');
     const decision = b.decision === undefined || b.decision === '' ? DECISIONES[0] : String(b.decision);
     if (!DECISIONES.includes(decision)) throw new BadRequestException('Decisión no válida.');
-    if (estado === 'Cerrada' && decision !== 'No aprobada') {
-      throw new ConflictException('Para cerrar sin nota de venta, la decisión del cliente debe ser «No aprobada». Emite la nota de venta o cambia la decisión.');
-    }
+    const garantia = tipoAtencion === 'Garantía' ? await this.garantiaEnlazada(organizacionId, v.clienteId, null, b.garantiaDeId, b.garantiaDetalleIds) : { garantiaDeId: null, garantiaDetalleIds: [] as string[] };
     // El número lo da el servidor en una transacción: gana quien presiona «Crear» primero y ningún número se repite ni se reutiliza.
     const o = await this.prisma.$transaction(async (tx) => {
       if (estado !== 'Cerrada') await this.limiteVehiculo(v.id, tipoAtencion, undefined, tx);
@@ -276,7 +301,7 @@ export class OrdenesController {
       const nueva = await tx.ordenServicio.create({
         data: {
           organizacionId, vehiculoId: v.id, clienteId: v.clienteId, localId, codigo: fecha + String(c.ultimo).padStart(5, '0'), correlativo: c.ultimo, tipoAtencion, tipoAtencionDetalle, km, tecnicoId, jefeTallerId,
-          creadoPorId: real.id, observaciones, recomendaciones, estado, decision, fechaCierre: estado === 'Cerrada' ? hoy : null,
+          creadoPorId: real.id, observaciones, recomendaciones, estado, decision, fechaCierre: estado === 'Cerrada' ? hoy : null, ...garantia,
         },
       });
       const nombreEstado = ESTADOS.find((x) => x.id === estado)?.nombre ?? estado;
@@ -304,8 +329,6 @@ export class OrdenesController {
     }
     if (b.decision !== undefined) {
       if (!DECISIONES.includes(String(b.decision))) throw new BadRequestException('Decisión no válida.');
-      const quedaCerrada = (b.estado ?? o.estado) === 'Cerrada';
-      if (quedaCerrada && b.decision !== 'No aprobada') throw new ConflictException('Una ODS cerrada sin nota de venta debe seguir «No aprobada». Reábrela antes de cambiar la decisión.');
       if (b.decision !== o.decision) { d.decision = String(b.decision); notas.push(`Decisión del cliente: ${o.decision} → ${b.decision}.`); }
     }
     if (b.tipoAtencion !== undefined && (b.tipoAtencion !== o.tipoAtencion || (b.tipoAtencion === 'Otro' && b.tipoAtencionDetalle !== o.tipoAtencionDetalle))) {
@@ -313,6 +336,24 @@ export class OrdenesController {
       if (o.estado !== 'Cerrada') await this.limiteVehiculo(o.vehiculoId, t, o.id);
       d.tipoAtencion = t;
       d.tipoAtencionDetalle = td;
+    }
+    // Garantía: sus servicios van en S/ 0.00 y no se factura. Al pasar a Garantía una orden con montos, se ponen en cero (si no hay pagos ni comprobante).
+    const tipoFinal = String(d.tipoAtencion ?? o.tipoAtencion);
+    let ponerEnCero = false;
+    if (tipoFinal === 'Garantía' && o.tipoAtencion !== 'Garantía' && o.detalles.some((x) => Number(x.total) > 0)) {
+      if (o.notas.some((x) => x.estado === 'EMITIDA')) throw new ConflictException('La ODS tiene un comprobante vigente: una garantía no se factura. Elimina primero el comprobante.');
+      if (o.abonos.length) throw new ConflictException('La ODS tiene adelantos: una garantía no lleva montos.');
+      ponerEnCero = true;
+    }
+    // La orden de origen y los servicios solo valen en una garantía; al cambiar de tipo se quitan.
+    if (tipoFinal !== 'Garantía') {
+      if (o.garantiaDeId) { d.garantiaDeId = null; d.garantiaDetalleIds = []; notas.push('Se quitó el enlace de garantía (la ODS ya no es de tipo Garantía).'); }
+    } else if (b.garantiaDeId !== undefined || b.garantiaDetalleIds !== undefined) {
+      const g = await this.garantiaEnlazada(organizacionId, String(d.clienteId ?? o.clienteId), o.id, b.garantiaDeId, b.garantiaDetalleIds);
+      if (g.garantiaDeId !== o.garantiaDeId || g.garantiaDetalleIds.join() !== o.garantiaDetalleIds.join()) {
+        d.garantiaDeId = g.garantiaDeId; d.garantiaDetalleIds = g.garantiaDetalleIds;
+        notas.push(g.garantiaDeId ? `Garantía enlazada a la ODS ${(await this.prisma.ordenServicio.findUnique({ where: { id: g.garantiaDeId } }))?.codigo} (${g.garantiaDetalleIds.length} servicio${g.garantiaDetalleIds.length === 1 ? '' : 's'}).` : 'Se quitó el enlace de garantía.');
+      }
     }
     if (b.vehiculoId !== undefined && b.vehiculoId !== o.vehiculoId) {
       const v = await this.prisma.vehiculo.findFirst({ where: { id: String(b.vehiculoId), organizacionId } });
@@ -353,9 +394,13 @@ export class OrdenesController {
     if (b.estado !== undefined && b.estado !== o.estado) {
       const e = String(b.estado);
       if (!ESTADOS.some((x) => x.id === e)) throw new BadRequestException('Estado no válido.');
-      // Sin nota de venta solo se cierra una ODS «No aprobada» (DEC-72); con una nota vigente se cierra con cualquier decisión (RF-088).
-      if (e === 'Cerrada' && (d.decision ?? o.decision) !== 'No aprobada' && !o.notas.some((x) => x.estado === 'EMITIDA')) {
-        throw new ConflictException('Para cerrar sin nota de venta, la decisión del cliente debe ser «No aprobada». Emite la nota de venta o cambia la decisión.');
+      // Se puede cerrar sin comprobante (queda «Sin comprobante», RN-06). Con un comprobante vigente, la orden y el comprobante deben cuadrar.
+      if (e === 'Cerrada') {
+        const n = o.notas.find((x) => x.estado === 'EMITIDA');
+        if (n) {
+          const r = cuadreOrdenComprobante(o.detalles.map((x) => ({ tipo: x.tipo, descripcion: x.descripcion, cantidad: Number(x.cantidad), total: Number(x.total) })), n.detalles.map((x) => ({ tipo: x.tipo, descripcion: x.descripcion, cantidad: Number(x.cantidad), total: Number(x.total) })));
+          if (!r.cuadra) throw new ConflictException(mensajeCuadre(n.codigo, r));
+        }
       }
       if (o.estado === 'Cerrada') await this.limiteVehiculo(o.vehiculoId, String(d.tipoAtencion ?? o.tipoAtencion), o.id);
       d.estado = e;
@@ -365,6 +410,10 @@ export class OrdenesController {
     }
     await this.prisma.$transaction(async (tx) => {
       await tx.ordenServicio.update({ where: { id }, data: d });
+      if (ponerEnCero) {
+        await tx.detalleODS.updateMany({ where: { ordenId: id }, data: { precio: 0, descuentoPct: 0, descuentoMonto: 0, total: 0 } });
+        notas.push('Tipo Garantía: los servicios pasaron a S/ 0.00.');
+      }
       for (const t of notas) await this.bitacora(tx, id, real, t);
     });
     const res = resumen(await this.cargar(id, organizacionId));
@@ -468,6 +517,8 @@ export class OrdenesController {
     if (!Array.isArray(b?.detalles) || b.detalles.length > 300) throw new BadRequestException('Envía la lista de ítems (hasta 300).');
     const nuevas = b.detalles.map(linea);
     const solape = await this.catalogoYSolapes(organizacionId, o, nuevas, b);
+    // Una ODS de garantía no lleva montos: todo va en S/ 0.00 (el catálogo no le pone precio).
+    if (o.tipoAtencion === 'Garantía') for (const l of nuevas) Object.assign(l, { precio: 0, descuentoPct: 0, descuentoMonto: 0, total: 0 });
     // El responsable de un servicio es un técnico o el jefe de taller; el de un producto, una cajera o un logístico (activos de la empresa).
     for (const l of nuevas) if (l.tecnicoId) await this.persona(organizacionId, l.tecnicoId, l.tipo === 'producto' ? 'responsable de productos' : 'técnico');
     const antes = new Map(o.detalles.map((d) => [d.id, d]));
@@ -571,7 +622,7 @@ export class OrdenesController {
   @Post(':id/descuento')
   @Requiere('ods', 'E')
   async descuento(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: { porcentaje?: unknown }) {
-    const p = Number(b?.porcentaje);
+    const p = aNumero(b?.porcentaje);
     if (!Number.isFinite(p) || p < 0 || p > 100) throw new BadRequestException('El porcentaje debe estar entre 0 y 100.');
     const o = await this.cargar(id, this.empresa(s));
     return this.detalles(s, real, id, { detalles: resumen(o).detalles.map((d) => ({ ...d, descuentoPct: p })) });
@@ -583,7 +634,7 @@ export class OrdenesController {
     const organizacionId = this.empresa(s);
     const actual = await this.cargar(id, organizacionId);
     if (actual.estado === 'Cerrada') throw new ConflictException('La ODS está cerrada: no admite abonos.');
-    const valor = r2(Number(b?.valor));
+    const valor = r2(aNumero(b?.valor));
     if (!Number.isFinite(valor) || valor <= 0) throw new BadRequestException('El valor del abono debe ser mayor a cero.');
     const metodo = METODOS.includes(String(b?.metodo)) ? String(b?.metodo) : null;
     if (!metodo) throw new BadRequestException('Elige el método de pago.');
@@ -655,9 +706,14 @@ export class OrdenesController {
   async eliminar(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: { motivo?: string }) {
     const organizacionId = this.empresa(s);
     const o = await this.cargar(id, organizacionId);
-    if (o.abonos.length) throw new ConflictException('La ODS tiene abonos: no se puede eliminar.');
-    const motivo = String(b?.motivo ?? '').trim() || 'Sin motivo';
-    await this.prisma.ordenServicio.update({ where: { id }, data: { eliminada: true, motivoEliminacion: motivo } });
+    // Con comprobante vigente, primero se elimina el comprobante. Los adelantos no se borran: quedan registrados como ingreso.
+    if (await this.prisma.notaVenta.count({ where: { ordenId: id, estado: 'EMITIDA' } })) throw new ConflictException('La ODS tiene un comprobante vigente: elimina primero el comprobante.');
+    const motivo = texto(b?.motivo, 500) ?? 'Sin motivo';
+    const adelantos = r2(o.abonos.reduce((a, x) => a + Number(x.valor), 0));
+    await this.prisma.$transaction(async (tx) => {
+      await tx.ordenServicio.update({ where: { id }, data: { eliminada: true, motivoEliminacion: motivo } });
+      await this.bitacora(tx, id, real, `ODS eliminada: ${motivo}.${adelantos > 0 ? ` Sus adelantos (S/ ${adelantos.toFixed(2)}) quedan registrados.` : ''}`);
+    });
     await auditar(this.prisma, real, s, 'orden_servicio', id, { codigo: o.codigo }, { eliminada: true }, `ODS eliminada: ${motivo}`);
     return { ok: true };
   }

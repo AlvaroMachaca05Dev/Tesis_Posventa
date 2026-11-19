@@ -113,15 +113,15 @@ it('muestra el mensaje del servidor cuando algo falla (correo repetido)', async 
   expect(await screen.findByRole('alert')).toHaveTextContent('Ese correo ya existe.');
 });
 
-it('desactiva un usuario después de confirmar', async () => {
+it('elimina un usuario después de confirmar en el modal propio (con movimientos queda desactivado en el servidor)', async () => {
   simular('A');
-  vi.stubGlobal('confirm', () => true);
   render(<App />);
   const fila = (await screen.findByText('cajera@demo.local')).closest('tr')!;
   await userEvent.click(within(fila).getByRole('button', { name: 'Acciones' }));
-  await userEvent.click(within(fila).getByRole('button', { name: 'Desactivar' }));
-  await waitFor(() => expect(llamadas.some((l) => l.metodo === 'PATCH' && l.ruta === '/usuarios/u1')).toBe(true));
-  expect(llamadas.find((l) => l.metodo === 'PATCH')!.cuerpo).toEqual({ activo: false });
+  await userEvent.click(within(fila).getByRole('button', { name: 'Eliminar' }));
+  const d = await screen.findByRole('alertdialog');
+  await userEvent.click(within(d).getByRole('button', { name: 'Eliminar' }));
+  await waitFor(() => expect(llamadas.some((l) => l.metodo === 'DELETE' && l.ruta === '/usuarios/u1')).toBe(true));
 });
 
 it('con nivel «solo ver» no hay botones para crear ni modificar', async () => {
@@ -132,13 +132,13 @@ it('con nivel «solo ver» no hay botones para crear ni modificar', async () => 
   expect(screen.queryByRole('button', { name: 'Acciones' })).toBeNull();
 });
 
-it('las acciones de la fila van en un solo botón con lista: Editar, Cambiar contraseña y Desactivar', async () => {
+it('las acciones de la fila van en un solo botón con lista: Editar, Cambiar contraseña y Eliminar', async () => {
   simular('A');
   render(<App />);
   const fila = (await screen.findByText('cajera@demo.local')).closest('tr')!;
   expect(within(fila).queryByRole('button', { name: 'Editar' })).toBeNull();
   await userEvent.click(within(fila).getByRole('button', { name: 'Acciones' }));
-  for (const a of ['Editar', 'Cambiar contraseña', 'Desactivar']) expect(within(fila).getByRole('button', { name: a })).toBeInTheDocument();
+  for (const a of ['Editar', 'Cambiar contraseña', 'Eliminar']) expect(within(fila).getByRole('button', { name: a })).toBeInTheDocument();
 });
 
 it('«Cambiar contraseña» pide la nueva contraseña dos veces y la envía', async () => {

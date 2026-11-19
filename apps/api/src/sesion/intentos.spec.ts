@@ -38,4 +38,16 @@ describe('CP-61 límite de intentos de ingreso (RNF-01)', () => {
     c.registrarFallo('a@demo.local');
     expect(c.bloqueado('a@demo.local')).toBe(false);
   });
+
+  it('robustez: miles de correos inventados no hacen crecer la memoria más allá del tope, y un bloqueo vigente se respeta', () => {
+    const c = new ControlIntentos(MAX_INTENTOS, VENTANA_MS, () => reloj, 100);
+    for (let i = 0; i < MAX_INTENTOS; i++) c.registrarFallo('victima@demo.local');
+    for (let i = 0; i < 5000; i++) c.registrarFallo(`bot${i}@x.pe`);
+    expect(c.tamano).toBeLessThanOrEqual(100);
+    // Con todo vigente se descartan los más antiguos; pasada la ventana, los vencidos se van primero.
+    reloj += VENTANA_MS + 1;
+    for (let i = 0; i < MAX_INTENTOS; i++) c.registrarFallo('otra@demo.local');
+    expect(c.bloqueado('otra@demo.local')).toBe(true);
+    expect(c.tamano).toBeLessThanOrEqual(100);
+  });
 });

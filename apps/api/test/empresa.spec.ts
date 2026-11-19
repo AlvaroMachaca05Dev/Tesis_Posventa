@@ -56,7 +56,12 @@ describe('configuración de la empresa', () => {
     const jpeg = '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
     const ok = await como(ADMIN, 'patch', '/empresa', { logo: { base64: jpeg, ancho: 400, alto: 120 } });
     expect(ok.status).toBe(200);
-    expect(ok.body.logo).toEqual({ base64: jpeg, ancho: 400, alto: 120 });
+    expect(ok.body.logo).toEqual({ base64: jpeg, ancho: 400, alto: 120, png: null });
+    // PNG transparente para la cabecera de la pantalla: solo PNG válido.
+    const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+    expect((await como(ADMIN, 'patch', '/empresa', { logo: { base64: jpeg, ancho: 400, alto: 120, png } })).body.logo.png).toBe(png);
+    expect((await como(ADMIN, 'patch', '/empresa', { logo: { base64: jpeg, ancho: 400, alto: 120, png: jpeg } })).status).toBe(400);
+    await como(ADMIN, 'patch', '/empresa', { logo: { base64: jpeg, ancho: 400, alto: 120 } });
     expect((await como(CAJERA, 'get', '/ordenes/catalogos')).body.empresa.logo).toMatchObject({ ancho: 400, alto: 120 });
     expect((await como(ADMIN, 'patch', '/empresa', { logo: { base64: 'iVBORw0KGgo=', ancho: 10, alto: 10 } })).status).toBe(400);
     expect((await como(ADMIN, 'patch', '/empresa', { logo: { base64: jpeg, ancho: 0, alto: 10 } })).status).toBe(400);

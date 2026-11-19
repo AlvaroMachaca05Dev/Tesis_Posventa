@@ -78,15 +78,19 @@ it('Proveedores: tabla con filtros por columna y modal centrado de dos columnas 
   await waitFor(() => expect(llamadas.some((l) => l.metodo === 'POST' && l.ruta === '/proveedores' && l.cuerpo.documento === '20123456789' && l.cuerpo.tipoDocumento === 'RUC' && l.cuerpo.contacto === 'Luis Torres' && l.cuerpo.movil === '987654321' && l.cuerpo.pais === 'PE')).toBe(true));
 });
 
-it('Grupos: pestañas de grupos, reglas, precios por grupo y familias; la tabla muestra el precio de cada grupo', async () => {
+it('Grupos: solo grupos y familias de motor (con alta, edición y baja, sin turbo); ya no hay reglas ni precios por grupo', async () => {
   window.location.hash = '#/grupos';
-  simular();
+  simular({ 'GET /familias-motor': [{ id: 'f1', codigo: 'FM0001', codigos: ['G3LA'], combustible: 'Gasolina', litros: '1.0', turbo: false, grupoId: null, grupo: null }] });
   render(<App />);
   expect(await screen.findByText('Nivel de tiempo 2')).toBeInTheDocument();
-  for (const t of ['Grupos', 'Reglas de precio', 'Precios por grupo', 'Familias de motor']) expect(screen.getByRole('tab', { name: t })).toBeInTheDocument();
-  await userEvent.click(screen.getByRole('tab', { name: 'Precios por grupo' }));
-  expect(await screen.findByText('S/ 100.00 · 4 h')).toBeInTheDocument();
-  expect(screen.getByText('S/ 80.00 · 3.5 h')).toBeInTheDocument();
+  for (const t of ['Grupos', 'Familias de motor']) expect(screen.getByRole('tab', { name: t })).toBeInTheDocument();
+  expect(screen.queryByRole('tab', { name: 'Reglas de precio' })).toBeNull();
+  expect(screen.queryByRole('tab', { name: 'Precios por grupo' })).toBeNull();
+  await userEvent.click(screen.getByRole('tab', { name: 'Familias de motor' }));
+  expect(await screen.findByText('G3LA')).toBeInTheDocument();
+  expect(screen.queryByText('Turbo')).toBeNull();
+  await userEvent.click(screen.getByRole('button', { name: '+ Nuevo' }));
+  expect(screen.getByRole('dialog', { name: /Nuev[oa] familia/ })).toBeInTheDocument();
 });
 
 it('ODS: el servicio del catálogo toma el precio del grupo y el solapamiento opcional se aplica desde la alerta', async () => {

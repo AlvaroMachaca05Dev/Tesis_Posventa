@@ -40,3 +40,28 @@ export function conSolape(d: DetalleOds, monto: number, regla: string | null): D
   return { ...x, total: totalLinea(x) };
 }
 export const itemVacio = (): DetalleOds => ({ tipo: 'servicio', descripcion: '', referencia: null, cantidad: 1, costo: null, rentabilidadPct: null, precio: 0, descuentoPct: 0, impuesto: 'IGV', total: 0, tecnicoId: null });
+
+/** Cobro simbólico de la revisión específica cuando el cliente repara con nosotros: no se factura en cero. */
+export const COBRO_REVISION_GRATIS = 1;
+/**
+ * Deja la revisión específica en S/ 1 y reparte la diferencia entre los demás servicios, en proporción a su total, para que la orden
+ * no cambie de monto. Si no hay otro servicio con monto, no se toca nada.
+ */
+export function revisionGratis(items: DetalleOds[], i: number): DetalleOds[] {
+  const rev = items[i];
+  if (!rev || rev.tipo !== 'servicio') return items;
+  const otros = items.map((d, j) => ({ d, j })).filter(({ d, j }) => j !== i && d.tipo === 'servicio' && d.total > 0 && d.descuentoPct < 100);
+  const suma = otros.reduce((a, { d }) => a + d.total, 0);
+  const diferencia = r2(rev.total - COBRO_REVISION_GRATIS);
+  if (diferencia <= 0 || suma <= 0) return items;
+  const aumentos = otros.map(({ d }) => r2((diferencia * d.total) / suma));
+  aumentos[aumentos.indexOf(Math.max(...aumentos))] += r2(diferencia - aumentos.reduce((a, x) => a + x, 0));
+  return items.map((d, j) => {
+    if (j === i) return { ...d, precio: COBRO_REVISION_GRATIS, descuentoPct: 0, descuentoMonto: 0, solapamientoId: null, total: COBRO_REVISION_GRATIS };
+    const k = otros.findIndex((o) => o.j === j);
+    if (k < 0) return d;
+    const nuevoTotal = r2(d.total + aumentos[k]);
+    const precio = r2(nuevoTotal / (1 - d.descuentoPct / 100));
+    return { ...d, precio, total: totalLinea({ ...d, precio }) };
+  });
+}

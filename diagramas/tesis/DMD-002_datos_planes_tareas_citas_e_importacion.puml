@@ -1,61 +1,81 @@
 @startuml
-skinparam shadowing false
-skinparam defaultFontName Arial
-skinparam defaultFontSize 13
-skinparam dpi 120
-skinparam roundCorner 8
-skinparam ArrowColor #44546a
-skinparam ClassBackgroundColor #f4f8fc
-skinparam ClassBorderColor #44546a
-skinparam PackageBackgroundColor #ffffff
-skinparam NoteBackgroundColor #fff8e1
-
-title Modelo de datos de planes, tareas, citas e importación
+!include _estilo.iuml
+title Modelo de datos de planes, servicios y proyecciones
 hide circle
 left to right direction
-entity plan {
-  *id\nnombre\ngrupo\nvigente
+entity plan_preventivo {
+  *id
+  --
+  #organizacion_id
+  codigo (único)
+  nombre
+  combustible, uso, aceite
+  ciclo (JSON: visitas en orden)
+  activo
 }
-entity version_plan {
-  *id\n#plan_id\nnumero\nfecha
+entity vehiculo {
+  *id
+  --
+  #plan_id
+  #grupo_id
+  placa_norm (única)
+  codigo_motor
+  uso, aceite
 }
-entity regla {
-  *id\n#version_id\nservicio\nkm_intervalo\ntiempo_intervalo
+entity cambio_plan_vehiculo {
+  *id
+  --
+  #vehiculo_id
+  #usuario_id
+  antes, despues
+  corte, km
+  creado_en
 }
-entity asignacion_plan {
-  *id\n#vehiculo_id\n#version_id\nestado
+entity servicio {
+  *id
+  --
+  codigo (único)
+  nombre, categoria
+  etiqueta, linea_plan, visita
+  subservicios (JSON)
+  pasos (JSON)
+  horas_estandar, precio_estandar
+  precios_grupo (JSON)
 }
-entity proyeccion {
-  *id\n#asignacion_id\nservicio\nkm_estimado\nfecha_estimada\nestado
+entity grupo_vehicular {
+  *id
+  --
+  codigo (único)
 }
-entity tarea {
-  *id\n#orden_id\n#responsable_id\ntipo\nestado\nduracion_estimada_min\nduracion_real_min
+entity lectura_km {
+  *id
+  --
+  #vehiculo_id
+  km, fecha, fuente
 }
-entity bloque_tiempo {
-  *id\n#tarea_id\n#cita_id\n#tecnico_id\ninicio\nfin
+entity proyeccion <<pendiente>> {
+  *id
+  --
+  #vehiculo_id
+  #servicio_id
+  km_estimado, fecha_estimada
+  estado
 }
-entity cita {
-  *id\n#vehiculo_id\n#orden_id\nfecha\nestado
+entity reajuste <<pendiente>> {
+  *id
+  --
+  #orden_id
+  #usuario_id
+  motivo, fecha
 }
-entity jornada {
-  *id\n#tecnico_id\ndia\nalmuerzo\nhorario
-}
-entity lote_importacion {
-  *id\narchivo\nmodo\nestado\n#usuario_id\nfecha
-}
-entity fila_importacion {
-  *id\n#lote_id\nhoja\nnumero_fila\nvalores\nresultado
-}
-entity identidad_externa {
-  *id\nsistema_origen\nentidad\nid_externo\nid_interno
-}
-plan ||--o{ version_plan
-version_plan ||--o{ regla
-version_plan ||--o{ asignacion_plan
-asignacion_plan ||--o{ proyeccion
-tarea ||--o{ bloque_tiempo
-cita ||--o{ bloque_tiempo
-jornada ||--o{ bloque_tiempo
-lote_importacion ||--o{ fila_importacion
-fila_importacion }o--|| identidad_externa
+plan_preventivo |o--o{ vehiculo
+grupo_vehicular |o--o{ vehiculo
+vehiculo ||--o{ lectura_km
+vehiculo ||--o{ cambio_plan_vehiculo
+vehiculo ||--o{ proyeccion
+servicio ||--o{ proyeccion
+reajuste ||--o{ proyeccion
+note bottom of plan_preventivo : El ciclo nombra el paquete de cada\nvisita (express, menor, mayor…),\nque es un servicio con subservicios.
+note bottom of cambio_plan_vehiculo : Cada cambio de uso o de aceite parte\nla línea de tiempo en la última visita.
+note bottom of proyeccion : Pendiente: reajuste con reglas de reinicio.
 @enduml

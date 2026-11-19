@@ -2,6 +2,7 @@ import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { api, Local, Me, Rol, UsuarioLista } from '../comun/api';
 import { FilaFiltros, useFiltros } from '../comun/FiltrosColumna';
 import { MenuAcciones } from '../comun/TablaMaestro';
+import { useConfirmar } from '../comun/Confirmar';
 
 const NIVEL: Record<string, string> = { A: 'Todo', E: 'Ver y editar', V: 'Solo ver' };
 
@@ -9,7 +10,8 @@ type Nivel = 'A' | 'E' | 'V';
 
 export default function Usuarios({ me, nivel }: { me: Me; nivel: Nivel }) {
   const puedeEditar = nivel === 'A' || nivel === 'E';
-  const puedeCrearRoles = nivel === 'A';
+  // Los roles los gestiona solo el Superadministrador (o el Desarrollador); el Administrador agrega usuarios, pero no roles.
+  const puedeCrearRoles = nivel === 'A' && (me.esPlataforma || me.roles.includes('Superadministrador'));
   const [pestana, setPestana] = useState<'usuarios' | 'roles'>('usuarios');
   const [usuarios, setUsuarios] = useState<UsuarioLista[]>([]);
   const [roles, setRoles] = useState<Rol[]>([]);
@@ -76,11 +78,13 @@ function ListaUsuarios(p: {
   ]);
   const visibles = p.usuarios.filter(pasa);
 
+  const { preguntar, modal: confirmacion } = useConfirmar();
   async function cambiarEstado(u: UsuarioLista) {
-    if (u.activo && !window.confirm(`¿Desactivar a ${u.nombre}?`)) return;
+    if (u.activo && (await preguntar({ titulo: `¿Eliminar a ${u.nombre}?`, mensaje: 'Si ya registró movimientos no se borra: queda desactivado y se puede activar.' })) === null) return;
     try {
-      await api.editarUsuario(u.id, { activo: !u.activo });
-      await p.alGuardar(u.activo ? 'Usuario desactivado.' : 'Usuario activado.');
+      if (!u.activo) { await api.editarUsuario(u.id, { activo: true }); await p.alGuardar('Usuario activado.'); return; }
+      const r = await api.eliminarUsuario(u.id);
+      await p.alGuardar(r.eliminado ? 'Usuario eliminado.' : 'Tenía movimientos: el usuario quedó desactivado.');
     } catch (e) {
       p.alFallar((e as Error).message);
     }
@@ -90,6 +94,7 @@ function ListaUsuarios(p: {
     <>
       {p.puedeEditar && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setEditando('nuevo')}>+ Nuevo</button></div>}
       {p.error && !editando && !claveDe && <p className="error" role="alert">{p.error}</p>}
+      {confirmacion}
       {editando && (
         <FormUsuario
           usuario={editando === 'nuevo' ? null : editando}
@@ -122,7 +127,7 @@ function ListaUsuarios(p: {
                     <MenuAcciones>
                       <button type="button" onClick={() => setEditando(u)}>Editar</button>
                       <button type="button" onClick={() => { p.limpiarError(); setClaveDe(u); }}>Cambiar contraseña</button>
-                      <button type="button" className="peligro" onClick={() => void cambiarEstado(u)}>{u.activo ? 'Desactivar' : 'Activar'}</button>
+                      <button type="button" className="peligro" onClick={() => void cambiarEstado(u)}>{u.activo ? 'Eliminar' : 'Activar'}</button>
                     </MenuAcciones>
                   </td>
                 )}
@@ -208,30 +213,39 @@ function FormUsuario(p: {
 
 function PestanaRoles(p: { me: Me; roles: Rol[]; nivel: Nivel; puedeCrear: boolean; error: string; limpiarError: () => void; alGuardar: (m: string) => Promise<void>; alFallar: (m: string) => void }) {
   const [creando, setCreando] = useState(false);
+  const [editando, setEditando] = useState<Rol | null>(null);
+  const { preguntar, modal } = useConfirmar();
   const COLUMNAS = ['Rol', 'Tipo', 'Módulos'];
+  const editable = (r: Rol) => p.puedeCrear && r.ambito !== 'plataforma' && r.nombre !== 'Superadministrador';
+  async function eliminar(r: Rol) {
+    if ((await preguntar({ titulo: '¿Eliminar este rol?', mensaje: `Se eliminará «${r.nombre}». Solo se puede si ningún usuario lo tiene.`, boton: 'Eliminar', peligro: true })) === null) return;
+    try { await api.eliminarRol(r.id); await p.alGuardar('Rol eliminado.'); } catch (e) { p.alFallar((e as Error).message); }
+  }
   const { filtros, setFiltros, pasa } = useFiltros<Rol>([(r) => r.nombre, (r) => (r.esBase ? 'Base' : 'Propio'), (r) => String(r.permisos.length)]);
   const visibles = p.roles.filter(pasa);
 
   return (
     <>
+      {modal}
       {p.puedeCrear && <div className="fila fin"><button type="button" className="primario chico" onClick={() => setCreando(true)}>+ Nuevo</button></div>}
       {p.error && !creando && <p className="error" role="alert">{p.error}</p>}
-      {creando && <FormRol me={p.me} nivel={p.nivel} error={p.error} alCancelar={() => { setCreando(false); p.limpiarError(); }} alGuardar={async (m) => { setCreando(false); await p.alGuardar(m); }} alFallar={p.alFallar} />}
+      {(creando || editando) && <FormRol rol={editando} me={p.me} nivel={p.nivel} error={p.error} alCancelar={() => { setCreando(false); setEditando(null); p.limpiarError(); }} alGuardar={async (m) => { setCreando(false); setEditando(null); await p.alGuardar(m); }} alFallar={p.alFallar} />}
       <div className="tabla">
         <table>
           <thead>
-            <tr>{COLUMNAS.map((c) => <th key={c}>{c}</th>)}</tr>
-            <FilaFiltros nombres={COLUMNAS} conAcciones={false} filtros={filtros} setFiltros={setFiltros} />
+            <tr>{p.puedeCrear && <th>Acciones</th>}{COLUMNAS.map((c) => <th key={c}>{c}</th>)}</tr>
+            <FilaFiltros nombres={COLUMNAS} conAcciones={p.puedeCrear} filtros={filtros} setFiltros={setFiltros} />
           </thead>
           <tbody>
             {visibles.map((r) => (
               <tr key={r.id}>
+                {p.puedeCrear && <td className="acc">{editable(r) && <MenuAcciones><button type="button" onClick={() => { p.limpiarError(); setEditando(r); }}>Editar</button><button type="button" className="peligro" onClick={() => void eliminar(r)}>Eliminar</button></MenuAcciones>}</td>}
                 <td>{r.nombre}</td>
                 <td>{r.esBase ? 'Base' : 'Propio'}</td>
                 <td className="suave">{r.permisos.length ? `${r.permisos.length} módulos` : '—'}</td>
               </tr>
             ))}
-            {visibles.length === 0 && <tr><td colSpan={3} className="suave">Sin resultados.</td></tr>}
+            {visibles.length === 0 && <tr><td colSpan={4} className="suave">Sin resultados.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -271,9 +285,9 @@ function FormClave(p: { usuario: UsuarioLista; error?: string; alCancelar: () =>
   );
 }
 
-function FormRol(p: { me: Me; nivel: Nivel; error?: string; alCancelar: () => void; alGuardar: (m: string) => Promise<void>; alFallar: (m: string) => void }) {
-  const [nombre, setNombre] = useState('');
-  const [elegidos, setElegidos] = useState<Record<string, Nivel>>({});
+function FormRol(p: { rol?: Rol | null; me: Me; nivel: Nivel; error?: string; alCancelar: () => void; alGuardar: (m: string) => Promise<void>; alFallar: (m: string) => void }) {
+  const [nombre, setNombre] = useState(p.rol?.nombre ?? '');
+  const [elegidos, setElegidos] = useState<Record<string, Nivel>>(() => Object.fromEntries((p.rol?.permisos ?? []).map((x) => [x.modulo, x.nivel])));
   // Solo se pueden elegir módulos que tú tienes, hasta tu mismo nivel.
   const modulos = p.me.menu.filter((m) => m.id !== 'usuarios' || p.nivel === 'A');
   const opciones = (max: Nivel): Nivel[] => (max === 'A' ? ['V', 'E', 'A'] : max === 'E' ? ['V', 'E'] : ['V']);
@@ -282,7 +296,8 @@ function FormRol(p: { me: Me; nivel: Nivel; error?: string; alCancelar: () => vo
     e.preventDefault();
     const permisos = modulos.filter((m) => elegidos[m.id]).map((m) => ({ modulo: m.id, nivel: elegidos[m.id] }));
     try {
-      await api.crearRol({ nombre, permisos });
+      if (p.rol) await api.editarRol(p.rol.id, { nombre, permisos });
+      else await api.crearRol({ nombre, permisos });
       await p.alGuardar('Rol guardado.');
     } catch (err) {
       p.alFallar((err as Error).message);
@@ -291,8 +306,8 @@ function FormRol(p: { me: Me; nivel: Nivel; error?: string; alCancelar: () => vo
 
   return (
     <div className="fondo-modal">
-      <form className="modal-form" role="dialog" aria-modal="true" aria-label="Nuevo rol propio" onSubmit={enviar}>
-        <h2>Nuevo rol propio</h2>
+      <form className="modal-form" role="dialog" aria-modal="true" aria-label={p.rol ? 'Editar rol' : 'Nuevo rol propio'} onSubmit={enviar}>
+        <h2>{p.rol ? 'Editar rol' : 'Nuevo rol propio'}</h2>
         {p.error && <p className="error" role="alert">{p.error}</p>}
         <div className="dos-col">
           <div className="campo ancha"><label htmlFor="r-nombre">Nombre del rol</label>

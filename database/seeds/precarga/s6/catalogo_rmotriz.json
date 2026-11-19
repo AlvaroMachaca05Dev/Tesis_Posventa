@@ -1,0 +1,3016 @@
+{
+ "servicios": [
+  {
+   "codigo": "SV001",
+   "n": 1,
+   "nombre": "Auxilio mecánico (grúa o remolque)",
+   "categoria": "Diagnóstico y servicios externos",
+   "etiqueta": "Adicional",
+   "lineaPlan": "No va en el plan",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 15.0,
+    "G4": 20.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.25,
+    "G3": 0.25,
+    "G4": 0.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV002",
+   "n": 2,
+   "nombre": "Revisión específica (un sistema)",
+   "categoria": "Diagnóstico y servicios externos",
+   "etiqueta": "Adicional",
+   "lineaPlan": "Revisión específica",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Diagnóstico de un sistema",
+     "horas": 0.5
+    }
+   ]
+  },
+  {
+   "codigo": "SV003",
+   "n": 3,
+   "nombre": "Tornería completa: culata + monoblock + cigüeñal + lavado (paquete)",
+   "categoria": "Diagnóstico y servicios externos",
+   "etiqueta": "Adicional",
+   "lineaPlan": "No va en el plan",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 1300.0,
+    "G2": 1400.0,
+    "G3": 1400.0,
+    "G4": 1700.0
+   },
+   "horas": {
+    "G1": 25.0,
+    "G2": 27.0,
+    "G3": 27.0,
+    "G4": 21.0
+   },
+   "externo": true,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV004",
+   "n": 4,
+   "nombre": "Tornería de culata + lavado (paquete)",
+   "categoria": "Diagnóstico y servicios externos",
+   "etiqueta": "Adicional",
+   "lineaPlan": "No va en el plan",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 500.0,
+    "G2": 550.0,
+    "G3": 550.0,
+    "G4": 800.0
+   },
+   "horas": {
+    "G1": 10.0,
+    "G2": 11.0,
+    "G3": 11.0,
+    "G4": 10.0
+   },
+   "externo": true,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV005",
+   "n": 5,
+   "nombre": "Tornería de monoblock + cigüeñal + lavado (paquete)",
+   "categoria": "Diagnóstico y servicios externos",
+   "etiqueta": "Adicional",
+   "lineaPlan": "No va en el plan",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 900.0,
+    "G2": 900.0,
+    "G3": 950.0,
+    "G4": 1300.0
+   },
+   "horas": {
+    "G1": 18.0,
+    "G2": 18.0,
+    "G3": 19.0,
+    "G4": 16.0
+   },
+   "externo": true,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV006",
+   "n": 6,
+   "nombre": "Cambio de palier + engrasado (del./post.) (L/R)",
+   "categoria": "Ejes y rodajes",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de palieres y capuchones",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 60.0,
+    "G3": 60.0,
+    "G4": 100.0
+   },
+   "horas": {
+    "G1": 1.75,
+    "G2": 1.75,
+    "G3": 1.75,
+    "G4": 1.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV007",
+   "n": 7,
+   "nombre": "Cambio de poncho de palier (del./post.) (L/R)",
+   "categoria": "Ejes y rodajes",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de palieres y capuchones",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 65.0,
+    "G4": 120.0
+   },
+   "horas": {
+    "G1": 1.75,
+    "G2": 2.5,
+    "G3": 1.75,
+    "G4": 1.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV008",
+   "n": 8,
+   "nombre": "Cambio de retén de palier lado caja (del./post.) (L/R)",
+   "categoria": "Ejes y rodajes",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de palieres y capuchones",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 120.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 1.0,
+    "G3": 1.0,
+    "G4": 1.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV009",
+   "n": 9,
+   "nombre": "Cambio de rodaje de rueda delantera (L/R)",
+   "categoria": "Ejes y rodajes",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 65.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 1.75,
+    "G2": 1.5,
+    "G3": 2.0,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV010",
+   "n": 10,
+   "nombre": "Cambio de rodaje de rueda posterior (4x2 / 4x4) (L/R)",
+   "categoria": "Ejes y rodajes",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 100.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 1.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV011",
+   "n": 11,
+   "nombre": "Mantenimiento de palier - cambio de grasa (del./post.) (L/R)",
+   "categoria": "Ejes y rodajes",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de palieres y capuchones",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV012",
+   "n": 12,
+   "nombre": "Cambio de alternador (desmontaje y montaje)",
+   "categoria": "Electricidad",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV013",
+   "n": 13,
+   "nombre": "Cambio de sensor de acceso difícil (detonación, boya, presión de A/C…)",
+   "categoria": "Electricidad",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 0.75,
+    "G3": 1.0,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV014",
+   "n": 14,
+   "nombre": "Cambio de sensor de acceso fácil (CKP, CMP, MAP, MAF, TPS, ECT, ABS…)",
+   "categoria": "Electricidad",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV015",
+   "n": 15,
+   "nombre": "Bajada de caja mecánica (collarín, retén u otros)",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 150.0,
+    "G2": 180.0,
+    "G3": 200.0,
+    "G4": 240.0
+   },
+   "horas": {
+    "G1": 3.0,
+    "G2": 3.5,
+    "G3": 4.0,
+    "G4": 3.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV016",
+   "n": 16,
+   "nombre": "Bajada de caja · cambio de kit de embrague (4x2 o 4x4)",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de embrague",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 180.0,
+    "G2": 180.0,
+    "G3": 220.0,
+    "G4": 350.0
+   },
+   "horas": {
+    "G1": 4.5,
+    "G2": 4.5,
+    "G3": 4.5,
+    "G4": 4.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV017",
+   "n": 17,
+   "nombre": "Cambio de aceite de caja mecánica",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de aceite de caja",
+   "visita": "Menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV018",
+   "n": 18,
+   "nombre": "Cambio de bomba auxiliar de embrague concéntrica (con bajada de caja)",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de embrague",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 150.0,
+    "G2": 180.0,
+    "G3": 230.0,
+    "G4": 440.0
+   },
+   "horas": {
+    "G1": 3.0,
+    "G2": 3.5,
+    "G3": 4.5,
+    "G4": 5.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV019",
+   "n": 19,
+   "nombre": "Cambio de bomba auxiliar de embrague exterior",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de embrague",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV020",
+   "n": 20,
+   "nombre": "Cambio de bomba principal de embrague",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de embrague",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 1.0,
+    "G3": 1.0,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV021",
+   "n": 21,
+   "nombre": "Cambio de caja automática (desmontaje y montaje)",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 180.0,
+    "G2": 200.0,
+    "G3": 230.0,
+    "G4": 360.0
+   },
+   "horas": {
+    "G1": 3.5,
+    "G2": 4.0,
+    "G3": 4.5,
+    "G4": 4.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV022",
+   "n": 22,
+   "nombre": "Cambio de empaque de cárter de caja mecánica",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 100.0,
+    "G2": 100.0,
+    "G3": 150.0,
+    "G4": 160.0
+   },
+   "horas": {
+    "G1": 2.0,
+    "G2": 1.5,
+    "G3": 3.0,
+    "G4": 2.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV023",
+   "n": 23,
+   "nombre": "Cambio de taco de caja (soporte de caja)",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de soportes de motor y de caja",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV024",
+   "n": 24,
+   "nombre": "Cambio de varillaje o cables de cambios",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 65.0,
+    "G3": 75.0,
+    "G4": 100.0
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 1.25,
+    "G3": 1.5,
+    "G4": 1.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV025",
+   "n": 25,
+   "nombre": "Regulación de varillaje o cables de cambios",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.25,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV026",
+   "n": 26,
+   "nombre": "Regulación o cambio de cable de embrague",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de embrague",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 40.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.75,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV027",
+   "n": 27,
+   "nombre": "Reparación de caja de cambios mecánica",
+   "categoria": "Embrague y caja",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 280.0,
+    "G2": 350.0,
+    "G3": 450.0,
+    "G4": 560.0
+   },
+   "horas": {
+    "G1": 5.5,
+    "G2": 7.0,
+    "G3": 9.0,
+    "G4": 7.0
+   },
+   "externo": false,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV028",
+   "n": 28,
+   "nombre": "Cambio de bomba principal de freno",
+   "categoria": "Frenos",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de líquido de frenos",
+   "visita": "Express, menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 1.0,
+    "G3": 1.0,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV029",
+   "n": 29,
+   "nombre": "Cambio de bombín o cáliper de freno (del./post.) (L/R)",
+   "categoria": "Frenos",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de pastillas",
+   "visita": "Menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV030",
+   "n": 30,
+   "nombre": "Cambio de cable de freno de mano",
+   "categoria": "Frenos",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Mantenimiento de frenos completo",
+   "visita": "Paquete de frenos",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 1.0,
+    "G3": 1.0,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV031",
+   "n": 31,
+   "nombre": "Cambio de disco de freno (del./post.) (L/R)",
+   "categoria": "Frenos",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de discos",
+   "visita": "Menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV032",
+   "n": 32,
+   "nombre": "Cambio de faja de freno (del./post.) (L/R)",
+   "categoria": "Frenos",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de zapatas",
+   "visita": "Menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 50.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV033",
+   "n": 33,
+   "nombre": "Cambio de pastilla de freno (del./post.) (L/R)",
+   "categoria": "Frenos",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de pastillas",
+   "visita": "Menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 15.0,
+    "G4": 25.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.25,
+    "G3": 0.25,
+    "G4": 0.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV034",
+   "n": 34,
+   "nombre": "Mantenimiento de frenos completo (paquete)",
+   "categoria": "Frenos",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Mantenimiento de frenos completo",
+   "visita": "Paquete de frenos",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 130.0,
+    "G2": 130.0,
+    "G3": 130.0,
+    "G4": 200.0
+   },
+   "horas": {
+    "G1": 2.5,
+    "G2": 2.5,
+    "G3": 2.5,
+    "G4": 2.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Purgado y cambio de líquido de frenos",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Mantenimiento de pastilla: limpieza y cambio de seguros (del.) (L/R)",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Mantenimiento de pastilla: limpieza y cambio de seguros (post.) (L/R)",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Regulación de fajas de freno y freno de mano",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de discos y tambores",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Prueba de frenado",
+     "horas": 0.25
+    }
+   ]
+  },
+  {
+   "codigo": "SV035",
+   "n": 35,
+   "nombre": "Mantenimiento de pastilla de freno: limpieza y cambio de seguros (del./post.) (L/R)",
+   "categoria": "Frenos",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Mantenimiento de frenos completo",
+   "visita": "Paquete de frenos",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 15.0,
+    "G4": 25.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.25,
+    "G3": 0.25,
+    "G4": 0.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV036",
+   "n": 36,
+   "nombre": "Purgado y cambio de líquido de frenos",
+   "categoria": "Frenos",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Revisión de líquido de frenos",
+   "visita": "Express, menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV037",
+   "n": 37,
+   "nombre": "Regulación de fajas de freno y freno de mano",
+   "categoria": "Frenos",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Mantenimiento de frenos completo",
+   "visita": "Paquete de frenos",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.25,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV038",
+   "n": 38,
+   "nombre": "Bajada de tanque de combustible (gasolina / diésel)",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": "Por combustible",
+   "precios": {
+    "G1": 65.0,
+    "G2": 75.0,
+    "G3": 90.0,
+    "G4": 140.0
+   },
+   "horas": {
+    "G1": 1.25,
+    "G2": 1.5,
+    "G3": 1.75,
+    "G4": 1.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV039",
+   "n": 39,
+   "nombre": "Cambio de bomba de alta presión o de inyección (diésel)",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": null,
+    "G2": null,
+    "G3": null,
+    "G4": 160.0
+   },
+   "horas": {
+    "G4": 2.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV040",
+   "n": 40,
+   "nombre": "Cambio de bomba de combustible de baja presión (eléctrica o de diafragma)",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 40.0,
+    "G4": 100.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 1.0,
+    "G3": 1.25,
+    "G4": 1.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV041",
+   "n": 41,
+   "nombre": "Cambio de empaque de múltiple de admisión",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 65.0,
+    "G3": 75.0,
+    "G4": 100.0
+   },
+   "horas": {
+    "G1": 2.5,
+    "G2": 1.25,
+    "G3": 2.0,
+    "G4": 1.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV042",
+   "n": 42,
+   "nombre": "Cambio de filtro de aire",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de filtro de aire",
+   "visita": "Menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 15.0,
+    "G4": 20.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.25,
+    "G3": 0.25,
+    "G4": 0.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV043",
+   "n": 43,
+   "nombre": "Cambio de filtro de combustible externo (gasolina / diésel)",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de filtro de combustible",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV044",
+   "n": 44,
+   "nombre": "Cambio de filtro de combustible sumergible (gasolina)",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de filtro de combustible",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV045",
+   "n": 45,
+   "nombre": "Limpieza de inyectores",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Afinamiento completo de motor",
+   "visita": "Menor y mayor con afinamiento (solo gasolina)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 0.75,
+    "G3": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV046",
+   "n": 46,
+   "nombre": "Limpieza de obturador / IAC y regulación de mínimo",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Afinamiento completo de motor",
+   "visita": "Menor y mayor con afinamiento (solo gasolina)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.75,
+    "G3": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV047",
+   "n": 47,
+   "nombre": "Limpieza y mantenimiento de carburador",
+   "categoria": "Gestión del motor - Alimentación",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Afinamiento completo de motor",
+   "visita": "Menor y mayor con afinamiento (solo gasolina)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 65.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 1.0,
+    "G3": 1.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV048",
+   "n": 48,
+   "nombre": "Bajada de culata (cadena / correa)",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 600.0,
+    "G2": 700.0,
+    "G3": 900.0,
+    "G4": 1300.0
+   },
+   "horas": {
+    "G1": 26.0,
+    "G2": 25.0,
+    "G3": 18.0,
+    "G4": 16.0
+   },
+   "externo": false,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV049",
+   "n": 49,
+   "nombre": "Bajada de motor (solo desmontaje y montaje)",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 700.0,
+    "G2": 900.0,
+    "G3": 1200.0,
+    "G4": 1400.0
+   },
+   "horas": {
+    "G1": 14.0,
+    "G2": 18.0,
+    "G3": 23.0,
+    "G4": 17.0
+   },
+   "externo": false,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV050",
+   "n": 50,
+   "nombre": "Calibración de válvulas (regulación de balancines)",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 65.0,
+    "G3": 75.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 1.25,
+    "G3": 1.5,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV051",
+   "n": 51,
+   "nombre": "Cambio de aceite de motor y filtro (rosca o cartucho)",
+   "categoria": "Motor",
+   "etiqueta": "Preventivo",
+   "lineaPlan": "Cambio de aceite y filtro de motor",
+   "visita": "Express, menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV052",
+   "n": 52,
+   "nombre": "Cambio de anillos de motor",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 750.0,
+    "G2": 950.0,
+    "G3": 1200.0,
+    "G4": 1500.0
+   },
+   "horas": {
+    "G1": 15.0,
+    "G2": 19.0,
+    "G3": 23.0,
+    "G4": 18.0
+   },
+   "externo": false,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV053",
+   "n": 53,
+   "nombre": "Cambio de cadena de distribución",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de distribución y correas",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 180.0,
+    "G2": 200.0,
+    "G3": 280.0,
+    "G4": 440.0
+   },
+   "horas": {
+    "G1": 7.0,
+    "G2": 9.0,
+    "G3": 5.5,
+    "G4": 5.5
+   },
+   "externo": false,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV054",
+   "n": 54,
+   "nombre": "Cambio de correa de accesorios (alternador)",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de correa de accesorios",
+   "visita": "Menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV055",
+   "n": 55,
+   "nombre": "Cambio de correa de distribución",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de distribución y correas",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 90.0,
+    "G2": 100.0,
+    "G3": 150.0,
+    "G4": 200.0
+   },
+   "horas": {
+    "G1": 2.0,
+    "G2": 2.0,
+    "G3": 3.0,
+    "G4": 2.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV056",
+   "n": 56,
+   "nombre": "Cambio de empaque de cárter de motor",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 75.0,
+    "G4": 140.0
+   },
+   "horas": {
+    "G1": 1.75,
+    "G2": 4.5,
+    "G3": 3.0,
+    "G4": 1.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV057",
+   "n": 57,
+   "nombre": "Cambio de empaque de tapa de balancines",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV058",
+   "n": 58,
+   "nombre": "Cambio de retén de árbol de levas",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 75.0,
+    "G2": 100.0,
+    "G3": 130.0,
+    "G4": 140.0
+   },
+   "horas": {
+    "G1": 1.5,
+    "G2": 2.0,
+    "G3": 2.5,
+    "G4": 1.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV059",
+   "n": 59,
+   "nombre": "Cambio de retén delantero de cigüeñal",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 65.0,
+    "G2": 65.0,
+    "G3": 65.0,
+    "G4": 140.0
+   },
+   "horas": {
+    "G1": 1.25,
+    "G2": 1.25,
+    "G3": 1.25,
+    "G4": 1.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV060",
+   "n": 60,
+   "nombre": "Cambio de retén posterior de cigüeñal (con bajada de caja)",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 180.0,
+    "G2": 200.0,
+    "G3": 230.0,
+    "G4": 360.0
+   },
+   "horas": {
+    "G1": 3.5,
+    "G2": 4.0,
+    "G3": 4.5,
+    "G4": 4.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV061",
+   "n": 61,
+   "nombre": "Cambio de soporte de motor (superior / inferior) (L/R)",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de soportes de motor y de caja",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 40.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.75,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV062",
+   "n": 62,
+   "nombre": "Prueba de compresión de motor",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.5,
+    "G3": 0.75,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV063",
+   "n": 63,
+   "nombre": "Reparación de motor sin tornería (cadena / correa)",
+   "categoria": "Motor",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 1300.0,
+    "G2": 1600.0,
+    "G3": 2000.0,
+    "G4": 2600.0
+   },
+   "horas": {
+    "G1": 34.0,
+    "G2": 32.0,
+    "G3": 45.0,
+    "G4": 32.0
+   },
+   "externo": false,
+   "trabajoMayor": true,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV064",
+   "n": 64,
+   "nombre": "Cambio de bomba de agua · motor con cadena",
+   "categoria": "Refrigeración y clima",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": "Motor con cadena",
+   "precios": {
+    "G1": 65.0,
+    "G2": 65.0,
+    "G3": 65.0,
+    "G4": 120.0
+   },
+   "horas": {
+    "G1": 1.25,
+    "G2": 1.25,
+    "G3": 1.25,
+    "G4": 1.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV065",
+   "n": 65,
+   "nombre": "Cambio de bomba de agua · motor con correa",
+   "categoria": "Refrigeración y clima",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": "Motor con correa",
+   "precios": {
+    "G1": 75.0,
+    "G2": 100.0,
+    "G3": 130.0,
+    "G4": 160.0
+   },
+   "horas": {
+    "G1": 1.5,
+    "G2": 2.0,
+    "G3": 2.5,
+    "G4": 2.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV066",
+   "n": 66,
+   "nombre": "Cambio de brida de agua",
+   "categoria": "Refrigeración y clima",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 65.0,
+    "G3": 65.0,
+    "G4": 100.0
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 1.25,
+    "G3": 1.25,
+    "G4": 1.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV067",
+   "n": 67,
+   "nombre": "Cambio de filtro de cabina (polen)",
+   "categoria": "Refrigeración y clima",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de filtro de cabina",
+   "visita": "Menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 15.0,
+    "G4": 20.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.25,
+    "G3": 0.25,
+    "G4": 0.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV068",
+   "n": 68,
+   "nombre": "Cambio de radiador",
+   "categoria": "Refrigeración y clima",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 50.0,
+    "G3": 75.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 1.0,
+    "G3": 1.5,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV069",
+   "n": 69,
+   "nombre": "Cambio de refrigerante y purgado",
+   "categoria": "Refrigeración y clima",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de refrigerante",
+   "visita": "Express, menor, mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 15.0,
+    "G2": 15.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.25,
+    "G2": 0.25,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV070",
+   "n": 70,
+   "nombre": "Cambio de termostato",
+   "categoria": "Refrigeración y clima",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "No va en el plan (correctivo)",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV071",
+   "n": 71,
+   "nombre": "Afinamiento completo de motor (carburado)",
+   "categoria": "Sistema de encendido (afinamiento de motor)",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Afinamiento completo de motor",
+   "visita": "Menor y mayor con afinamiento (solo gasolina)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 140.0,
+    "G2": 140.0,
+    "G3": 140.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 2.5,
+    "G2": 2.5,
+    "G3": 2.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Limpieza o cambio de bujías (tipo y estado)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de bobinas y chicotes",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Prueba de presión de bomba",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Limpieza y mantenimiento de carburador",
+     "horas": 1.5
+    }
+   ]
+  },
+  {
+   "codigo": "SV072",
+   "n": 72,
+   "nombre": "Afinamiento completo de motor (inyección)",
+   "categoria": "Sistema de encendido (afinamiento de motor)",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Afinamiento completo de motor",
+   "visita": "Menor y mayor con afinamiento (solo gasolina)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 140.0,
+    "G2": 140.0,
+    "G3": 140.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 3.0,
+    "G2": 3.0,
+    "G3": 3.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Limpieza o cambio de bujías (tipo y estado)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de bobinas y chicotes",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Prueba de presión de bomba",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Limpieza de inyectores y obturador / IAC",
+     "horas": 2.0
+    }
+   ]
+  },
+  {
+   "codigo": "SV073",
+   "n": 73,
+   "nombre": "Cambio de bobina de encendido",
+   "categoria": "Sistema de encendido (afinamiento de motor)",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Afinamiento completo de motor",
+   "visita": "Menor y mayor con afinamiento (solo gasolina)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV074",
+   "n": 74,
+   "nombre": "Cambio de chicotes de bujías",
+   "categoria": "Sistema de encendido (afinamiento de motor)",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Afinamiento completo de motor",
+   "visita": "Menor y mayor con afinamiento (solo gasolina)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV075",
+   "n": 75,
+   "nombre": "Cambio o limpieza de bujías",
+   "categoria": "Sistema de encendido (afinamiento de motor)",
+   "etiqueta": "Preventivo / correctivo",
+   "lineaPlan": "Afinamiento completo de motor",
+   "visita": "Menor y mayor con afinamiento (solo gasolina)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": null
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV076",
+   "n": 76,
+   "nombre": "Cambio de aceite de hidrolina (dirección hidráulica)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de dirección hidráulica",
+   "visita": "Revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV077",
+   "n": 77,
+   "nombre": "Cambio de amortiguador McPherson con espiral (del./post.) (L/R)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de amortiguadores",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 50.0,
+    "G2": 60.0,
+    "G3": 60.0,
+    "G4": 70.0
+   },
+   "horas": {
+    "G1": 1.25,
+    "G2": 2.5,
+    "G3": 2.5,
+    "G4": 1.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV078",
+   "n": 78,
+   "nombre": "Cambio de amortiguador convencional (del./post.) (L/R)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de amortiguadores",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 1.0,
+    "G2": 1.25,
+    "G3": 1.25,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV079",
+   "n": 79,
+   "nombre": "Cambio de axial de dirección - barra de acoplamiento (L/R)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de terminales y cremallera",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 65.0,
+    "G2": 90.0,
+    "G3": 130.0,
+    "G4": 140.0
+   },
+   "horas": {
+    "G1": 1.25,
+    "G2": 1.75,
+    "G3": 2.5,
+    "G4": 1.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV080",
+   "n": 80,
+   "nombre": "Cambio de bieletas o jebes de barra estabilizadora (del./post.)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de rótulas, bujes y trapecios",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 50.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 1.0,
+    "G3": 0.75,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV081",
+   "n": 81,
+   "nombre": "Cambio de cremallera de dirección eléctrica o mecánica",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de terminales y cremallera",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 65.0,
+    "G2": 65.0,
+    "G3": 75.0,
+    "G4": 140.0
+   },
+   "horas": {
+    "G1": 1.25,
+    "G2": 1.25,
+    "G3": 1.5,
+    "G4": 1.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV082",
+   "n": 82,
+   "nombre": "Cambio de cremallera de dirección hidráulica",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de terminales y cremallera",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 90.0,
+    "G2": 90.0,
+    "G3": 100.0,
+    "G4": 160.0
+   },
+   "horas": {
+    "G1": 1.75,
+    "G2": 1.75,
+    "G3": 2.0,
+    "G4": 2.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV083",
+   "n": 83,
+   "nombre": "Cambio de goma o tope de amortiguador (del./post.) (L/R)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de amortiguadores",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 1.0,
+    "G3": 1.0,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV084",
+   "n": 84,
+   "nombre": "Cambio de manguera de hidrolina de alta presión (dirección hidráulica)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de dirección hidráulica",
+   "visita": "Revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 1.0,
+    "G3": 1.0,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV085",
+   "n": 85,
+   "nombre": "Cambio de rótula inferior de suspensión (del./post.) (L/R)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de rótulas, bujes y trapecios",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV086",
+   "n": 86,
+   "nombre": "Cambio de terminal de dirección (L/R)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de terminales y cremallera",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 50.0,
+    "G3": 50.0,
+    "G4": 80.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 1.0,
+    "G3": 0.75,
+    "G4": 1.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV087",
+   "n": 87,
+   "nombre": "Cambio de torreta de amortiguador (del./post.) (L/R)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de amortiguadores",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 1.0,
+    "G3": 1.0,
+    "G4": 1.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV088",
+   "n": 88,
+   "nombre": "Cambio de trapecio (del./post.) (L/R)",
+   "categoria": "Suspensión y dirección",
+   "etiqueta": "Correctivo",
+   "lineaPlan": "Revisión de rótulas, bujes y trapecios",
+   "visita": "Mayor y revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 60.0,
+    "G3": 60.0,
+    "G4": 100.0
+   },
+   "horas": {
+    "G1": 1.75,
+    "G2": 1.75,
+    "G3": 1.75,
+    "G4": 1.25
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV089",
+   "n": 89,
+   "nombre": "Cambio de manguera de acceso difícil (radiador superior o inferior, bajo múltiple…)",
+   "categoria": "Adicionales",
+   "etiqueta": "Adicional",
+   "lineaPlan": "No va en el plan",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 40.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV090",
+   "n": 90,
+   "nombre": "Cambio de manguera de acceso fácil (agua, combustible, vacío…)",
+   "categoria": "Adicionales",
+   "etiqueta": "Adicional",
+   "lineaPlan": "No va en el plan",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 25.0,
+    "G2": 25.0,
+    "G3": 25.0,
+    "G4": 25.0
+   },
+   "horas": {
+    "G1": 0.5,
+    "G2": 0.5,
+    "G3": 0.5,
+    "G4": 0.5
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV091",
+   "n": 91,
+   "nombre": "Cargo por pago con tarjeta de débito o crédito (5% adicional)",
+   "categoria": "Adicionales",
+   "etiqueta": "Adicional",
+   "lineaPlan": "No va en el plan",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 0.0,
+    "G2": 0.0,
+    "G3": 0.0,
+    "G4": 0.0
+   },
+   "horas": {
+    "G1": 0.0,
+    "G2": 0.0,
+    "G3": 0.0,
+    "G4": 0.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV092",
+   "n": 92,
+   "nombre": "Servicios generales (código: servicios)",
+   "categoria": "Adicionales",
+   "etiqueta": "Adicional",
+   "lineaPlan": "No va en el plan",
+   "visita": "Fuera del plan",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 0.0,
+    "G2": 0.0,
+    "G3": 0.0,
+    "G4": 0.0
+   },
+   "horas": {
+    "G1": 0.0,
+    "G2": 0.0,
+    "G3": 0.0,
+    "G4": 0.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": []
+  },
+  {
+   "codigo": "SV093",
+   "n": 93,
+   "nombre": "Escáner computarizado",
+   "categoria": "Diagnóstico y servicios externos",
+   "etiqueta": "Adicional",
+   "lineaPlan": "Escaneo de fallas",
+   "visita": "Revisión completa",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40.0,
+    "G2": 40.0,
+    "G3": 40.0,
+    "G4": 60.0
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Escaneo de fallas",
+     "horas": 0.75
+    }
+   ]
+  },
+  {
+   "codigo": "SV094",
+   "n": 94,
+   "nombre": "Servicio express",
+   "categoria": "Paquetes de mantenimiento",
+   "etiqueta": "Preventivo",
+   "lineaPlan": "Visita del plan",
+   "visita": "Servicio express",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 40,
+    "G2": 40,
+    "G3": 40,
+    "G4": 60
+   },
+   "horas": {
+    "G1": 0.75,
+    "G2": 0.75,
+    "G3": 0.75,
+    "G4": 0.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Cambio de aceite y filtro de motor",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de refrigerante",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido de frenos",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de batería",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido limpiaparabrisas",
+     "horas": 0.25
+    }
+   ]
+  },
+  {
+   "codigo": "SV095",
+   "n": 95,
+   "nombre": "Mantenimiento menor",
+   "categoria": "Paquetes de mantenimiento",
+   "etiqueta": "Preventivo",
+   "lineaPlan": "Visita del plan",
+   "visita": "Mantenimiento menor",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 90,
+    "G2": 90,
+    "G3": 90,
+    "G4": 140
+   },
+   "horas": {
+    "G1": 1.75,
+    "G2": 1.75,
+    "G3": 1.75,
+    "G4": 1.75
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Cambio de aceite y filtro de motor",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de refrigerante",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido de frenos",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de batería",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido limpiaparabrisas",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de filtros de aire y cabina",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de neumáticos (desgaste / presión)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de pastillas y discos",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de zapatas y tambores",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de luces",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de mangueras y fugas (motor / refrigerante / caja)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de embrague y su líquido",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de aceite de caja",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de correa de accesorios",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de ventilación y emisiones",
+     "horas": 0.25
+    }
+   ]
+  },
+  {
+   "codigo": "SV096",
+   "n": 96,
+   "nombre": "Mantenimiento mayor",
+   "categoria": "Paquetes de mantenimiento",
+   "etiqueta": "Preventivo",
+   "lineaPlan": "Visita del plan",
+   "visita": "Mantenimiento mayor",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 160,
+    "G2": 160,
+    "G3": 160,
+    "G4": 250
+   },
+   "horas": {
+    "G1": 3,
+    "G2": 3,
+    "G3": 3,
+    "G4": 3
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Cambio de aceite y filtro de motor",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de refrigerante",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido de frenos",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de batería",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido limpiaparabrisas",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de filtros de aire y cabina",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de neumáticos (desgaste / presión)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de pastillas y discos",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de zapatas y tambores",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de luces",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de mangueras y fugas (motor / refrigerante / caja)",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de embrague y su líquido",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de aceite de caja",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de correa de accesorios",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de ventilación y emisiones",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de amortiguadores",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de rótulas, bujes y trapecios",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de terminales y cremallera",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de palieres y capuchones",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de sistema de escape",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de soportes de motor",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de soportes de caja",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de distribución y correas",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de filtro de combustible",
+     "horas": 0.25
+    }
+   ]
+  },
+  {
+   "codigo": "SV097",
+   "n": 97,
+   "nombre": "Mantenimiento menor + afinamiento",
+   "categoria": "Paquetes de mantenimiento",
+   "etiqueta": "Preventivo",
+   "lineaPlan": "Visita del plan",
+   "visita": "Mantenimiento menor + afinamiento",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 220,
+    "G2": 220,
+    "G3": 220,
+    "G4": null
+   },
+   "horas": {
+    "G1": 5.0,
+    "G2": 5.0,
+    "G3": 5.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Cambio de aceite y filtro de motor",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de refrigerante",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido de frenos",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de batería",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido limpiaparabrisas",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de filtros de aire y cabina",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de neumáticos (desgaste / presión)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de pastillas y discos",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de zapatas y tambores",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de luces",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de mangueras y fugas (motor / refrigerante / caja)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de embrague y su líquido",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de aceite de caja",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de correa de accesorios",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de ventilación y emisiones",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Limpieza o cambio de bujías (tipo y estado)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de bobinas y chicotes",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Prueba de presión de bomba",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Limpieza de inyectores y obturador / IAC",
+     "horas": 2.0
+    }
+   ]
+  },
+  {
+   "codigo": "SV098",
+   "n": 98,
+   "nombre": "Mantenimiento mayor + afinamiento",
+   "categoria": "Paquetes de mantenimiento",
+   "etiqueta": "Preventivo",
+   "lineaPlan": "Visita del plan",
+   "visita": "Mantenimiento mayor + afinamiento",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 290,
+    "G2": 290,
+    "G3": 290,
+    "G4": null
+   },
+   "horas": {
+    "G1": 6.0,
+    "G2": 6.0,
+    "G3": 6.0
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Cambio de aceite y filtro de motor",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de refrigerante",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido de frenos",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de batería",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido limpiaparabrisas",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de filtros de aire y cabina",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de neumáticos (desgaste / presión)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de pastillas y discos",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de zapatas y tambores",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de luces",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de mangueras y fugas (motor / refrigerante / caja)",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de embrague y su líquido",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de aceite de caja",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de correa de accesorios",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de ventilación y emisiones",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de amortiguadores",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de rótulas, bujes y trapecios",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de terminales y cremallera",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de palieres y capuchones",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de sistema de escape",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de soportes de motor",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de soportes de caja",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de distribución y correas",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de filtro de combustible",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Limpieza o cambio de bujías (tipo y estado)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de bobinas y chicotes",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Prueba de presión de bomba",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Limpieza de inyectores y obturador / IAC",
+     "horas": 2.0
+    }
+   ]
+  },
+  {
+   "codigo": "SV099",
+   "n": 99,
+   "nombre": "Revisión completa (incluye cambio de aceite y filtro)",
+   "categoria": "Paquetes de mantenimiento",
+   "etiqueta": "Preventivo",
+   "lineaPlan": "Visita del plan",
+   "visita": "Revisión completa (incluye cambio de aceite y filtro)",
+   "eligeSistema": null,
+   "precios": {
+    "G1": 220,
+    "G2": 220,
+    "G3": 220,
+    "G4": 330
+   },
+   "horas": {
+    "G1": 4,
+    "G2": 4,
+    "G3": 4,
+    "G4": 4
+   },
+   "externo": false,
+   "trabajoMayor": false,
+   "subservicios": [
+    {
+     "nombre": "Cambio de aceite y filtro de motor",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de refrigerante",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido de frenos",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de batería",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de líquido limpiaparabrisas",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de filtros de aire y cabina",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de neumáticos (desgaste / presión)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de pastillas y discos",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de zapatas y tambores",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de luces",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de mangueras y fugas (motor / refrigerante / caja)",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de embrague y su líquido",
+     "horas": 0.5
+    },
+    {
+     "nombre": "Revisión de aceite de caja",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de correa de accesorios",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de ventilación y emisiones",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de dirección hidráulica",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de amortiguadores",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de rótulas, bujes y trapecios",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de terminales y cremallera",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de soportes de motor",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de soportes de caja",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de sistema de escape",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de palieres y capuchones",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Escaneo de fallas y prueba de ruta",
+     "horas": 1.0
+    },
+    {
+     "nombre": "Revisión de filtro de combustible",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de bomba de vacío (servofreno)",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de distribución y correas",
+     "horas": 0.25
+    },
+    {
+     "nombre": "Revisión de aire acondicionado",
+     "horas": 0.25
+    }
+   ]
+  }
+ ]
+}

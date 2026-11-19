@@ -62,7 +62,7 @@ describe('la base hace cumplir sus reglas aunque se salte la API', () => {
     expect(esUnico(e)).toBe(true);
   });
   it('código de ODS único por empresa', async () => {
-    const o = (await como(CAJERA, 'post', '/ordenes', { vehiculoId, tipoAtencion: 'Garantía' })).body;
+    const o = (await como(CAJERA, 'post', '/ordenes', { vehiculoId, tipoAtencion: 'Mantenimiento correctivo' })).body;
     const base = await prisma.ordenServicio.findUniqueOrThrow({ where: { id: o.id } });
     const e = await prisma.ordenServicio.create({ data: { organizacionId, vehiculoId, clienteId, localId: base.localId, codigo: o.codigo, tipoAtencion: 'Otro', creadoPorId: base.creadoPorId } }).catch((x) => x);
     expect(esUnico(e)).toBe(true);
@@ -75,7 +75,7 @@ describe('la base hace cumplir sus reglas aunque se salte la API', () => {
     expect(esForanea(await prisma.evidenciaIngreso.create({ data: { ordenId: fantasma, nombre: 'x', tipo: 'image/png', tamano: 1, datos: Buffer.from([1]), subidoPorId: usuario.id } }).catch((x) => x))).toBe(true);
   });
   it('los montos se guardan exactos (decimales, no flotantes)', async () => {
-    const o = (await prisma.ordenServicio.findFirstOrThrow({ where: { clienteId } }));
+    const o = (await prisma.ordenServicio.findFirstOrThrow({ where: { clienteId, tipoAtencion: { not: 'Garantía' } } }));
     await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [{ tipo: 'producto', descripcion: 'Filtro', cantidad: 3, precio: 0.1 }] });
     const d = await prisma.detalleODS.findFirstOrThrow({ where: { ordenId: o.id } });
     expect(d.total.toString()).toBe('0.3');
@@ -96,7 +96,7 @@ describe('coherencia entre tablas después de usar la API', () => {
     expect(o.clienteId).toBe(clienteId);
   });
   it('el total que muestra la API coincide con la suma guardada de los ítems y lo pendiente con los abonos', async () => {
-    const o = await prisma.ordenServicio.findFirstOrThrow({ where: { vehiculoId } });
+    const o = await prisma.ordenServicio.findFirstOrThrow({ where: { vehiculoId, tipoAtencion: { not: 'Garantía' } } });
     await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [{ tipo: 'servicio', descripcion: 'Diagnóstico', precio: 80, cantidad: 2 }, { tipo: 'producto', descripcion: 'Aceite', precio: 35.5, cantidad: 2, descuentoPct: 10 }] });
     await como(CAJERA, 'post', `/ordenes/${o.id}/abonos`, { metodo: 'Yape', valor: 50 });
     const api = (await como(CAJERA, 'get', `/ordenes/${o.id}`)).body;
@@ -112,7 +112,7 @@ describe('coherencia entre tablas después de usar la API', () => {
     expect(await prisma.detalleODS.count({ where: { ordenId: o.id } })).toBe(1);
   });
   it('un error a la mitad no deja cambios a medias (total bajo lo abonado: nada se guarda)', async () => {
-    const o = await prisma.ordenServicio.findFirstOrThrow({ where: { vehiculoId } });
+    const o = await prisma.ordenServicio.findFirstOrThrow({ where: { vehiculoId, tipoAtencion: { not: 'Garantía' } } });
     const antes = await prisma.detalleODS.findMany({ where: { ordenId: o.id } });
     const r = await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [{ tipo: 'servicio', descripcion: 'Barato', precio: 1 }] });
     expect(r.status).toBe(409);

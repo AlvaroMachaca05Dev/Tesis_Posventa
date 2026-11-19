@@ -1,7 +1,9 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { api, CatalogoOds, CatalogosOds, Cliente, Cotizacion, Orden, TipoIgv, Vehiculo } from '../comun/api';
+import { FormEvent, Fragment, useEffect, useMemo, useState } from 'react';
+import { api, CatalogoOds, CatalogosOds, Cliente, Cotizacion, NotaVenta, Orden, Pais, TipoIgv, Vehiculo } from '../comun/api';
+import { FormCliente } from '../cliente/Clientes';
 import { leerNumero, soles } from '../ordenServicio/ordenServicio.util';
 import { totalesDe } from './FormNota';
+import { BotonFicha, FichaServicio, tieneFicha } from '../comun/FichaServicio';
 
 const TIPOS: [TipoIgv, string][] = [['GRAVADO', 'Gravado'], ['EXONERADO', 'Exonerado'], ['INAFECTO', 'Inafecto']];
 const r2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -31,7 +33,14 @@ const lineasDeCot = (c: Cotizacion): Linea[] => c.detalles.map((d) => ({
   precio: String(d.precio), descuentoPct: String(d.descuentoPct), tipoIgv: d.tipoIgv, servicioId: d.servicioId ?? null, productoId: d.productoId ?? null, origen: 'cotizacion' as const,
 }));
 
-export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cotizacionInicial, editarId, alCerrar, alHecho }: { cat: CatalogosOds; ordenInicial?: Orden; modo?: 'comprobante' | 'cotizacion'; cotizacionInicial?: Cotizacion; editarId?: string; alCerrar: () => void; alHecho: (m: string) => Promise<void> | void }) {
+// Duplicar un comprobante: se copian sus ítems (en un servicio el total es el precio) sin la orden ni los pagos.
+const lineasDeNota = (n: NotaVenta): Linea[] => n.detalles.map((d) => ({
+  clave: ++contador, tipo: d.tipo === 'servicio' ? 'servicio' : 'producto', referencia: d.referencia ?? '', descripcion: d.descripcion, cantidad: String(d.cantidad),
+  precio: String(d.tipo === 'servicio' ? d.total : d.precio), descuentoPct: String(d.tipo === 'servicio' ? 0 : d.descuentoPct), tipoIgv: d.tipoIgv,
+  servicioId: d.servicioId ?? null, productoId: d.productoId ?? null,
+}));
+
+export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cotizacionInicial, notaInicial, editarId, alCerrar, alHecho }: { cat: CatalogosOds; ordenInicial?: Orden; modo?: 'comprobante' | 'cotizacion'; cotizacionInicial?: Cotizacion; notaInicial?: NotaVenta; editarId?: string; alCerrar: () => void; alHecho: (m: string) => Promise<void> | void }) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const esCot = modo === 'cotizacion';
@@ -42,16 +51,23 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cot
   const [formaPago, setFormaPago] = useState(cotizacionInicial?.formaPago ?? '');
   const [conIgv, setConIgv] = useState(cotizacionInicial?.conIgv ?? true);
   const [catalogo, setCatalogo] = useState<CatalogoOds>({ servicios: [], productos: [] });
-  const [clienteId, setClienteId] = useState(ordenInicial?.cliente.id ?? cotizacionInicial?.cliente.id ?? '');
-  const [vehiculoId, setVehiculoId] = useState(ordenInicial?.vehiculo.id ?? cotizacionInicial?.vehiculo?.id ?? '');
+  // Ficha del servicio: recuadro ocultable justo bajo la línea.
+  const [fichas, setFichas] = useState<number[]>([]);
+  const [clienteId, setClienteId] = useState(ordenInicial?.cliente.id ?? cotizacionInicial?.cliente.id ?? notaInicial?.cliente.id ?? '');
+  const [vehiculoId, setVehiculoId] = useState(ordenInicial?.vehiculo.id ?? cotizacionInicial?.vehiculo?.id ?? notaInicial?.vehiculo?.id ?? '');
   const [orden, setOrden] = useState<Orden | null>(ordenInicial ?? null);
   const [elegida, setElegida] = useState(ordenInicial?.id ?? '');
-  const [lineas, setLineas] = useState<Linea[]>(() => (ordenInicial ? lineasDe(ordenInicial) : cotizacionInicial ? lineasDeCot(cotizacionInicial) : [vacia()]));
-  const [condicion, setCondicion] = useState<'CONTADO' | 'CREDITO'>(cotizacionInicial?.condicion ?? 'CONTADO');
+  const [lineas, setLineas] = useState<Linea[]>(() => (ordenInicial ? lineasDe(ordenInicial) : cotizacionInicial ? lineasDeCot(cotizacionInicial) : notaInicial ? lineasDeNota(notaInicial) : [vacia()]));
+  const [condicion, setCondicion] = useState<'CONTADO' | 'CREDITO'>(cotizacionInicial?.condicion ?? notaInicial?.condicion ?? 'CONTADO');
   // El vencimiento (en la cotización, «válida hasta») se puede elegir siempre y por defecto es hoy, igual que la emisión.
   const [vence, setVence] = useState(editarId && cotizacionInicial ? cotizacionInicial.validaHasta.slice(0, 10) : hoyIso());
-  const [observaciones, setObservaciones] = useState(ordenInicial?.observaciones ?? cotizacionInicial?.observaciones ?? '');
-  const [comentario, setComentario] = useState('');
+  const [observaciones, setObservaciones] = useState(ordenInicial?.observaciones ?? cotizacionInicial?.observaciones ?? notaInicial?.observaciones ?? '');
+  const [comentario, setComentario] = useState(notaInicial?.comentario ?? '');
+  // «+» junto al cliente: alta rápida con el mismo formulario de Clientes.
+  const [nuevoCliente, setNuevoCliente] = useState(false);
+  const [errorCliente, setErrorCliente] = useState('');
+  const [paises, setPaises] = useState<Pais[]>([]);
+  const [paisBase, setPaisBase] = useState('PE');
   const [detraccion, setDetraccion] = useState<boolean | null>(null);
   const [pagos, setPagos] = useState<Pago[]>([]);
   const [metodo, setMetodo] = useState(cat.metodosPago[0] ?? 'Efectivo');
@@ -64,11 +80,12 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cot
     Promise.all([api.clientes(), api.vehiculos(), esCot ? Promise.resolve([]) : api.ordenes({}), api.catalogoOds(), esCot ? Promise.resolve([]) : api.cotizaciones().catch(() => [] as Cotizacion[])])
       .then(([c, v, o, k, cs]) => {
         setClientes(c); setVehiculos(v); setCatalogo(k); setCotizaciones((cs as Cotizacion[]).filter((x) => x.estado === 'VIGENTE'));
-        const libres = o.filter((x) => !x.conComprobante && x.estado !== 'Cerrada' && x.decision !== 'No aprobada' && x.detalles.length > 0);
+        const libres = o.filter((x) => !x.conComprobante && x.estado !== 'Cerrada' && x.decision !== 'No aprobada' && x.tipoAtencion !== 'Garantía' && x.detalles.length > 0);
         if (cotizacionInicial && !esCot) setCotizaciones((xs) => (xs.some((x) => x.id === cotizacionInicial.id) ? xs : [cotizacionInicial, ...xs]));
         setOrdenes(ordenInicial && !libres.some((x) => x.id === ordenInicial.id) ? [ordenInicial, ...libres] : libres);
       })
       .catch((e) => setError((e as Error).message));
+    api.config().then((c) => { setPaises(c.paises); setPaisBase(c.paisPredeterminado); }).catch(() => undefined);
   }, []);
 
   const serie = (cat.locales ?? []).find((l) => l.id === cat.localId)?.serieNotaVenta ?? null;
@@ -138,6 +155,12 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cot
   const puede = (esCot || !!serie) && !!clienteId && lineas.some((l) => l.descripcion.trim());
   return (
     <div className="fondo-modal">
+      {nuevoCliente && (
+        <FormCliente cliente={null} paises={paises} paisBase={paisBase} error={errorCliente}
+          alCancelar={() => { setNuevoCliente(false); setErrorCliente(''); }}
+          alGuardar={async (_m, c) => { if (c) { setClientes((xs) => [...xs, c]); setClienteId(c.id); setVehiculoId(''); } setNuevoCliente(false); setErrorCliente(''); }}
+          alFallar={setErrorCliente} />
+      )}
       <form className="modal-ods modal-venta" role="dialog" aria-modal="true" aria-label={esCot ? (editarId ? 'Editar cotización' : 'Emitir nueva cotización') : 'Emitir nuevo comprobante'} onSubmit={emitir}>
         <div className="fila entre"><h2>{esCot ? (editarId ? 'Editar cotización' : 'Emitir nueva cotización') : 'Emitir nuevo comprobante'}</h2><button type="button" className="cerrar" aria-label="Cerrar" onClick={alCerrar}>×</button></div>
         {error && <p className="error" role="alert">{error}</p>}
@@ -150,8 +173,8 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cot
                     <option value="">Seleccionar</option>
                     {cotizaciones.map((c) => <option key={c.id} value={c.id}>{c.codigo} · {c.cliente.nombre} · {soles(c.total)}</option>)}
                   </select>
-                  <button type="button" onClick={cargarCotizacion} disabled={!elegidaCot || elegidaCot === cot?.id}>+ Agregar</button>
-                  {cot && <button type="button" onClick={quitarCotizacion}>Quitar</button>}
+                  <button type="button" className="mas-cuadrado" aria-label="Agregar los ítems de la cotización" title="Agregar los ítems" onClick={cargarCotizacion} disabled={!elegidaCot || elegidaCot === cot?.id}>+</button>
+                  {cot && <button type="button" className="mas-cuadrado quitar" aria-label="Quitar los ítems de la cotización" title="Quitar los ítems" onClick={quitarCotizacion}>×</button>}
                 </div></div>
               <div className="campo"><label htmlFor="v-ods">Cargar ítems desde una orden de servicio</label>
                 <div className="con-boton">
@@ -159,8 +182,8 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cot
                     <option value="">Seleccionar</option>
                     {opcOrdenes.map((o) => <option key={o.id} value={o.id}>#{o.codigo} · {o.cliente.nombre} · {o.vehiculo.placa} · {soles(o.total)}</option>)}
                   </select>
-                  <button type="button" onClick={cargarOrden} disabled={!elegida || elegida === orden?.id}>+ Agregar</button>
-                  {orden && <button type="button" onClick={quitarOrden}>Quitar</button>}
+                  <button type="button" className="mas-cuadrado" aria-label="Agregar los ítems de la orden de servicio" title="Agregar los ítems" onClick={cargarOrden} disabled={!elegida || elegida === orden?.id}>+</button>
+                  {orden && <button type="button" className="mas-cuadrado quitar" aria-label="Quitar los ítems de la orden de servicio" title="Quitar los ítems" onClick={quitarOrden}>×</button>}
                 </div></div>
             </div>
           </section>
@@ -189,9 +212,12 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cot
             <div className="campo"><label>Condición</label>
               <div className="radios">{(['CONTADO', 'CREDITO'] as const).map((c) => <label key={c} className="check"><input type="radio" name="v-condicion" checked={condicion === c} onChange={() => setCondicion(c)} /> {c === 'CONTADO' ? 'Contado' : 'Crédito'}</label>)}</div></div>
             <div className="campo ancha"><label htmlFor="v-cliente">Cliente *</label>
-              <select id="v-cliente" value={clienteId} disabled={!!orden} required onChange={(e) => { setClienteId(e.target.value); setVehiculoId(''); }}>
-                <option value="">Seleccionar</option>{opcClientes.map((c) => <option key={c.id} value={c.id}>{c.documento} · {c.nombre}</option>)}
-              </select></div>
+              <div className="con-boton">
+                <select id="v-cliente" value={clienteId} disabled={!!orden} required onChange={(e) => { setClienteId(e.target.value); setVehiculoId(''); }}>
+                  <option value="">Seleccionar</option>{opcClientes.map((c) => <option key={c.id} value={c.id}>{c.documento} · {c.nombre}</option>)}
+                </select>
+                {!orden && <button type="button" className="mas-cuadrado" aria-label="Crear cliente" title="Crear cliente" onClick={() => setNuevoCliente(true)}>+</button>}
+              </div></div>
             <div className="campo"><label htmlFor="v-placa">{esCot ? 'Placa (opcional)' : 'Placa'}</label>
               <select id="v-placa" value={vehiculoId} disabled={!!orden || !clienteId} onChange={(e) => setVehiculoId(e.target.value)}>
                 <option value="">Sin placa</option>{placas.map((v) => <option key={v.id} value={v.id}>{v.placa}</option>)}
@@ -201,12 +227,14 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cot
         {!esCot && !serie && <p className="error" role="alert">{!cat.localId ? 'Tu usuario no tiene un local asignado: la serie sale del local, así que no puedes emitir.' : 'Este local no tiene serie de nota de venta. Asígnala en Empresa y parámetros.'}</p>}
         <div className="tabla">
           <table>
-            <thead><tr><th>#</th><th>Tipo</th><th>Código</th><th>Detalle</th><th className="der">Cant.</th>{!esCot && <th>Tipo de IGV</th>}<th className="der">Precio</th><th className="der">Desc. %</th><th className="der">Total</th><th /></tr></thead>
+            <thead><tr><th>#</th><th>Tipo</th><th aria-label="Ficha" /><th>Código</th><th>Detalle</th><th className="der">Cant.</th>{!esCot && <th>Tipo de IGV</th>}<th className="der">Precio</th><th className="der">Desc. %</th><th className="der">Total</th><th /></tr></thead>
             <tbody>
-              {lineas.map((l, i) => (
-                <tr key={l.clave}>
+              {lineas.map((l, i) => { const fi = l.tipo === 'servicio' && l.servicioId ? catalogo.servicios.find((x) => x.id === l.servicioId) : undefined; const abierta = fichas.includes(l.clave); return (
+                <Fragment key={l.clave}>
+                <tr>
                   <td>{i + 1}</td>
                   <td><select aria-label={`Tipo del ítem ${i + 1}`} value={l.tipo} onChange={(e) => cambiar(l.clave, { tipo: e.target.value as Linea['tipo'], servicioId: null, productoId: null })}><option value="producto">Producto</option><option value="servicio">Servicio</option></select></td>
+                  <td className="celda-ficha">{tieneFicha(fi) && <BotonFicha abierta={abierta} nombre={l.descripcion} alAlternar={() => setFichas((xs) => (xs.includes(l.clave) ? xs.filter((x) => x !== l.clave) : [...xs, l.clave]))} />}</td>
                   <td><input aria-label={`Código del ítem ${i + 1}`} value={l.referencia} onChange={(e) => cambiar(l.clave, { referencia: e.target.value })} /></td>
                   <td><input aria-label={`Detalle del ítem ${i + 1}`} list={`cat-${l.tipo}`} value={l.descripcion} placeholder="Escribe para buscar…" onChange={(e) => escribir(l, e.target.value)} /></td>
                   <td className="der"><input aria-label={`Cantidad del ítem ${i + 1}`} className="corto" inputMode="decimal" value={l.cantidad} disabled={l.tipo === 'servicio'} onChange={(e) => cambiar(l.clave, { cantidad: e.target.value })} /></td>
@@ -216,7 +244,9 @@ export default function FormVenta({ cat, ordenInicial, modo = 'comprobante', cot
                   <td className="der">{soles(totalDe(l))}</td>
                   <td><button type="button" className="peligro" aria-label={`Quitar el ítem ${i + 1}`} onClick={() => setLineas((xs) => (xs.length > 1 ? xs.filter((x) => x.clave !== l.clave) : [nuevaLinea()]))}>×</button></td>
                 </tr>
-              ))}
+                {abierta && tieneFicha(fi) && <tr className="fila-ficha"><td colSpan={esCot ? 9 : 10}><FichaServicio fi={fi} nombre={l.descripcion} /></td></tr>}
+                </Fragment>
+              ); })}
             </tbody>
           </table>
           <datalist id="cat-producto">{catalogo.productos.map((p) => <option key={p.id} value={`${p.codigo} · ${p.nombre}`} />)}</datalist>

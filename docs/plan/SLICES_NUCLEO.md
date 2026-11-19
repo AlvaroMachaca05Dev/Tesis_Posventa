@@ -8,16 +8,16 @@ El 05/11/2026 los requisitos bajaron de 99 a 49 (fuente: `docs/requisitos/R82/`)
 |---|---|---|---|---|
 | S1 | Acceso, usuarios y roles | 001, 002, 003 | 01 a 04 | Terminado |
 | S2 | Clientes y vehículos con lecturas de km | 004, 005, 007 | 03, 06, 08 | Terminado |
-| S3 | Órdenes de servicio: crear y editar con ítems, tipo de atención, garantía, fotos, estados, cierre, corrección y abonos | 011, 015, 016, 018, 089 | 05, 06, 09 | En curso: falta RF-018 y los ajustes R8.2 (ocultar la decisión del cliente, cierre «Sin nota de venta» RN-06, tipo «Otro» con texto, garantía enlazada a la ODS de origen) |
-| S4 | Migración inicial (procedimiento interno RN-11) | — | — | Pendiente, sin requisitos funcionales: va después del S5 porque también carga los maestros |
+| S3 | Órdenes de servicio: crear y editar con ítems, tipo de atención, garantía, fotos, estados, cierre, corrección y abonos | 011, 015, 016, 018, 089 | 05, 06, 09 | En curso: cierre con cuadre (RN-06), garantía enlazada, RF-018, decisión del cliente y tipo «Otro» ocultos, hechos; falta la aprobación por ítem (opcional, desactivada por defecto, DEC por registrar; en desarrollo el 19/11/2026) |
+| S4 | Migración inicial (procedimiento interno RN-11) | — | — | Terminado (19/11/2026, DEC-120): datos de Tuulapp cargados en prueba y desarrollo sin rechazos (14 074 ODS, 4 160 clientes, 4 704 vehículos, 13 228 notas, 50 usuarios) con la tabla ClaveOrigen |
 | S5 | Maestros: proveedores, servicios, productos, grupos, precios por grupo y solapamiento | 008, 009, 010, 100, 101, 102 | 03, 06, 08 | Terminado (05/11/2026): 22 pruebas de API y 3 de interfaz |
-| S6 | Planes preventivos y sugerencia a vehículos sin plan | 026, 028, 030, 103 | — | Pendiente |
-| S7 | Línea de tiempo, reajuste, recomendaciones y lista de próximos y vencidos | 031, 032, 034, 067 | — | Pendiente |
+| S6 | Planes preventivos y sugerencia a vehículos sin plan | 026, 028, 030, 103 | — | En curso (DEC-118 y DEC-119): 8 planes por código (GP-M, GP-S, GR-M, GR-S, DP-M, DP-S, DR-M, DR-S), vehículo con uso y tipo de aceite, plan derivado del combustible, el uso y el aceite, catálogo de 99 servicios con ficha y asignación con sugerencia; falta enlazar la visita con la orden |
+| S7 | Línea de tiempo, reajuste, recomendaciones y lista de próximos y vencidos | 031, 032, 034, 067 | — | En curso (19/11/2026, hecha en localhost): línea de tiempo del vehículo y genérica por plan, tramos por cambio de plan (tabla CambioPlanVehiculo), vencido y por vencer (DEC-119), cotización por paquete con descuento, recordatorio por WhatsApp e impresión; faltan las reglas de reinicio por servicio (propuesta por aprobar), las recomendaciones y la lista masiva de próximos y vencidos |
 | S8 | Tareas y vistas (lista, tablero y calendario como Google Calendar) | 036, 037, 039, 055 | 09 | Pendiente |
 | S9 | Citas y creación de la ODS desde la cita | 053, 054 | — | Pendiente |
-| S10 | Bitácora y auditoría | 059, 060, 063 | 03 | Pendiente (la auditoría y la bitácora de la ODS ya existen) |
-| S11 | Cotización, nota de venta, cuentas y bancos | 087, 088, 090, 091 | 05, 06 | Pendiente |
-| S12 | Compras e inventario (kárdex) | 078, 092 | 05 | Pendiente |
+| S10 | Bitácora y auditoría | 059, 060, 063 | 03 | Pendiente, a propósito: primero se termina lo demás (la auditoría y la bitácora de la ODS ya existen). Para después: la columna «log» de las ODS de Tuulapp tiene la trazabilidad detallada |
+| S11 | Cotización, nota de venta, cuentas y bancos | 087, 088, 090, 091 | 05, 06 | En curso: cotizaciones, nota de venta (venta directa y desde la ODS), cuentas por cobrar y por pagar hechas; faltan bancos y caja (RF-091) |
+| S12 | Compras e inventario (kárdex) | 078, 092 | 05 | En curso: compras con entrada de stock y kárdex hechas; faltan almacenes por local y vistas de inventario |
 | S13 | Posventa: consulta de km, encuesta y seguimiento | 094, 095, 097 | — | Pendiente |
 | S14 | Reportes, métricas y configuración | 065, 066, 096, 098, 071, 085 | 07 | Pendiente |
 

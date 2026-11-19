@@ -1,0 +1,1004 @@
+{
+ "solapamientos": [
+  {
+   "codigo": "SOL-01",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV055"
+   ],
+   "reducidos": [
+    "SV064",
+    "SV065"
+   ],
+   "minimo": 2,
+   "porcentaje": 50.0,
+   "estandar": 0,
+   "alerta": "Correa de distribución y bomba de agua se hacen juntas (ahorra ~0.6 h). Puedes descontar hasta S/ {d} en la bomba, si deseas.",
+   "estado": "Decidido",
+   "nota": "Bomba hasta 50 %, sin bajar de S/ 30"
+  },
+  {
+   "codigo": "SOL-02",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV033"
+   ],
+   "reducidos": [
+    "SV032"
+   ],
+   "minimo": 2,
+   "porcentaje": 40,
+   "estandar": 0,
+   "alerta": "Pastillas y fajas se hacen en la misma subida del auto. Se descontó S/ {d} en las fajas.",
+   "estado": "Decidido",
+   "nota": "Fajas hasta S/ 10 / 20 / 30 / 25"
+  },
+  {
+   "codigo": "SOL-03",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV048",
+    "SV053"
+   ],
+   "reducidos": [
+    "SV057"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "La bajada de culata ya incluye la tapa de balancines. Se descontó el 100 % de la tapa (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de la tapa (dejar la línea con descuento)"
+  },
+  {
+   "codigo": "SOL-04",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV006"
+   ],
+   "reducidos": [
+    "SV007"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Palier y poncho del mismo lado son prácticamente el mismo trabajo. Se descontó el 100 % del poncho (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del poncho del mismo lado"
+  },
+  {
+   "codigo": "SOL-05",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV016"
+   ],
+   "reducidos": [
+    "SV015"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "El kit de embrague ya incluye collarín, plato y disco. Se descontó el 100 % de la segunda bajada de caja (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del segundo: el kit ya incluye collarín, plato y disco"
+  },
+  {
+   "codigo": "SOL-06",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV048",
+    "SV053"
+   ],
+   "reducidos": [
+    "SV055"
+   ],
+   "minimo": 2,
+   "porcentaje": 30.0,
+   "estandar": 0,
+   "alerta": "Culata y correa de distribución comparten desmontajes. Se descontó S/ {d} en la correa.",
+   "estado": "Decidido",
+   "nota": "30 % de la correa, redondeado a 5"
+  },
+  {
+   "codigo": "SOL-07",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV077",
+    "SV078"
+   ],
+   "reducidos": [
+    "SV088"
+   ],
+   "minimo": 2,
+   "porcentaje": 15.0,
+   "estandar": 0,
+   "alerta": "Amortiguador y trapecio del mismo lado comparten desmontajes. Puedes descontar S/ {d} en el trapecio, si deseas.",
+   "estado": "Decidido",
+   "nota": "15 % del trapecio, redondeado a 5"
+  },
+  {
+   "codigo": "SOL-08",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV079"
+   ],
+   "reducidos": [
+    "SV086"
+   ],
+   "minimo": 2,
+   "porcentaje": 60.0,
+   "estandar": 0,
+   "alerta": "Axial y terminal del mismo lado se cambian juntos (rueda, desarme y alineación una sola vez). Se descontó S/ {d} en el terminal.",
+   "estado": "Decidido",
+   "nota": "60 % del terminal, redondeado a 5"
+  },
+  {
+   "codigo": "SOL-09",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV081",
+    "SV082"
+   ],
+   "reducidos": [
+    "SV086"
+   ],
+   "minimo": 2,
+   "porcentaje": 20.0,
+   "estandar": 0,
+   "alerta": "Cremallera y terminal comparten la alineación final. Puedes descontar S/ {d} en el terminal, si deseas.",
+   "estado": "Decidido",
+   "nota": "20 % del terminal, redondeado a 5"
+  },
+  {
+   "codigo": "SOL-10",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV081",
+    "SV082"
+   ],
+   "reducidos": [
+    "SV079"
+   ],
+   "minimo": 2,
+   "porcentaje": 10.0,
+   "estandar": 0,
+   "alerta": "Cremallera y axial comparten la alineación final. Puedes descontar S/ {d} en el axial, si deseas.",
+   "estado": "Decidido",
+   "nota": "10 % del axial, redondeado a 5"
+  },
+  {
+   "codigo": "SOL-11",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV033"
+   ],
+   "reducidos": [
+    "SV035"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Los seguros se cambian al cambiar las pastillas. Se descontó el 100 % de los seguros (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de los seguros"
+  },
+  {
+   "codigo": "SOL-12",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV033"
+   ],
+   "reducidos": [
+    "SV033",
+    "SV035"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Cambiar las pastillas ya incluye su limpieza. Se descontó el 100 % del mantenimiento (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del mantenimiento"
+  },
+  {
+   "codigo": "SOL-13",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV031"
+   ],
+   "reducidos": [
+    "SV033"
+   ],
+   "minimo": 2,
+   "porcentaje": 80.0,
+   "estandar": 0,
+   "alerta": "Al cambiar discos ya se sacan las pastillas (Autodata: discos con pastillas incluidas). Se descontó S/ {d} en las pastillas.",
+   "estado": "Decidido",
+   "nota": "80 % de las pastillas"
+  },
+  {
+   "codigo": "SOL-14",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV055"
+   ],
+   "reducidos": [
+    "SV059"
+   ],
+   "minimo": 2,
+   "porcentaje": 80.0,
+   "estandar": 0,
+   "alerta": "Con la correa fuera, el retén delantero del cigüeñal queda a la vista. Se descontó S/ {d} en el retén.",
+   "estado": "Decidido",
+   "nota": "80 % del retén"
+  },
+  {
+   "codigo": "SOL-15",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV055"
+   ],
+   "reducidos": [
+    "SV058"
+   ],
+   "minimo": 2,
+   "porcentaje": 80.0,
+   "estandar": 0,
+   "alerta": "Con la correa fuera, el retén del árbol de levas queda a la vista. Se descontó S/ {d} en el retén.",
+   "estado": "Decidido",
+   "nota": "80 % del retén"
+  },
+  {
+   "codigo": "SOL-16",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV016"
+   ],
+   "reducidos": [
+    "SV060"
+   ],
+   "minimo": 2,
+   "porcentaje": 90.0,
+   "estandar": 0,
+   "alerta": "Con la caja abajo, el retén posterior del cigüeñal queda a la vista. Se descontó S/ {d} en el retén.",
+   "estado": "Decidido",
+   "nota": "90 % del retén"
+  },
+  {
+   "codigo": "SOL-17",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV050"
+   ],
+   "reducidos": [
+    "SV057"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Para calibrar válvulas ya se saca la tapa de balancines. Se descontó el 100 % de la tapa (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de la tapa"
+  },
+  {
+   "codigo": "SOL-18",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV006"
+   ],
+   "reducidos": [
+    "SV008"
+   ],
+   "minimo": 2,
+   "porcentaje": 80.0,
+   "estandar": 0,
+   "alerta": "Con el palier fuera, el retén queda a la vista. Se descontó S/ {d} en el retén.",
+   "estado": "Decidido",
+   "nota": "80 % del retén"
+  },
+  {
+   "codigo": "SOL-19",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV006",
+    "SV011"
+   ],
+   "reducidos": [
+    "SV007"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "El mantenimiento ya saca y engrasa el palier. Se descontó el 100 % del poncho del mismo lado (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del poncho"
+  },
+  {
+   "codigo": "SOL-20",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV006"
+   ],
+   "reducidos": [
+    "SV011"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "El cambio de palier ya incluye el engrasado. Se descontó el 100 % del mantenimiento (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del mantenimiento"
+  },
+  {
+   "codigo": "SOL-21",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV038"
+   ],
+   "reducidos": [
+    "SV038"
+   ],
+   "minimo": 2,
+   "porcentaje": 50.0,
+   "estandar": 0,
+   "alerta": "Con el tanque abajo, la bomba, el filtro y la boya quedan a la mano. Puedes descontar hasta 50 % (ej. bomba S/ {d}), si deseas.",
+   "estado": "Decidido",
+   "nota": "Hasta 50 % del segundo"
+  },
+  {
+   "codigo": "SOL-22",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV088"
+   ],
+   "reducidos": [
+    "SV085"
+   ],
+   "minimo": 2,
+   "porcentaje": 50.0,
+   "estandar": 0,
+   "alerta": "Trapecio y rótula del mismo lado comparten desmontaje. Puedes descontar S/ {d} en la rótula, si deseas.",
+   "estado": "Decidido",
+   "nota": "50 % de la rótula"
+  },
+  {
+   "codigo": "SOL-23",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV029"
+   ],
+   "reducidos": [
+    "SV036"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Si se cambió un bombín o caliper, el purgado ya va incluido (Autodata). Puedes descontar el purgado (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del purgado (solo bombín / caliper)"
+  },
+  {
+   "codigo": "SOL-24",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV068"
+   ],
+   "reducidos": [
+    "SV036",
+    "SV069"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Cambiar el radiador ya incluye vaciar y rellenar el refrigerante (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del refrigerante"
+  },
+  {
+   "codigo": "SOL-25",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV048"
+   ],
+   "reducidos": [
+    "SV036",
+    "SV069"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Bajar la culata ya incluye vaciar y rellenar el refrigerante (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del refrigerante"
+  },
+  {
+   "codigo": "SOL-26",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV064",
+    "SV065"
+   ],
+   "reducidos": [
+    "SV036",
+    "SV069"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Cambiar la bomba de agua ya incluye vaciar y rellenar el refrigerante (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del refrigerante"
+  },
+  {
+   "codigo": "SOL-27",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV053"
+   ],
+   "reducidos": [
+    "SV054"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Para cambiar la cadena ya se saca la correa de accesorios (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de la correa de accesorios"
+  },
+  {
+   "codigo": "SOL-28",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV055"
+   ],
+   "reducidos": [
+    "SV054"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Para cambiar la correa de distribución ya se saca la de accesorios (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de la correa de accesorios"
+  },
+  {
+   "codigo": "SOL-29",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV064",
+    "SV065"
+   ],
+   "reducidos": [
+    "SV054"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Para cambiar la bomba de agua ya se saca la correa de accesorios (Autodata). Se descontó el 100 % (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de la correa de accesorios"
+  },
+  {
+   "codigo": "SOL-30",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV053"
+   ],
+   "reducidos": [
+    "SV057"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Para cambiar la cadena ya se saca la tapa de balancines (Autodata). Se descontó el 100 % de la tapa (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de la tapa"
+  },
+  {
+   "codigo": "SOL-31",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV048",
+    "SV053"
+   ],
+   "reducidos": [
+    "SV053"
+   ],
+   "minimo": 2,
+   "porcentaje": 70.0,
+   "estandar": 0,
+   "alerta": "Para bajar la culata ya se saca la cadena (Autodata: ~3 h compartidas). Se descontó S/ {d} en la cadena.",
+   "estado": "Decidido",
+   "nota": "70 % de la cadena"
+  },
+  {
+   "codigo": "SOL-32",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV048"
+   ],
+   "reducidos": [
+    "SV064",
+    "SV065"
+   ],
+   "minimo": 2,
+   "porcentaje": 50.0,
+   "estandar": 0,
+   "alerta": "Culata y bomba de agua comparten desmontajes (Autodata). Se descontó S/ {d} en la bomba de agua.",
+   "estado": "Decidido",
+   "nota": "50 % de la bomba de agua"
+  },
+  {
+   "codigo": "SOL-33",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV064",
+    "SV065"
+   ],
+   "reducidos": [
+    "SV068"
+   ],
+   "minimo": 2,
+   "porcentaje": 35.0,
+   "estandar": 0,
+   "alerta": "Bomba de agua y radiador comparten el vaciado del sistema (Autodata). Puedes descontar S/ {d} en el radiador, si deseas.",
+   "estado": "Decidido",
+   "nota": "35 % del radiador"
+  },
+  {
+   "codigo": "SOL-34",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV048"
+   ],
+   "reducidos": [
+    "SV068"
+   ],
+   "minimo": 2,
+   "porcentaje": 30.0,
+   "estandar": 0,
+   "alerta": "Culata y radiador comparten el vaciado del sistema (Autodata). Puedes descontar S/ {d} en el radiador, si deseas.",
+   "estado": "Decidido",
+   "nota": "30 % del radiador"
+  },
+  {
+   "codigo": "SOL-35",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV053"
+   ],
+   "reducidos": [
+    "SV064",
+    "SV065",
+    "SV053"
+   ],
+   "minimo": 2,
+   "porcentaje": 25.0,
+   "estandar": 0,
+   "alerta": "Cadena y bomba de agua comparten desmontajes (Autodata). Puedes descontar S/ {d} en la bomba, si deseas.",
+   "estado": "Decidido",
+   "nota": "25 % de la bomba de agua"
+  },
+  {
+   "codigo": "SOL-36",
+   "tipo": "PAR",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV077",
+    "SV078"
+   ],
+   "reducidos": [
+    "SV085"
+   ],
+   "minimo": 2,
+   "porcentaje": 30.0,
+   "estandar": 0,
+   "alerta": "Amortiguador y rótula del mismo lado comparten desmontaje (Autodata). Puedes descontar S/ {d} en la rótula, si deseas.",
+   "estado": "Decidido",
+   "nota": "30 % de la rótula"
+  },
+  {
+   "codigo": "SOL-37",
+   "tipo": "CONJUNTO",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV007",
+    "SV077",
+    "SV078",
+    "SV088",
+    "SV079",
+    "SV086",
+    "SV081",
+    "SV082",
+    "SV031"
+   ],
+   "reducidos": [],
+   "minimo": 2,
+   "porcentaje": 10,
+   "estandar": 0,
+   "alerta": "Varios trabajos en la misma rueda: la rueda se saca una sola vez (~0.2 h, Autodata). Puedes descontar S/ {d} en cada trabajo adicional, si deseas.",
+   "estado": "Decidido",
+   "nota": "S/ 5 a 10 por cada trabajo adicional (la rueda se saca una vez)"
+  },
+  {
+   "codigo": "SOL-38",
+   "tipo": "CONJUNTO",
+   "modo": "OPCIONAL",
+   "base": [
+    "SV077",
+    "SV078",
+    "SV088",
+    "SV079",
+    "SV086",
+    "SV081",
+    "SV082"
+   ],
+   "reducidos": [],
+   "minimo": 2,
+   "porcentaje": 40,
+   "estandar": 0,
+   "alerta": "Varios trabajos que terminan en alineación: se alinea una sola vez (~0.6 h, Autodata). Puedes descontar S/ {d} en cada trabajo adicional, si deseas.",
+   "estado": "Decidido",
+   "nota": "Alineación una sola vez (~0.6 h)"
+  },
+  {
+   "codigo": "SOL-39",
+   "tipo": "CONJUNTO",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV064",
+    "SV065",
+    "SV048",
+    "SV068",
+    "SV069"
+   ],
+   "reducidos": [],
+   "minimo": 2,
+   "porcentaje": 40,
+   "estandar": 0,
+   "alerta": "Varios trabajos del sistema de refrigeración: se vacía y rellena una sola vez (Autodata). Se descontó S/ {d} en cada trabajo adicional.",
+   "estado": "Decidido",
+   "nota": "Vaciar y rellenar una sola vez (~0.6 h)"
+  },
+  {
+   "codigo": "SOL-40",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV071",
+    "SV072"
+   ],
+   "reducidos": [
+    "SV071",
+    "SV072"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "Ese servicio ya va dentro del afinamiento completo. Se descontó el 100 % (ej. bujías S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del servicio repetido"
+  },
+  {
+   "codigo": "SOL-41",
+   "tipo": "CONJUNTO",
+   "modo": "AVISO",
+   "base": [
+    "SV071",
+    "SV072"
+   ],
+   "reducidos": [
+    "SV071",
+    "SV072"
+   ],
+   "minimo": 3,
+   "porcentaje": null,
+   "estandar": 0,
+   "alerta": "Hay 3 o más servicios sueltos del afinamiento: conviene ofrecer el paquete Afinamiento completo (G1 S/ 130, G2 S/ 140, G3 S/ 150).",
+   "estado": "Decidido",
+   "nota": "Si los sueltos suman igual o más que el paquete, cobrar el paquete"
+  },
+  {
+   "codigo": "SOL-42",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV003",
+    "SV004",
+    "SV005",
+    "SV063"
+   ],
+   "reducidos": [
+    "SV003",
+    "SV004",
+    "SV005",
+    "SV063"
+   ],
+   "minimo": 2,
+   "porcentaje": 100.0,
+   "estandar": 0,
+   "alerta": "El paquete parcial ya va dentro de la tornería completa. Se descontó el 100 % (ej. culata S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % del paquete parcial (ya va dentro del completo)"
+  },
+  {
+   "codigo": "SOL-43",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV016"
+   ],
+   "reducidos": [
+    "SV018"
+   ],
+   "minimo": 2,
+   "porcentaje": 90.0,
+   "estandar": 0,
+   "alerta": "Con la caja abajo por el embrague, la bomba concéntrica queda a la vista. Se descontó S/ {d} en la bomba.",
+   "estado": "Decidido",
+   "nota": "90 % de la bomba concéntrica (la caja ya está abajo)"
+  },
+  {
+   "codigo": "SOL-44",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV077"
+   ],
+   "reducidos": [
+    "SV087",
+    "SV083"
+   ],
+   "minimo": 2,
+   "porcentaje": 100,
+   "estandar": 0,
+   "alerta": "Se desarma el mismo puntal: la torreta y la goma o tope van sin costo (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de la torreta y de la goma o tope"
+  },
+  {
+   "codigo": "SOL-45",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV034"
+   ],
+   "reducidos": [
+    "SV036",
+    "SV035",
+    "SV037"
+   ],
+   "minimo": 2,
+   "porcentaje": 100,
+   "estandar": 0,
+   "alerta": "El mantenimiento de frenos completo ya incluye este servicio (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "100 % de cada servicio repetido"
+  },
+  {
+   "codigo": "SOL-46",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV033",
+    "SV032",
+    "SV031"
+   ],
+   "reducidos": [
+    "SV034"
+   ],
+   "minimo": 2,
+   "porcentaje": 25,
+   "estandar": 0,
+   "alerta": "Se descuenta del paquete de frenos lo ya cobrado en el cambio (S/ {d}).",
+   "estado": "Propuesto",
+   "nota": "Descontar del paquete los subservicios ya cobrados"
+  },
+  {
+   "codigo": "SOL-47",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV099"
+   ],
+   "reducidos": [
+    "SV094",
+    "SV095",
+    "SV096",
+    "SV097",
+    "SV098"
+   ],
+   "minimo": 2,
+   "porcentaje": 100,
+   "estandar": 0,
+   "alerta": "La revisión completa absorbe este paquete: no se suman (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "La revisión completa absorbe al express, al menor y al mayor"
+  },
+  {
+   "codigo": "SOL-48",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV096",
+    "SV098"
+   ],
+   "reducidos": [
+    "SV095",
+    "SV097",
+    "SV094"
+   ],
+   "minimo": 2,
+   "porcentaje": 100,
+   "estandar": 0,
+   "alerta": "El mantenimiento mayor absorbe este paquete: se repite el cambio de aceite (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "El mayor absorbe al menor y al express"
+  },
+  {
+   "codigo": "SOL-49",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV097",
+    "SV098"
+   ],
+   "reducidos": [
+    "SV071",
+    "SV072"
+   ],
+   "minimo": 2,
+   "porcentaje": null,
+   "estandar": 10,
+   "alerta": "Al sumar el afinamiento a la visita se descuentan S/ {d} (capó y escaneo una sola vez).",
+   "estado": "Decidido",
+   "nota": "S/ 10 al sumar el afinamiento a una visita"
+  },
+  {
+   "codigo": "SOL-50",
+   "tipo": "PAR",
+   "modo": "AVISO",
+   "base": [
+    "SV006",
+    "SV007",
+    "SV008",
+    "SV009",
+    "SV010",
+    "SV011",
+    "SV012",
+    "SV013",
+    "SV014",
+    "SV015",
+    "SV016",
+    "SV017",
+    "SV018",
+    "SV019",
+    "SV020",
+    "SV021",
+    "SV022",
+    "SV023",
+    "SV024",
+    "SV025",
+    "SV026",
+    "SV027",
+    "SV028",
+    "SV029",
+    "SV030",
+    "SV031",
+    "SV032",
+    "SV033",
+    "SV038",
+    "SV039",
+    "SV040",
+    "SV041",
+    "SV042",
+    "SV043",
+    "SV044",
+    "SV045",
+    "SV046",
+    "SV047",
+    "SV048",
+    "SV049",
+    "SV050",
+    "SV052",
+    "SV053",
+    "SV054",
+    "SV055",
+    "SV056",
+    "SV057",
+    "SV058",
+    "SV059",
+    "SV060",
+    "SV061",
+    "SV062",
+    "SV063",
+    "SV064",
+    "SV065",
+    "SV066",
+    "SV067",
+    "SV068",
+    "SV069",
+    "SV070",
+    "SV071",
+    "SV072",
+    "SV073",
+    "SV074",
+    "SV075",
+    "SV076",
+    "SV077",
+    "SV078",
+    "SV079",
+    "SV080",
+    "SV081",
+    "SV082",
+    "SV083",
+    "SV084",
+    "SV085",
+    "SV086",
+    "SV087",
+    "SV088"
+   ],
+   "reducidos": [
+    "SV002"
+   ],
+   "minimo": 2,
+   "porcentaje": null,
+   "estandar": 0,
+   "alerta": "Si el cliente repara con nosotros, la revisión específica sale gratis: se factura S/ 1 y la diferencia se reparte en las demás líneas.",
+   "estado": "Decidido",
+   "nota": "Revisión específica gratis si el cliente repara"
+  },
+  {
+   "codigo": "SOL-51",
+   "tipo": "PAR",
+   "modo": "AUTOMATICO",
+   "base": [
+    "SV095",
+    "SV097"
+   ],
+   "reducidos": [
+    "SV094"
+   ],
+   "minimo": 2,
+   "porcentaje": 100,
+   "estandar": 0,
+   "alerta": "El mantenimiento menor absorbe al express: se repite el cambio de aceite (S/ {d}).",
+   "estado": "Decidido",
+   "nota": "El menor absorbe al express"
+  }
+ ]
+}

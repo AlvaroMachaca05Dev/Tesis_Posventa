@@ -158,16 +158,16 @@ it('Clientes: con permiso solo de ver no aparecen «+ Nuevo» ni Editar', async 
   expect(screen.queryByRole('button', { name: 'Editar' })).toBeNull();
 });
 
-it('Clientes: eliminar pide confirmación y envía activo=false; «Clientes varios» no se puede eliminar', async () => {
+it('Clientes: eliminar pide confirmación en el modal propio y llama a DELETE; «Clientes varios» no se puede eliminar', async () => {
   window.location.hash = '#/clientes';
   simular();
-  vi.stubGlobal('confirm', () => true);
   render(<App />);
   const fila = (await screen.findByText('JOAQUIN IGNACIO DEL CARPIO')).closest('tr')!;
   await userEvent.click(within(fila).getByRole('button', { name: 'Acciones' }));
   await userEvent.click(within(fila).getByRole('button', { name: 'Eliminar' }));
-  await waitFor(() => expect(llamadas.some((l) => l.metodo === 'PATCH' && l.ruta === '/clientes/c1')).toBe(true));
-  expect(llamadas.find((l) => l.metodo === 'PATCH')!.cuerpo).toEqual({ activo: false });
+  const d = await screen.findByRole('alertdialog', { name: '¿Eliminar a JOAQUIN IGNACIO DEL CARPIO?' });
+  await userEvent.click(within(d).getByRole('button', { name: 'Eliminar' }));
+  await waitFor(() => expect(llamadas.some((l) => l.metodo === 'DELETE' && l.ruta === '/clientes/c1')).toBe(true));
   const filaVarios = screen.getByText('Clientes varios').closest('tr')!;
   await userEvent.click(within(filaVarios).getByRole('button', { name: 'Acciones' }));
   expect(within(filaVarios).queryByRole('button', { name: 'Eliminar' })).toBeNull();

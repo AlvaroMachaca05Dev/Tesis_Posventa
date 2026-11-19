@@ -53,6 +53,7 @@ export class CotizacionController {
     const formaPago = b?.formaPago ? String(b.formaPago) : null;
     if (formaPago && !METODOS.includes(formaPago)) throw new BadRequestException('La forma de pago no es válida.');
     const t = totalesNota(lineas);
+    for (const k of ['conIgv', 'conDetraccion']) if (b?.[k] !== undefined && typeof b[k] !== 'boolean') throw new BadRequestException(`«${k === 'conIgv' ? 'Incluir IGV' : 'Detracción'}» es sí o no.`);
     const conDetraccion = b?.conDetraccion === undefined ? proponeDetraccion(lineas, t.total) : b.conDetraccion === true;
     return { clienteId: cliente.id, vehiculoId, lineas, validaHasta, condicion, formaPago, conIgv: b?.conIgv !== false, conDetraccion, observaciones: texto(b?.observaciones, 1000), comentario: texto(b?.comentario, 1000), t };
   }

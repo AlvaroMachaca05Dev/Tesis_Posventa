@@ -20,6 +20,18 @@ const nota: NotaOrden = {
 };
 const texto = (b: Uint8Array) => new TextDecoder('latin1').decode(b);
 
+describe('robustez del PDF', () => {
+  it('un nombre con paréntesis, barras, emojis o intento de inyectar operadores PDF no rompe el archivo', () => {
+    const malo = 'ACME) Tj ET BT (inyectado\\ 😀 <script> ñandú';
+    const o = { ...orden, cliente: { ...orden.cliente, nombre: malo } } as unknown as Orden;
+    const pdf = texto(generarPdfNota('PDF', o, { ...nota, observaciones: malo }, empresa));
+    expect(pdf.startsWith('%PDF-')).toBe(true);
+    expect(pdf.trim().endsWith('%%EOF')).toBe(true);
+    expect(pdf).toContain('ACME\\) Tj ET BT \\(inyectado\\\\ ? <script> ñandú');
+    expect(pdf).not.toContain('ACME) Tj');
+  });
+});
+
 describe('logo de la empresa en el PDF', () => {
   it('con logo propio se incrusta el JPEG tal cual (DCTDecode) y con las medidas del logo; sin logo se usa el de respaldo', () => {
     const jpeg = btoa('\xFF\xD8\xFF\xE0jpeg-de-prueba');

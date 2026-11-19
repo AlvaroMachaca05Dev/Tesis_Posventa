@@ -2,11 +2,11 @@ import { BadRequestException, Body, ConflictException, Controller, Get, NotFound
 import { Prisma } from '@prisma/client';
 import { auditar, Requiere, Sesion, SesionActual, SesionReal } from '../comun/acceso';
 import { PrismaService } from '../comun/prisma.service';
-import { empresaDe, texto } from '../comun/validacion';
+import { aNumero, empresaDe, texto } from '../comun/validacion';
 import { parsearItems } from './lineas';
 import { codigoNota, detraccionDe, proponeDetraccion, TIPOS_IGV, TipoIgv, tipoIgvPorDefecto, totalesNota } from './notaVenta.reglas';
 
-const INCLUIR_NOTA = { detalles: { orderBy: { posicion: 'asc' as const } }, local: true, emitidaPor: true, anuladaPor: true, cliente: true, vehiculo: true, abonos: true, orden: { include: { abonos: true } } };
+export const INCLUIR_NOTA = { detalles: { orderBy: { posicion: 'asc' as const } }, local: true, emitidaPor: true, anuladaPor: true, cliente: true, vehiculo: true, abonos: true, orden: { include: { abonos: true } } };
 type Nota = Prisma.NotaVentaGetPayload<{ include: typeof INCLUIR_NOTA }>;
 const n = (d: Prisma.Decimal | number) => Number(d);
 const r2 = (x: number) => Math.round((x + Number.EPSILON) * 100) / 100;
@@ -21,8 +21,8 @@ export function resumenNota(x: Nota) {
     local: { id: x.localId, nombre: x.local.nombre }, observaciones: x.observaciones, comentario: x.comentario,
     orden: x.orden ? { id: x.orden.id, codigo: x.orden.codigo, km: x.orden.km } : null,
     cliente: { id: x.cliente.id, nombre: x.cliente.nombre, documento: x.cliente.documento, tipoDocumento: x.cliente.tipoDocumento, direccionFiscal: x.cliente.direccionFiscal, movil: x.cliente.movil },
-    vehiculo: x.vehiculo ? { placa: x.vehiculo.placa, marca: x.vehiculo.marca, modelo: x.vehiculo.modelo } : null,
-    detalles: x.detalles.map((d) => ({ id: d.id, tipo: d.tipo, descripcion: d.descripcion, referencia: d.referencia, cantidad: n(d.cantidad), precio: n(d.precio), descuentoPct: n(d.descuentoPct), tipoIgv: d.tipoIgv, total: n(d.total) })),
+    vehiculo: x.vehiculo ? { id: x.vehiculo.id, placa: x.vehiculo.placa, marca: x.vehiculo.marca, modelo: x.vehiculo.modelo } : null,
+    detalles: x.detalles.map((d) => ({ id: d.id, tipo: d.tipo, descripcion: d.descripcion, referencia: d.referencia, cantidad: n(d.cantidad), precio: n(d.precio), descuentoPct: n(d.descuentoPct), tipoIgv: d.tipoIgv, total: n(d.total), servicioId: d.servicioId, productoId: d.productoId })),
     exonerada: n(x.exonerada), inafecta: n(x.inafecta), gravada: n(x.gravada), igv: n(x.igv), total: n(x.total),
     conDetraccion: x.conDetraccion, detraccionPct: n(x.detraccionPct), detraccionExacta: n(x.detraccionExacta), detraccion: n(x.detraccion),
     // La detracción la deposita la empresa: el saldo es el total menos lo pagado (DEC-82).
@@ -69,9 +69,11 @@ export class NotaVentaController {
     const det = conDetraccion ? detraccionDe(t.total) : { pct: 0, exacta: 0, redondeada: 0 };
 
     // Pagos que se registran al emitir (adelantos o cobro), validados contra el total.
+    if (b?.pagos !== undefined && b?.pagos !== null && !Array.isArray(b.pagos)) throw new BadRequestException('Los pagos van en una lista.');
+    if (Array.isArray(b?.pagos) && b.pagos.length > 50) throw new BadRequestException('Se admiten hasta 50 pagos al emitir.');
     const pagos = (Array.isArray(b?.pagos) ? b.pagos : []).map((x: unknown) => {
       const q = x as { metodo?: unknown; valor?: unknown; concepto?: unknown };
-      const valor = r2(Number(q?.valor));
+      const valor = r2(aNumero(q?.valor));
       if (!METODOS.includes(String(q?.metodo))) throw new BadRequestException('Elige el método de pago.');
       if (!Number.isFinite(valor) || valor <= 0) throw new BadRequestException('El valor de cada pago debe ser mayor a cero.');
       return { metodo: String(q.metodo), valor, concepto: texto(q.concepto, 200) ?? 'Pago' };
@@ -113,6 +115,7 @@ export class NotaVentaController {
     if (!o) throw new NotFoundException('Orden de servicio no encontrada.');
     if (o.estado === 'Cerrada') throw new ConflictException('La ODS está cerrada: reábrela para emitir su nota de venta.');
     if (o.decision === 'No aprobada') throw new ConflictException('El cliente no aprobó la orden: no se emite nota de venta.');
+    if (o.tipoAtencion === 'Garantía') throw new ConflictException('Una ODS de garantía no se factura: lo que se cobre va en otra orden de servicio.');
     if (o.notas.some((x) => x.estado === 'EMITIDA')) throw new ConflictException('Esta ODS ya tiene una nota de venta vigente.');
     return o;
   }
@@ -123,7 +126,11 @@ export class NotaVentaController {
     const o = await this.ordenEmisible(id, empresaDe(s));
     if (o.detalles.length === 0) throw new ConflictException('La ODS no tiene ítems: agrega servicios o productos antes de emitir.');
     const tipos = (b?.tiposIgv ?? {}) as Record<string, unknown>;
-    const lineas: Linea[] = o.detalles.map((d, i) => {
+    // Con aprobación por ítem activada, el comprobante lleva solo los ítems aprobados (los no aprobados quedan en la ODS).
+    const org = await this.prisma.organizacion.findUnique({ where: { id: empresaDe(s) }, select: { aprobacionPorItem: true } });
+    const detalles = org?.aprobacionPorItem ? o.detalles.filter((d) => d.aprobado) : o.detalles;
+    if (detalles.length === 0) throw new ConflictException('No hay ítems aprobados para emitir el comprobante.');
+    const lineas: Linea[] = detalles.map((d, i) => {
       const pedido = tipos[d.id];
       if (pedido !== undefined && !TIPOS_IGV.includes(String(pedido) as TipoIgv)) throw new BadRequestException('El tipo de IGV es Gravado, Exonerado o Inafecto.');
       return {
@@ -186,10 +193,10 @@ export class NotaVentaController {
   async anular(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
     const organizacionId = empresaDe(s);
     const x = await this.cargar(id, organizacionId);
-    if (x.estado !== 'EMITIDA') throw new ConflictException('Esta nota de venta ya está anulada.');
-    if (x.ordenId && (await this.prisma.ordenServicio.findFirst({ where: { id: x.ordenId, estado: 'Cerrada' } }))) throw new ConflictException('La ODS está cerrada: reábrela antes de anular su nota de venta.');
+    if (x.estado !== 'EMITIDA') throw new ConflictException('Esta nota de venta ya fue eliminada.');
+    if (x.ordenId && (await this.prisma.ordenServicio.findFirst({ where: { id: x.ordenId, estado: 'Cerrada' } }))) throw new ConflictException('La ODS está cerrada: reábrela antes de eliminar su nota de venta.');
     const motivo = texto(b?.motivo, 500);
-    if (!motivo) throw new BadRequestException('Escribe el motivo de la anulación.');
+    if (!motivo) throw new BadRequestException('Escribe el motivo de la eliminación.');
     await this.prisma.$transaction(async (tx) => {
       await tx.notaVenta.update({ where: { id }, data: { estado: 'ANULADA', anuladaPorId: real.id, motivoAnulacion: motivo, anuladaEn: new Date() } });
       for (const l of x.detalles.filter((d) => d.tipo === 'producto' && d.productoId)) {
@@ -197,9 +204,9 @@ export class NotaVentaController {
         const antes = n((await tx.stockProducto.findUnique({ where: clave }))?.cantidad ?? 0);
         const saldo = Math.round((antes + n(l.cantidad)) * 1000) / 1000;
         await tx.stockProducto.upsert({ where: clave, update: { cantidad: saldo }, create: { productoId: l.productoId as string, localId: x.localId, cantidad: saldo } });
-        await tx.movimientoInventario.create({ data: { productoId: l.productoId as string, localId: x.localId, tipo: 'Anulación de venta', entrada: l.cantidad, salida: 0, saldo, motivo: `Nota de venta ${x.codigo} anulada`, usuarioId: real.id } });
+        await tx.movimientoInventario.create({ data: { productoId: l.productoId as string, localId: x.localId, tipo: 'Venta eliminada', entrada: l.cantidad, salida: 0, saldo, motivo: `Nota de venta ${x.codigo} eliminada`, usuarioId: real.id } });
       }
-      if (x.ordenId) await tx.bitacora.create({ data: { ordenId: x.ordenId, actorId: real.id, texto: `Nota de venta ${x.codigo} anulada: ${motivo}` } });
+      if (x.ordenId) await tx.bitacora.create({ data: { ordenId: x.ordenId, actorId: real.id, texto: `Nota de venta ${x.codigo} eliminada: ${motivo}. Sus pagos quedan registrados.` } });
     });
     const res = resumenNota(await this.cargar(id, organizacionId));
     await auditar(this.prisma, real, s, 'nota_venta', id, resumenNota(x), res, 'Nota de venta anulada');

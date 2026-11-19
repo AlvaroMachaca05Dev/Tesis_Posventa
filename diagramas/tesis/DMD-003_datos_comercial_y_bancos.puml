@@ -1,49 +1,119 @@
 @startuml
-skinparam shadowing false
-skinparam defaultFontName Arial
-skinparam defaultFontSize 13
-skinparam dpi 120
-skinparam roundCorner 8
-skinparam ArrowColor #44546a
-skinparam ClassBackgroundColor #f4f8fc
-skinparam ClassBorderColor #44546a
-skinparam PackageBackgroundColor #ffffff
-skinparam NoteBackgroundColor #fff8e1
-
-title Modelo de datos comercial, de cuentas y de bancos
+!include _estilo.iuml
+title Modelo de datos comercial, de compras y de cuentas
 hide circle
+left to right direction
 entity cotizacion {
-  *id\n#cliente_id\n#orden_id\nestado\nkm\nobservacion
+  *id
+  --
+  #organizacion_id
+  #local_id
+  #cliente_id
+  #vehiculo_id
+  serie, numero (únicos)
+  valida_hasta
+  condicion
+  gravada, igv, total
+  estado
 }
-entity item_cotizado {
-  *id\n#cotizacion_id\ndescripcion\ncantidad\nprecio_centavos\nimpuesto
+entity detalle_cotizacion {
+  *id
+  --
+  #cotizacion_id
+  tipo, descripcion
+  cantidad, precio
+  descuento_pct, tipo_igv
+  total
 }
 entity nota_venta {
-  *id\n#serie_id\nnumero\n#cliente_id\n#orden_id\ncondicion\ntotal_centavos
+  *id
+  --
+  #organizacion_id
+  #local_id
+  #orden_id (nulo en venta directa)
+  #cliente_id
+  serie, numero (únicos)
+  condicion
+  gravada, igv, total
+  con_detraccion, detraccion
+  estado
 }
-entity serie_comprobante {
-  *id\n#local_id\nserie
+entity detalle_nota {
+  *id
+  --
+  #nota_id
+  tipo, descripcion
+  cantidad, precio
+  descuento_pct, tipo_igv
+  total
 }
-entity pago {
-  *id\n#nota_id\n#factura_id\n#cuenta_id\nimporte_centavos\nmetodo\nfecha
+entity correlativo_serie {
+  *organizacion_id, serie
+  --
+  ultimo
 }
-entity cuenta_bancaria {
-  *id\n#local_id\nnombre\ntipo\nsaldo_centavos
+entity abono {
+  *id
+  --
+  #orden_id
+  #nota_id
+  fecha, metodo, valor
 }
-entity movimiento_cuenta {
-  *id\n#cuenta_id\ntipo\nimporte_centavos\nfecha
+entity compra {
+  *id
+  --
+  #organizacion_id
+  #local_id
+  #proveedor_id
+  tipo_documento, serie, numero
+  condicion
+  fecha_vencimiento
+  total, estado
 }
-entity factura_compra {
-  *id\n#proveedor_id\ncodigo\ntotal_centavos
+entity detalle_compra {
+  *id
+  --
+  #compra_id
+  #producto_id
+  cantidad, costo, total
+}
+entity pago_compra {
+  *id
+  --
+  #compra_id
+  fecha, metodo, valor
+}
+entity orden_servicio {
+  *id
+}
+entity cliente {
+  *id
 }
 entity proveedor {
-  *id\nnombre\ndocumento
+  *id
 }
-cotizacion ||--o{ item_cotizado
-nota_venta }o--|| serie_comprobante
-nota_venta ||--o{ pago
-factura_compra ||--o{ pago
-cuenta_bancaria ||--o{ pago
-cuenta_bancaria ||--o{ movimiento_cuenta
-proveedor ||--o{ factura_compra
+entity producto {
+  *id
+}
+entity movimiento_inventario {
+  *id
+  --
+  #producto_id
+  #local_id
+  entrada, salida, saldo
+}
+cotizacion ||--|{ detalle_cotizacion
+cliente ||--o{ cotizacion
+nota_venta ||--|{ detalle_nota
+cliente ||--o{ nota_venta
+orden_servicio |o--o{ nota_venta
+nota_venta |o--o{ abono
+orden_servicio |o--o{ abono
+proveedor ||--o{ compra
+compra ||--|{ detalle_compra
+compra ||--o{ pago_compra
+producto |o--o{ detalle_compra
+producto ||--o{ movimiento_inventario
+note bottom of correlativo_serie : El número de cada serie se toma\ndentro de la transacción (RN-03).
+note bottom of pago_compra : Las cuentas bancarias y sus\nmovimientos (RF-091) están pendientes.
 @enduml

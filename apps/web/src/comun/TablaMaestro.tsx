@@ -1,4 +1,5 @@
 import { CSSProperties, FormEvent, ReactNode, useEffect, useState } from 'react';
+import { useConfirmar } from './Confirmar';
 import { FilaFiltros, useFiltros } from './FiltrosColumna';
 import { Paginacion, usePaginacion } from './Paginacion';
 import { useColumnasRedimensionables } from './useColumnasRedimensionables';
@@ -15,6 +16,12 @@ export interface Campo {
   requerido?: boolean;
   ancha?: boolean;
   soloAlCrear?: boolean;
+  /** Para el tipo «multi»: opción → grupo, y la lista se muestra como árbol. */
+  agrupar?: Record<string, string>;
+  /** Dibuja el campo a mano (rejillas, listas de ítems…). Recibe los valores y cómo cambiarlos. */
+  render?: (v: Record<string, Valor>, poner: (k: string, x: Valor) => void) => ReactNode;
+  /** Botón «+» junto a un select, para crear el registro que falta sin salir del formulario. */
+  mas?: { titulo: string; alClic: (poner: (k: string, x: Valor) => void) => void };
 }
 // `ancho`: máximo de caracteres del dato más largo que puede traer la columna. Sin él, la columna no se parte en líneas
 // (dato corto: código, pill, número, fecha). Con él, se le da el ancho justo para ese máximo, en una o dos líneas.
@@ -46,6 +53,10 @@ export default function TablaMaestro<T extends { id: string }>(p: {
   sinTitulo?: boolean;
   // Módulos cuyo «+ Nuevo» abre un flujo propio y cuyas filas no se editan (p. ej. los comprobantes).
   alNuevo?: () => void;
+  // Modal amplio (p. ej. solapamientos, con listas de servicios lado a lado).
+  modalAncho?: boolean;
+  /** «Nueva» en vez de «Nuevo» (categoría, familia…). */
+  femenino?: boolean;
 }) {
   const [editando, setEditando] = useState<T | 'nuevo' | null>(null);
   const [mensaje, setMensaje] = useState('');
@@ -56,6 +67,7 @@ export default function TablaMaestro<T extends { id: string }>(p: {
   const filtradas = p.filas.filter((x) => (verInactivos || !p.activo || p.activo(x)) && pasa(x));
   const { visibles, pagina, setPagina, tam, setTam, total, totalPaginas, inicio, fin } = usePaginacion(filtradas);
   const edita = p.puedeEditar && !p.alNuevo;
+  const { preguntar, modal: confirmacion } = useConfirmar();
   const conAcciones = edita || !!p.acciones;
 
   async function hacer(f: () => Promise<unknown>, ok: string) {
@@ -70,6 +82,20 @@ export default function TablaMaestro<T extends { id: string }>(p: {
     }
   }
 
+  async function eliminarFila(x: T) {
+    if ((await preguntar({ titulo: `¿Eliminar este ${p.uno}?`, mensaje: p.alternar ? 'Si tiene historial no se borra: sale de la lista activa y se puede restaurar.' : undefined })) === null) return;
+    try {
+      const r = (await p.eliminar!(x)) as { eliminado?: boolean } | undefined;
+      setError('');
+      setMensaje(r?.eliminado === false ? `Tenía historial: el ${p.uno} salió de la lista activa.` : `${p.uno[0].toUpperCase() + p.uno.slice(1)} eliminado.`);
+      await p.alCambiar();
+    } catch (e) { setMensaje(''); setError((e as Error).message); }
+  }
+  async function alternarFila(x: T) {
+    if (p.activo!(x) && (await preguntar({ titulo: `¿Eliminar este ${p.uno}?`, mensaje: 'Sale de la lista activa y se puede restaurar.' })) === null) return;
+    await hacer(() => p.alternar!(x), p.activo!(x) ? 'Eliminado de la lista activa.' : 'Restaurado.');
+  }
+
   return (
     <div className={p.sinTitulo ? '' : 'panel ancho'}>
       {!p.sinTitulo && <h1>{p.titulo}</h1>}
@@ -79,6 +105,7 @@ export default function TablaMaestro<T extends { id: string }>(p: {
       </div>
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
       {error && !editando && <p className="error" role="alert">{error}</p>}
+      {confirmacion}
       {editando && (() => {
         const fila = editando === 'nuevo' ? null : editando;
         const alCancelar = () => { setEditando(null); setError(''); };
@@ -96,8 +123,9 @@ export default function TablaMaestro<T extends { id: string }>(p: {
         };
         return p.formulario ? p.formulario({ fila, error, alCancelar, alGuardar }) : (
           <FormMaestro
-            titulo={`${fila ? 'Editar' : 'Nuevo'} ${p.uno}`}
+            titulo={`${fila ? 'Editar' : p.femenino ? 'Nueva' : 'Nuevo'} ${p.uno}`}
             fila={fila}
+            ancho={p.modalAncho}
             campos={p.campos ?? []}
             inicial={p.valores ? p.valores(fila) : {}}
             error={error}
@@ -127,10 +155,11 @@ export default function TablaMaestro<T extends { id: string }>(p: {
                   <td className="acc">
                     <MenuAcciones>
                       {edita && <button type="button" onClick={() => setEditando(x)}>Editar</button>}
-                      {edita && p.alternar && p.activo && (
-                        <button type="button" className={p.activo(x) ? 'peligro' : ''} onClick={() => { if (!p.activo!(x) || window.confirm(`¿Quitar este ${p.uno} de la lista activa? Se conserva y puedes restaurarlo.`)) void hacer(() => p.alternar!(x), p.activo!(x) ? 'Quitado de la lista activa.' : 'Restaurado.'); }}>{p.activo(x) ? 'Quitar' : 'Restaurar'}</button>
+                      {/* Un solo «Eliminar»: sin uso se borra; con historial sale de la lista activa y se restaura con «Restaurar». */}
+                      {edita && p.alternar && p.activo && (!p.activo(x) || !p.eliminar) && (
+                        <button type="button" className={p.activo(x) ? 'peligro' : ''} onClick={() => void alternarFila(x)}>{p.activo(x) ? 'Eliminar' : 'Restaurar'}</button>
                       )}
-                      {edita && p.eliminar && <button type="button" className="peligro" onClick={() => { if (window.confirm(`¿Eliminar este ${p.uno}?`)) void hacer(() => p.eliminar!(x), 'Eliminado.'); }}>Eliminar</button>}
+                      {edita && p.eliminar && (!p.activo || p.activo(x)) && <button type="button" className="peligro" onClick={() => void eliminarFila(x)}>Eliminar</button>}
                       {p.acciones?.(x)}
                     </MenuAcciones>
                   </td>
@@ -147,7 +176,7 @@ export default function TablaMaestro<T extends { id: string }>(p: {
   );
 }
 
-function FormMaestro<T>(p: { titulo: string; fila: T | null; campos: Campo[] | ((x: T | null, v: Record<string, Valor>) => Campo[]); inicial: Record<string, Valor>; error: string; alCancelar: () => void; alGuardar: (d: Record<string, Valor>) => Promise<void> }) {
+function FormMaestro<T>(p: { titulo: string; fila: T | null; ancho?: boolean; campos: Campo[] | ((x: T | null, v: Record<string, Valor>) => Campo[]); inicial: Record<string, Valor>; error: string; alCancelar: () => void; alGuardar: (d: Record<string, Valor>) => Promise<void> }) {
   const [v, setV] = useState<Record<string, Valor>>(p.inicial);
   const campos = (typeof p.campos === 'function' ? p.campos(p.fila, v) : p.campos).filter((c) => !(c.soloAlCrear && p.fila));
   // Al cambiar un campo que limita a otro (p. ej. el tipo de documento), el valor se recorta al nuevo largo.
@@ -163,25 +192,31 @@ function FormMaestro<T>(p: { titulo: string; fila: T | null; campos: Campo[] | (
   const id = (k: string) => 'm-' + k;
   return (
     <div className="fondo-modal">
-      <form className="modal-form" role="dialog" aria-modal="true" aria-label={p.titulo} onSubmit={enviar}>
+      <form className={'modal-form' + (p.ancho ? ' ancho' : '')} role="dialog" aria-modal="true" aria-label={p.titulo} onSubmit={enviar}>
         <h2>{p.titulo}</h2>
         {p.error && <p className="error" role="alert">{p.error}</p>}
         <div className="dos-col">
           {campos.map((c) => (
             <div key={c.k} className={'campo' + (c.ancha || c.tipo === 'area' ? ' ancha' : '')}>
-              {c.tipo === 'check' ? (
+              {c.render ? (
+                <>
+                  {c.etiqueta && <span className="etiqueta-campo">{c.etiqueta}</span>}
+                  {c.render(v, (k, x) => setV((y) => ({ ...y, [k]: x })))}
+                </>
+              ) : c.tipo === 'check' ? (
                 <label className="check"><input id={id(c.k)} type="checkbox" checked={!!v[c.k]} onChange={(e) => setV({ ...v, [c.k]: e.target.checked })} /> {c.etiqueta}</label>
               ) : (
                 <>
                   <label htmlFor={id(c.k)}>{c.etiqueta}</label>
                   {c.tipo === 'multi' ? (
-                    <select id={id(c.k)} multiple size={8} value={(v[c.k] as string[]) ?? []} onChange={(e) => setV({ ...v, [c.k]: Array.from(e.target.selectedOptions).map((o) => o.value) })}>
-                      {(c.opciones ?? []).map(([o, t]) => <option key={o} value={o}>{t}</option>)}
-                    </select>
+                    <SelectorMultiple id={id(c.k)} etiqueta={c.etiqueta} agrupar={c.agrupar} opciones={c.opciones ?? []} valor={(v[c.k] as string[]) ?? []} alCambiar={(x) => setV({ ...v, [c.k]: x })} />
                   ) : c.tipo === 'select' ? (
-                    <select id={id(c.k)} value={String(v[c.k] ?? '')} required={c.requerido} onChange={(e) => setV({ ...v, [c.k]: e.target.value })}>
-                      {(c.opciones ?? []).map(([o, t]) => <option key={o} value={o}>{t}</option>)}
-                    </select>
+                    <div className={c.mas ? 'select-mas' : undefined}>
+                      <select id={id(c.k)} value={String(v[c.k] ?? '')} required={c.requerido} onChange={(e) => setV({ ...v, [c.k]: e.target.value })}>
+                        {(c.opciones ?? []).map(([o, t]) => <option key={o} value={o}>{t}</option>)}
+                      </select>
+                      {c.mas && <button type="button" className="mas-cuadrado" aria-label={c.mas.titulo} title={c.mas.titulo} onClick={() => c.mas!.alClic((k, x) => setV((y) => ({ ...y, [k]: x })))}>+</button>}
+                    </div>
                   ) : c.tipo === 'area' ? (
                     <textarea id={id(c.k)} rows={2} value={String(v[c.k] ?? '')} onChange={(e) => setV({ ...v, [c.k]: e.target.value })} />
                   ) : (
@@ -227,6 +262,43 @@ export function MenuAcciones({ children }: { children: ReactNode }) {
     <div className="menu-acciones" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setLugar(null); }}>
       <button type="button" className="icono" aria-label="Acciones" aria-expanded={abierto} onClick={alternar}>⚙ ▾</button>
       {abierto && <div className="menu-lista" style={lugar!} onClick={() => setLugar(null)}>{children}</div>}
+    </div>
+  );
+}
+
+/** Varios elementos de una lista larga: buscador, casillas y los elegidos arriba (se quitan con ×). */
+export function SelectorMultiple(p: { id: string; etiqueta: string; opciones: [string, string][]; valor: string[]; alCambiar: (v: string[]) => void; agrupar?: Record<string, string> }) {
+  const [buscar, setBuscar] = useState('');
+  const [cerradas, setCerradas] = useState<string[]>([]);
+  const normal = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const nombre = new Map(p.opciones);
+  const visibles = p.opciones.filter(([, t]) => normal(t).includes(normal(buscar.trim())));
+  const alternar = (o: string) => p.alCambiar(p.valor.includes(o) ? p.valor.filter((x) => x !== o) : [...p.valor, o]);
+  return (
+    <div className="selector-multiple" role="group" aria-label={p.etiqueta}>
+      {p.valor.length > 0 && (
+        <div className="chips">
+          {p.valor.map((o) => <span key={o} className="chip">{nombre.get(o) ?? o}<button type="button" aria-label={`Quitar ${nombre.get(o) ?? o}`} onClick={() => alternar(o)}>×</button></span>)}
+        </div>
+      )}
+      <input id={p.id} placeholder="Buscar…" value={buscar} onChange={(e) => setBuscar(e.target.value)} />
+      <ul className={p.agrupar ? 'arbol' : ''}>
+        {p.agrupar
+          ? [...new Set(visibles.map(([o]) => p.agrupar![o] ?? 'Otros'))].map((g) => {
+              const hojas = visibles.filter(([o]) => (p.agrupar![o] ?? 'Otros') === g);
+              const cerrada = cerradas.includes(g) && !buscar.trim();
+              return (
+                <li key={g} className="rama">
+                  <button type="button" className="rama-cab" aria-expanded={!cerrada} onClick={() => setCerradas((xs) => (xs.includes(g) ? xs.filter((x) => x !== g) : [...xs, g]))}>{cerrada ? '▸' : '▾'} {g} <span className="suave">({hojas.length})</span></button>
+                  {!cerrada && <ul>{hojas.map(([o, t]) => <li key={o} className="hoja"><label><input type="checkbox" checked={p.valor.includes(o)} onChange={() => alternar(o)} /> <span>{t}</span></label></li>)}</ul>}
+                </li>
+              );
+            })
+          : visibles.map(([o, t]) => (
+              <li key={o}><label><input type="checkbox" checked={p.valor.includes(o)} onChange={() => alternar(o)} /> <span>{t}</span></label></li>
+            ))}
+        {visibles.length === 0 && <li className="suave">Sin coincidencias.</li>}
+      </ul>
     </div>
   );
 }

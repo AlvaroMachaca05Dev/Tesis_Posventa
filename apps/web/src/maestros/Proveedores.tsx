@@ -42,6 +42,7 @@ export default function Proveedores({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
         guardar={(x, d) => (x ? api.editarProveedor(x.id, d) : api.crearProveedor(d))}
         activo={(x) => x.activo}
         alternar={(x) => api.editarProveedor(x.id, { activo: !x.activo })}
+        eliminar={(x) => api.eliminarProveedor(x.id)}
       />
     </>
   );

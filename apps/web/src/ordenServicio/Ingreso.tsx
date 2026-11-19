@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, Orden } from '../comun/api';
+import { useConfirmar } from '../comun/Confirmar';
 
 export const MAX_FOTOS = 5;
 
@@ -10,6 +11,7 @@ export default function Ingreso({ orden, bloqueada, puedeEditar, alCambiar, alFa
   pendientes?: File[]; alPendientes?: (f: File[]) => void;
 }) {
   const archivos = useRef<HTMLInputElement>(null);
+  const { preguntar, modal: confirmacion } = useConfirmar();
   const camaraNativa = useRef<HTMLInputElement>(null);
   const [vistas, setVistas] = useState<Record<string, string>>({});
   const [subiendo, setSubiendo] = useState(false);
@@ -44,6 +46,7 @@ export default function Ingreso({ orden, bloqueada, puedeEditar, alCambiar, alFa
   const llenos = Object.values(orden.estadoVehiculo ?? {}).filter((x) => (Array.isArray(x) ? x.length > 0 : !!x && x !== 'Sin registrar')).length;
   return (
     <section className="ingreso">
+      {confirmacion}
       <div className="fila entre">
         <h3>Evidencias de ingreso <span className="suave">({total}/{MAX_FOTOS})</span></h3>
         <button type="button" disabled={nueva} onClick={abrirEstado}>🚗 Estado del vehículo{llenos ? ` (${llenos})` : ''}</button>
@@ -62,7 +65,7 @@ export default function Ingreso({ orden, bloqueada, puedeEditar, alCambiar, alFa
           <figure key={e.id}>
             {vistas[e.id] ? <a href={vistas[e.id]} target="_blank" rel="noreferrer"><img src={vistas[e.id]} alt={e.nombre} /></a> : <span className="suave">…</span>}
             <figcaption title={e.nombre}>{e.nombre}</figcaption>
-            {puedeEditar && !bloqueada && <button type="button" className="quitar" aria-label={`Quitar ${e.nombre}`} onClick={async () => { if (!window.confirm(`¿Quitar ${e.nombre}?`)) return; try { alCambiar(await api.quitarEvidencia(orden.id, e.id)); } catch (x) { alFallar(x); } }}>✕</button>}
+            {puedeEditar && !bloqueada && <button type="button" className="quitar" aria-label={`Quitar ${e.nombre}`} onClick={async () => { if ((await preguntar({ titulo: `¿Quitar ${e.nombre}?`, boton: 'Quitar' })) === null) return; try { alCambiar(await api.quitarEvidencia(orden.id, e.id)); } catch (x) { alFallar(x); } }}>✕</button>}
           </figure>
         ))}
         {pendientes.map((f, i) => (

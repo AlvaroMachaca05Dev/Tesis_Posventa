@@ -144,8 +144,9 @@ describe('emitir la nota de venta desde la ODS', () => {
 
 describe('la ODS con nota de venta', () => {
   it('se cierra aunque la decisión no sea «No aprobada», no admite cambiar ítems y los abonos dan el saldo de la nota', async () => {
+    const sin = await nuevaOds([servicio(50)]);
+    expect((await como(CAJERA, 'patch', `/ordenes/${sin.id}`, { estado: 'Cerrada' })).status).toBe(200);
     const o = await nuevaOds([servicio(200)]);
-    expect((await como(CAJERA, 'patch', `/ordenes/${o.id}`, { estado: 'Cerrada' })).status).toBe(409);
     const nota = (await como(CAJERA, 'post', `/ordenes/${o.id}/nota-venta`, {})).body;
     expect((await como(CAJERA, 'put', `/ordenes/${o.id}/detalles`, { detalles: [servicio(10)] })).status).toBe(409);
     await como(CAJERA, 'post', `/ordenes/${o.id}/abonos`, { metodo: 'Efectivo', valor: 150 });

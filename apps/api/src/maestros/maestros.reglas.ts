@@ -135,6 +135,9 @@ export interface ReglaSolape {
   minimo?: number; // CONJUNTO: cuántos servicios del conjunto deben estar
   modo: 'AUTOMATICO' | 'OPCIONAL' | 'AVISO';
   descuentoEstandar: number;
+  /** Si existe, el descuento es este % del servicio que lo recibe y manda sobre los montos en soles. */
+  porcentaje?: number | null;
+  porcentajeDiesel?: number | null;
   descuentos?: Record<string, number | null> | null;
   alerta?: string | null;
   activo?: boolean;
@@ -143,7 +146,9 @@ export interface LineaSolape { indice: number; servicioId?: string | null; total
 export interface Hallazgo { regla: ReglaSolape; indiceBase: number; indiceReducido: number; monto: number; alerta: string; clave: string }
 
 /** Monto del descuento para el grupo del vehículo: el del grupo si existe; si no, el estándar. Múltiplo de 5. */
-export function montoSolape(r: ReglaSolape, grupo: string | null) {
+export function montoSolape(r: ReglaSolape, grupo: string | null, total?: number) {
+  const pct = grupo === 'G4' && r.porcentajeDiesel != null ? r.porcentajeDiesel : r.porcentaje;
+  if (pct != null && pct > 0 && total != null) return pct >= 100 ? total : Math.round(total * pct) / 100;
   const g = grupo ? r.descuentos?.[grupo] : undefined;
   return g != null ? g : r.descuentoEstandar;
 }
@@ -171,7 +176,7 @@ export function evaluarSolapamientos(lineas: LineaSolape[], reglas: ReglaSolape[
         continue;
       }
       for (const l of orden.slice(1)) {
-        const monto = Math.max(0, Math.min(montoSolape(r, grupo), l.total));
+        const monto = Math.max(0, Math.min(montoSolape(r, grupo, l.total), l.total));
         if (monto > 0) hallados.push({ regla: r, indiceBase: orden[0].indice, indiceReducido: l.indice, monto, alerta: texto(r, monto), clave: claveSolape(r.id, l.servicioId!) });
       }
       continue;
@@ -179,7 +184,7 @@ export function evaluarSolapamientos(lineas: LineaSolape[], reglas: ReglaSolape[
     const a = lineas.find((l) => l.servicioId && r.base.includes(l.servicioId));
     if (!a) continue;
     for (const b of lineas.filter((l) => l.servicioId && r.reducidos.includes(l.servicioId) && l.indice !== a.indice)) {
-      const monto = r.modo === 'AVISO' ? 0 : Math.max(0, Math.min(montoSolape(r, grupo), b.total));
+      const monto = r.modo === 'AVISO' ? 0 : Math.max(0, Math.min(montoSolape(r, grupo, b.total), b.total));
       if (monto <= 0 && r.modo !== 'AVISO') continue;
       hallados.push({ regla: r, indiceBase: a.indice, indiceReducido: b.indice, monto, alerta: texto(r, monto), clave: claveSolape(r.id, b.servicioId!) });
     }

@@ -11,6 +11,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Categorías del inventario: una lista para productos y otra para servicios, que se eligen al crear cada uno.
+model Categoria {
+  id             String       @id @default(uuid())
+  organizacionId String
+  tipo           String // producto | servicio
+  nombre         String
+  activo         Boolean      @default(true)
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+
+  @@unique([organizacionId, tipo, nombre])
+}
+
+// Plan de mantenimiento preventivo: 8 planes (combustible × uso × aceite) con código GP-M, GR-S, DP-M…
+// La cajera elige combustible y uso; el aceite sale del vehículo. La revisión completa no forma parte de ningún ciclo.
+model PlanPreventivo {
+  id             String       @id @default(uuid())
+  organizacionId String
+  codigo         String
+  nombre         String
+  combustible    String // Gasolina | Diésel
+  uso            String // Particular | Profesional
+  aceite         String       @default("M") // M = mineral o semisintético · S = sintético o full sintético
+  // Ciclo: paso del aceite (km, meses), secuencia de paquetes (SV094… y «+AF» = con afinamiento), ciclos en la línea de tiempo y mini patrón.
+  ciclo          Json
+  activo         Boolean      @default(true)
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  vehiculos      Vehiculo[]
+
+  @@unique([organizacionId, codigo])
+}
+
 model Organizacion {
   id                 String             @id @default(uuid())
   nombre             String
@@ -26,10 +57,14 @@ model Organizacion {
   terminosRecepcion  String?
   razonSocial        String?
   pieTicket          String?
+  // Logo con fondo transparente (PNG, base64) para la cabecera de la pantalla; el JPEG va a los PDF.
+  logoPng            String?            @db.Text
   logoJpeg           String?            @db.Text // logo horizontal en JPEG (base64) para los PDF y tickets
   logoAncho          Int?
   logoAlto           Int?
   anchoTicketMm      Int                @default(80)
+  // Aprobación por ítem en la ODS (talleres con compra logística de lo aprobado). Desactivada por defecto.
+  aprobacionPorItem  Boolean            @default(false)
   locales            Local[]
   roles              Rol[]
   usuarios           Usuario[]
@@ -44,6 +79,8 @@ model Organizacion {
   grupos             GrupoVehicular[]
   reglasPrecio       ReglaPrecio[]
   solapamientos      Solapamiento[]
+  planes             PlanPreventivo[]
+  categorias         Categoria[]
 }
 
 // Qué módulos tiene contratados cada empresa. Lo define el Propietario de la plataforma.
@@ -72,6 +109,7 @@ model Local {
   movimientos    MovimientoInventario[]
   notas          NotaVenta[]
   cotizaciones   Cotizacion[]
+  compras        Compra[]
 }
 
 // Los roles son datos: los base se crean por empresa y el Superadministrador puede crear roles propios.
@@ -138,6 +176,9 @@ model Usuario {
   evidencias     EvidenciaIngreso[]
   cotizacionesCreadas Cotizacion[] @relation("CotizacionCrea")
   cotizacionesAnuladas Cotizacion[] @relation("CotizacionAnula")
+  comprasRegistradas Compra[] @relation("CompraRegistra")
+  comprasAnuladas    Compra[] @relation("CompraAnula")
+  pagosCompra        PagoCompra[]
 }
 
 // Un usuario puede tener uno o más roles; sus permisos son la suma de los de cada rol.
@@ -202,12 +243,19 @@ model Vehiculo {
   grupoFuente    String? // FAMILIA_MOTOR | MODELO | MANUAL
   // Código del motor (G3LA, A08S3…): sirve para hallar la familia de motor y con ella el grupo.
   codigoMotor    String?
+  // Uso (Particular | Profesional) y tipo de aceite (Mineral, Semisintético, Sintético, Full sintético): con el combustible definen el plan.
+  uso            String?
+  aceite         String?
+  // Plan de mantenimiento preventivo (sale del combustible, el uso y el aceite).
+  planId         String?
   creadoEn       DateTime        @default(now())
   organizacion   Organizacion    @relation(fields: [organizacionId], references: [id])
   cliente        Cliente         @relation(fields: [clienteId], references: [id])
   grupo          GrupoVehicular? @relation(fields: [grupoId], references: [id])
+  plan           PlanPreventivo? @relation(fields: [planId], references: [id])
   lecturas       LecturaKm[]
   ordenes        OrdenServicio[]
+  cambiosPlan    CambioPlanVehiculo[]
 
   @@unique([organizacionId, placaNorm])
   notas NotaVenta[]
@@ -262,6 +310,9 @@ model OrdenServicio {
   estadoVehiculo          Json?
   // Reglas de solapamiento opcionales que la cajera decidió no aplicar («Mantener montos»).
   solapamientosMantenidos String[]           @default([])
+  // Garantía enlazada: la ODS de origen y los servicios (DetalleODS de esa orden) por los que vuelve el vehículo; sirven para atribuir la garantía al técnico que los hizo.
+  garantiaDeId            String?
+  garantiaDetalleIds      String[]           @default([])
   eliminada               Boolean            @default(false)
   motivoEliminacion       String?
   creadoEn                DateTime           @default(now())
@@ -278,6 +329,8 @@ model OrdenServicio {
   evidencias              EvidenciaIngreso[]
   solicitudes             SolicitudOds[]
   notas                   NotaVenta[]
+  garantiaDe              OrdenServicio?     @relation("GarantiaOrigen", fields: [garantiaDeId], references: [id])
+  garantias               OrdenServicio[]    @relation("GarantiaOrigen")
 
   @@unique([organizacionId, codigo])
 }
@@ -313,6 +366,8 @@ model DetalleODS {
   // Descuento en soles por solapamiento de servicios (RF-102) y la regla que lo dio.
   descuentoMonto  Decimal       @default(0) @db.Decimal(12, 2)
   solapamientoId  String?
+  // Aprobación por ítem (opcional por empresa): el cliente aprueba o no cada ítem; se cobra y se imprime solo lo aprobado.
+  aprobado        Boolean       @default(true)
   orden           OrdenServicio @relation(fields: [ordenId], references: [id])
   tecnico         Usuario?      @relation(fields: [tecnicoId], references: [id])
 }
@@ -402,6 +457,7 @@ model Proveedor {
   organizacion   Organizacion  @relation(fields: [organizacionId], references: [id])
   productos      Producto[]
   servicios      Servicio[]
+  compras        Compra[]
 
   @@unique([organizacionId, documento])
 }
@@ -424,6 +480,7 @@ model Producto {
   proveedor      Proveedor?             @relation(fields: [proveedorId], references: [id])
   stock          StockProducto[]
   movimientos    MovimientoInventario[]
+  detallesCompra DetalleCompra[]
 
   @@unique([organizacionId, codigo])
 }
@@ -473,6 +530,14 @@ model Servicio {
   preciosGrupo   Json?
   horasGrupo     Json?
   repuestos      String[]     @default([])
+  // Ficha del servicio: etiqueta de mantenimiento (Preventivo, Correctivo, Preventivo / correctivo, Adicional), línea del plan con la que se enlaza,
+  // visita donde va, lo que elige el sistema, servicios que incluye ({nombre, horas}, sin precios) y acciones a realizar para el técnico.
+  etiqueta       String?
+  lineaPlan      String?
+  visita         String?
+  eligeSistema   String?
+  subservicios   Json?
+  pasos          Json?
   activo         Boolean      @default(true)
   creadoEn       DateTime     @default(now())
   organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
@@ -566,6 +631,10 @@ model Solapamiento {
   // AUTOMATICO, OPCIONAL o AVISO (solo informa, sin descuento)
   modo               String       @default("OPCIONAL")
   descuentoEstandar  Decimal      @db.Decimal(10, 2)
+  // Si hay porcentaje, el descuento es ese % del servicio que lo recibe (manda sobre los montos en soles).
+  porcentaje         Decimal?     @db.Decimal(5, 2)
+  // Porcentaje propio de los vehículos diésel (grupo G4); si falta, rige «porcentaje».
+  porcentajeDiesel   Decimal?     @db.Decimal(5, 2)
   descuentos         Json?
   horasCompartidas   Decimal?     @db.Decimal(6, 2)
   alerta             String?
@@ -725,4 +794,94 @@ model DetalleCotizacion {
   servicioId   String?
   productoId   String?
   cotizacion   Cotizacion @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+}
+
+// Compra a un proveedor (factura, boleta o nota de compra): sube el stock del local y queda en el kárdex.
+// Al contado se paga al registrarla; a crédito su saldo va a Cuentas por pagar. No se edita ni se borra: se anula.
+model Compra {
+  id               String          @id @default(uuid())
+  organizacionId   String
+  localId          String
+  proveedorId      String
+  tipoDocumento    String          @default("FACTURA") // FACTURA | BOLETA | NOTA_COMPRA
+  serie            String
+  numero           String
+  fecha            DateTime
+  condicion        String          @default("CONTADO") // CONTADO | CREDITO
+  fechaVencimiento DateTime?
+  observaciones    String?
+  total            Decimal         @db.Decimal(12, 2)
+  estado           String          @default("REGISTRADA") // REGISTRADA | ANULADA
+  registradaPorId  String
+  anuladaPorId     String?
+  motivoAnulacion  String?
+  anuladaEn        DateTime?
+  creadoEn         DateTime        @default(now())
+  local            Local           @relation(fields: [localId], references: [id])
+  proveedor        Proveedor       @relation(fields: [proveedorId], references: [id])
+  registradaPor    Usuario         @relation("CompraRegistra", fields: [registradaPorId], references: [id])
+  anuladaPor       Usuario?        @relation("CompraAnula", fields: [anuladaPorId], references: [id])
+  detalles         DetalleCompra[]
+  pagos            PagoCompra[]
+
+  @@unique([organizacionId, proveedorId, tipoDocumento, serie, numero])
+  @@index([proveedorId])
+}
+
+model DetalleCompra {
+  id          String    @id @default(uuid())
+  compraId    String
+  posicion    Int       @default(0)
+  productoId  String?
+  descripcion String
+  cantidad    Decimal   @db.Decimal(12, 3)
+  costo       Decimal   @db.Decimal(12, 2)
+  descuento   Decimal   @default(0) @db.Decimal(12, 2)
+  total       Decimal   @db.Decimal(12, 2)
+  compra      Compra    @relation(fields: [compraId], references: [id], onDelete: Cascade)
+  producto    Producto? @relation(fields: [productoId], references: [id])
+}
+
+// Pago a proveedor: el de contado al registrar la compra y los de Cuentas por pagar.
+model PagoCompra {
+  id              String   @id @default(uuid())
+  compraId        String
+  fecha           DateTime @default(now())
+  metodo          String
+  concepto        String?
+  valor           Decimal  @db.Decimal(12, 2)
+  registradoPorId String
+  compra          Compra   @relation(fields: [compraId], references: [id], onDelete: Cascade)
+  registradoPor   Usuario  @relation(fields: [registradoPorId], references: [id])
+}
+
+// Migración inicial (S4, RN-11): de dónde viene cada fila cargada desde otro sistema (p. ej. «tuulapp» + su identificador).
+// Hace la carga idempotente: si la clave ya existe, la fila se actualiza en vez de duplicarse. No tiene relaciones para no tocar las tablas de negocio.
+model ClaveOrigen {
+  id         String   @id @default(uuid())
+  sistema    String
+  tabla      String
+  idOrigen   String
+  registroId String
+  cargadoEn  DateTime @default(now())
+
+  @@unique([sistema, tabla, idOrigen])
+  @@index([tabla, registroId])
+}
+
+// Cambio de plan de un vehículo ya asignado (uso o aceite): parte la línea de tiempo en la última visita; lo anterior queda congelado.
+model CambioPlanVehiculo {
+  id             String   @id @default(uuid())
+  organizacionId String
+  vehiculoId     String
+  antes          String // código del plan anterior (GP-M…)
+  despues        String // código del plan nuevo
+  corte          String // fecha (AAAA-MM-DD) de la última visita al momento del cambio: desde ahí rige el plan nuevo
+  km             Int?
+  usuarioId      String
+  usuario        String // nombre de quien hizo el cambio
+  creadoEn       DateTime @default(now())
+  vehiculo       Vehiculo @relation(fields: [vehiculoId], references: [id], onDelete: Cascade)
+
+  @@index([vehiculoId])
 }

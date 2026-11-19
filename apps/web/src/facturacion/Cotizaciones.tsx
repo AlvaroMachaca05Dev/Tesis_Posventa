@@ -5,11 +5,12 @@ import { TIPO_CORTO } from '../comun/documento';
 import VistaPreviaPdf from '../ordenServicio/VistaPreviaPdf';
 import { soles } from '../ordenServicio/ordenServicio.util';
 import FormVenta from './FormVenta';
+import { useConfirmar } from '../comun/Confirmar';
 import { generarPdfNota } from './pdfNota';
 
 const empresaVacia = { nombre: '', ruc: null, direccion: null, telefono: null, correo: null, lema: null, cuentasBancarias: null, terminosRecepcion: null };
 const dia = (iso: string) => new Date(iso).toLocaleDateString('es-PE');
-const ESTADO = { VIGENTE: ['Vigente', 'verde'], VENCIDA: ['Vencida', 'amarillo'], ANULADA: ['Anulada', 'rojo'] } as const;
+const ESTADO = { VIGENTE: ['Vigente', 'verde'], VENCIDA: ['Vencida', 'ambar'], ANULADA: ['Eliminada', 'rojo'] } as const;
 
 /** Cotizaciones: no afectan caja, stock ni pagos. Se emiten con el mismo formato de la nota de venta y luego se cargan al facturar. */
 export default function Cotizaciones({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
@@ -21,7 +22,8 @@ export default function Cotizaciones({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
   const [form, setForm] = useState<{ cot?: Cotizacion; editar?: boolean } | null>(null);
   const [facturar, setFacturar] = useState<Cotizacion | null>(null);
   const [vista, setVista] = useState<{ titulo: string; url: string } | null>(null);
-  const cargar = useCallback(async () => setFilas(await api.cotizaciones()), []);
+  const cargar = useCallback(async () => setFilas((await api.cotizaciones()).filter((x) => x.estado !== 'ANULADA')), []);
+  const { preguntar, modal: confirmacion } = useConfirmar();
   useEffect(() => { Promise.all([cargar(), api.catalogosOds().then(setCat)]).catch((e) => setError((e as Error).message)); }, [cargar]);
 
   const cerrarVista = () => { if (vista) URL.revokeObjectURL(vista.url); setVista(null); };
@@ -35,19 +37,15 @@ export default function Cotizaciones({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
     } catch (x) { setError((x as Error).message); }
   }
   async function eliminar(c: Cotizacion) {
-    if (!window.confirm(`¿Eliminar la cotización ${c.codigo}? No se puede deshacer.`)) return;
+    if ((await preguntar({ titulo: `¿Eliminar la cotización ${c.codigo}?`, mensaje: 'No se puede deshacer.' })) === null) return;
     try { await api.eliminarCotizacion(c.id); setError(''); setMensaje(`Cotización ${c.codigo} eliminada.`); await cargar(); } catch (x) { setError((x as Error).message); }
-  }
-  async function anular(c: Cotizacion) {
-    const motivo = window.prompt(`¿Por qué anulas la cotización ${c.codigo}?`);
-    if (!motivo) return;
-    try { await api.anularCotizacion(c.id, motivo); setError(''); setMensaje(`Cotización ${c.codigo} anulada.`); await cargar(); } catch (x) { setError((x as Error).message); }
   }
 
   return (
     <>
       {error && <p className="error" role="alert">{error}</p>}
       {mensaje && <p className="ok" role="status">{mensaje}</p>}
+      {confirmacion}
       {vista && <VistaPreviaPdf titulo={vista.titulo} url={vista.url} alCerrar={cerrarVista} />}
       {form && cat && <FormVenta modo="cotizacion" cat={cat} cotizacionInicial={form.cot} editarId={form.editar ? form.cot?.id : undefined} alCerrar={() => setForm(null)} alHecho={async (m) => { setForm(null); setMensaje(m); await cargar(); }} />}
       {facturar && cat && <FormVenta cat={cat} cotizacionInicial={facturar} alCerrar={() => setFacturar(null)} alHecho={async (m) => { setFacturar(null); setMensaje(m); await cargar(); }} />}
@@ -80,8 +78,7 @@ export default function Cotizaciones({ nivel }: { nivel: 'A' | 'E' | 'V' }) {
             <button type="button" onClick={() => imprimir(x, 'Ticket')}>Ticket</button>
             <button type="button" onClick={() => imprimir(x, 'PDF')}>PDF</button>
             {nivel !== 'V' && <button type="button" onClick={() => setForm({ cot: x })}>Duplicar</button>}
-            {nivel !== 'V' && x.estado !== 'ANULADA' && <button type="button" onClick={() => setForm({ cot: x, editar: true })}>Editar</button>}
-            {nivel === 'A' && x.estado !== 'ANULADA' && <button type="button" className="peligro" onClick={() => void anular(x)}>Anular</button>}
+            {nivel !== 'V' && <button type="button" onClick={() => setForm({ cot: x, editar: true })}>Editar</button>}
             {nivel === 'A' && <button type="button" className="peligro" onClick={() => void eliminar(x)}>Eliminar</button>}
           </>
         )}

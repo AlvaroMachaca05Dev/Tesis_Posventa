@@ -16,13 +16,36 @@ export function validarMovil(pais: string, movil: string | null | undefined) {
   }
 }
 
+/** Solo un número o un texto numérico es número: verdadero/falso, listas, objetos, vacío o espacios dan NaN (no 0 ni 1). */
+export const aNumero = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v.trim().replace(',', '.')) : NaN);
+
+/**
+ * «Eliminar» de una tabla: si el registro no tiene uso se borra; si la base lo impide porque tiene historial
+ * (llave foránea) y se puede desactivar, sale de la lista activa (se puede restaurar); si no, 409 con el motivo.
+ */
+export async function eliminarRegistro(borrar: () => Promise<unknown>, desactivar: (() => Promise<unknown>) | null, conUso: string) {
+  try {
+    await borrar();
+    return { ok: true, eliminado: true };
+  } catch (e) {
+    // P2003/P2014 de Prisma, o el error crudo de Postgres por RESTRICT (23001) o llave foránea (23503).
+    const llave = ['P2003', 'P2014'].includes((e as { code?: string })?.code ?? '') || /violates (RESTRICT setting|foreign key)|"2300[13]"/.test(String((e as Error)?.message));
+    if (!llave) throw e;
+    if (!desactivar) throw new ConflictException(conUso);
+    await desactivar();
+    return { ok: true, eliminado: false };
+  }
+}
+
 /** Convierte el choque de un índice único (P2002) en un 409 con mensaje propio. */
 export function choqueUnico(e: unknown, mensaje: string): never {
   if ((e as { code?: string })?.code === 'P2002') throw new ConflictException(mensaje);
   throw e;
 }
 
+/** Un texto llega como texto (o número): listas, objetos y verdadero/falso se rechazan en vez de guardarse como «[object Object]». */
 export const texto = (v: unknown, max = 500) => {
+  if (v !== null && v !== undefined && typeof v !== 'string' && typeof v !== 'number') throw new BadRequestException('Un campo de texto trae un valor que no es texto.');
   const t = String(v ?? '').trim();
   if (t.length > max) throw new BadRequestException(`El texto supera los ${max} caracteres.`);
   return t === '' ? null : t;

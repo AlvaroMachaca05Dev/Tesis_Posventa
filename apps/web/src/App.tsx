@@ -21,6 +21,12 @@ export default function App() {
   useEffect(() => {
     if (sesion.token()) void cargar();
   }, [cargar]);
+  // Al cambiar el logo de la empresa se vuelve a leer el perfil, para que la cabecera lo muestre de inmediato.
+  useEffect(() => {
+    const alCambiar = () => { void api.me().then(setMe).catch(() => undefined); };
+    window.addEventListener('empresa-cambio', alCambiar);
+    return () => window.removeEventListener('empresa-cambio', alCambiar);
+  }, []);
 
   if (cargando) return <div className="centro">Cargando…</div>;
   if (!me)

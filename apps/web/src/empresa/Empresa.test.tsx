@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from '../App';
 
-vi.mock('../comun/imagen', () => ({ aJpeg: async () => ({ base64: '/9j/AAAA', ancho: 300, alto: 100 }) }));
+vi.mock('../comun/imagen', () => ({ prepararLogo: async (_f: File, sinFondo: boolean) => ({ jpeg: { base64: '/9j/AAAA', ancho: 300, alto: 100 }, png: 'iVBORw0KGgoAAAA', vista: 'data:image/png;base64,iVBORw0KGgoAAAA', fondoQuitado: sinFondo }) }));
 
 type Peticion = { metodo: string; ruta: string; cuerpo: any };
 const llamadas: Peticion[] = [];
@@ -42,7 +42,8 @@ it('muestra tres pestañas y guarda los datos de la empresa', async () => {
   simular();
   render(<App />);
   expect(await screen.findByRole('tab', { name: 'Datos de la empresa' })).toHaveAttribute('aria-selected', 'true');
-  for (const t of ['Impresión', 'Locales y series']) expect(screen.getByRole('tab', { name: t })).toBeInTheDocument();
+  expect(screen.getByRole('tab', { name: 'Impresión' })).toBeInTheDocument();
+  expect(screen.queryByRole('tab', { name: 'Locales y series' })).toBeNull();
   const razon = await screen.findByLabelText('Razón social');
   await userEvent.type(razon, 'Taller Demo S.A.C.');
   await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));
@@ -61,31 +62,21 @@ it('Impresión guarda el ancho del ticket, el pie, las cuentas y los términos',
   await waitFor(() => expect(llamadas.find((l) => l.metodo === 'PATCH')?.cuerpo).toEqual({ anchoTicketMm: 58, pieTicket: 'Gracias', cuentasBancarias: 'BANCO DEMO 000', terminosRecepcion: '1. Cláusula.' }));
 });
 
-it('Locales y series: cada local guarda sus series en mayúsculas', async () => {
-  simular();
-  render(<App />);
-  await userEvent.click(await screen.findByRole('tab', { name: 'Locales y series' }));
-  const serie = await screen.findByLabelText('Serie de boleta de Local Unión');
-  expect(serie).toHaveValue('B002');
-  await userEvent.clear(serie);
-  await userEvent.type(serie, 'b009');
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar Local Unión' }));
-  await waitFor(() => expect(llamadas.find((l) => l.metodo === 'PATCH' && l.ruta === '/empresa/locales/l2')?.cuerpo).toMatchObject({ serieBoleta: 'B009', serieNotaVenta: 'NV02' }));
-});
-
 it('con permiso solo de ver no hay botón Guardar y los campos están bloqueados', async () => {
   simular('V');
   render(<App />);
   expect(await screen.findByLabelText('Razón social')).toBeDisabled();
   expect(screen.queryByRole('button', { name: 'Guardar' })).toBeNull();
-  expect(within(screen.getByRole('tablist')).getAllByRole('tab')).toHaveLength(3);
+  expect(within(screen.getByRole('tablist')).getAllByRole('tab')).toHaveLength(2);
 });
 
-it('Logo: se sube una imagen (ya convertida a JPEG) y se guarda con sus medidas; con logo aparece «Quitar logo»', async () => {
+it('Logo: se elige la imagen, se ve la vista previa sin fondo y al guardar va el JPEG para los PDF y el PNG transparente', async () => {
   simular();
   render(<App />);
   const entrada = await screen.findByLabelText('Subir logo');
   await userEvent.upload(entrada, new File(['x'], 'logo.png', { type: 'image/png' }));
-  await waitFor(() => expect(llamadas.find((l) => l.metodo === 'PATCH' && l.ruta === '/empresa')?.cuerpo).toEqual({ logo: { base64: '/9j/AAAA', ancho: 300, alto: 100 } }));
+  expect(await screen.findByAltText('Vista previa del logo')).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar logo' }));
+  await waitFor(() => expect(llamadas.find((l) => l.metodo === 'PATCH' && l.ruta === '/empresa')?.cuerpo).toEqual({ logo: { base64: '/9j/AAAA', ancho: 300, alto: 100, png: 'iVBORw0KGgoAAAA' } }));
   expect(await screen.findByText('Logo guardado.')).toBeInTheDocument();
 });

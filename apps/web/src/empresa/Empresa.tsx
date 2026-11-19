@@ -1,10 +1,10 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { api, ConfigEmpresa, LocalEmpresa } from '../comun/api';
-import { aJpeg } from '../comun/imagen';
+import { LogoListo, prepararLogo } from '../comun/imagen';
 
 type Nivel = 'A' | 'E' | 'V';
-type Pestana = 'datos' | 'impresion' | 'locales';
-const PESTANAS: [Pestana, string][] = [['datos', 'Datos de la empresa'], ['impresion', 'Impresión'], ['locales', 'Locales y series']];
+type Pestana = 'datos' | 'impresion';
+const PESTANAS: [Pestana, string][] = [['datos', 'Datos de la empresa'], ['impresion', 'Impresión']];
 
 /** Configuración de la empresa: sus datos (salen en los PDF y tickets), los parámetros de impresión y las series de cada local. */
 export default function Empresa({ nivel }: { nivel: Nivel }) {
@@ -31,7 +31,6 @@ export default function Empresa({ nivel }: { nivel: Nivel }) {
       {error && <p className="error" role="alert">{error}</p>}
       {cfg && pestana === 'datos' && <Datos cfg={cfg} puedeEditar={puedeEditar} alGuardar={hecho} alFallar={fallo} />}
       {cfg && pestana === 'impresion' && <Impresion cfg={cfg} puedeEditar={puedeEditar} alGuardar={hecho} alFallar={fallo} />}
-      {cfg && pestana === 'locales' && <Locales cfg={cfg} puedeEditar={puedeEditar} alGuardar={hecho} alFallar={fallo} />}
     </div>
   );
 }
@@ -42,11 +41,25 @@ function Datos({ cfg, puedeEditar, alGuardar, alFallar }: Parte) {
   const [d, setD] = useState({ nombre: cfg.nombre, razonSocial: cfg.razonSocial ?? '', ruc: cfg.ruc ?? '', direccion: cfg.direccion ?? '', telefono: cfg.telefono ?? '', correo: cfg.correo ?? '', lema: cfg.lema ?? '' });
   const poner = (k: keyof typeof d, v: string) => setD((x) => ({ ...x, [k]: v }));
   const enviar = async (e: FormEvent) => { e.preventDefault(); try { alGuardar(await api.editarEmpresa(d), 'Datos de la empresa guardados.'); } catch (x) { alFallar(x); } };
-  async function subirLogo(f: File) {
-    try { alGuardar(await api.editarEmpresa({ logo: await aJpeg(f) }), 'Logo guardado.'); } catch (x) { alFallar(x); }
+  // Vista previa antes de subir: el archivo se convierte a PNG y, si tiene fondo liso, se le quita.
+  const [previo, setPrevio] = useState<{ archivo: File; listo: LogoListo; sinFondo: boolean } | null>(null);
+  async function elegirLogo(f: File) {
+    try { setPrevio({ archivo: f, listo: await prepararLogo(f, true), sinFondo: true }); } catch (x) { alFallar(x); }
+  }
+  async function cambiarFondo(sinFondo: boolean) {
+    if (!previo) return;
+    try { setPrevio({ ...previo, sinFondo, listo: await prepararLogo(previo.archivo, sinFondo) }); } catch (x) { alFallar(x); }
+  }
+  async function subirLogo() {
+    if (!previo) return;
+    try {
+      alGuardar(await api.editarEmpresa({ logo: { ...previo.listo.jpeg, png: previo.listo.png } }), 'Logo guardado.');
+      setPrevio(null);
+      window.dispatchEvent(new Event('empresa-cambio'));
+    } catch (x) { alFallar(x); }
   }
   async function quitarLogo() {
-    try { alGuardar(await api.editarEmpresa({ logo: null }), 'Logo quitado.'); } catch (x) { alFallar(x); }
+    try { alGuardar(await api.editarEmpresa({ logo: null }), 'Logo quitado.'); window.dispatchEvent(new Event('empresa-cambio')); } catch (x) { alFallar(x); }
   }
   const campo = (k: keyof typeof d, etiqueta: string, extra: Record<string, unknown> = {}) => (
     <div className="campo"><label htmlFor={`e-${k}`}>{etiqueta}</label><input id={`e-${k}`} value={d[k]} disabled={!puedeEditar} onChange={(e) => poner(k, e.target.value)} {...extra} /></div>
@@ -63,12 +76,22 @@ function Datos({ cfg, puedeEditar, alGuardar, alFallar }: Parte) {
         <div className="campo ancha"><label htmlFor="e-lema">Lema de la cabecera</label><input id="e-lema" value={d.lema} disabled={!puedeEditar} onChange={(e) => poner('lema', e.target.value)} /></div>
       </div>
       <section className="bloque-nota logo-empresa"><h3>Logo de la empresa (horizontal)</h3>
-        {cfg.logo ? <img className="logo-vista" alt="Logo de la empresa" src={`data:image/jpeg;base64,${cfg.logo.base64}`} /> : <p className="suave">Sin logo.</p>}
-        {puedeEditar && (
-          <div className="fila">
-            <label className="boton-archivo">Subir logo<input type="file" accept="image/*" aria-label="Subir logo" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) await subirLogo(f); }} /></label>
-            {cfg.logo && <button type="button" onClick={() => void quitarLogo()}>Quitar logo</button>}
-          </div>
+        {previo ? (
+          <>
+            <div className="vista-logo"><img alt="Vista previa del logo" src={previo.listo.vista} /></div>
+            <label className="check"><input type="checkbox" checked={previo.sinFondo} onChange={(e) => void cambiarFondo(e.target.checked)} /> Quitar el fondo{previo.sinFondo && !previo.listo.fondoQuitado ? ' (no se detectó un fondo liso)' : ''}</label>
+            <div className="fila"><button type="button" className="primario chico" onClick={() => void subirLogo()}>Guardar logo</button><button type="button" onClick={() => setPrevio(null)}>Cancelar</button></div>
+          </>
+        ) : (
+          <>
+            {cfg.logo ? <div className="vista-logo"><img className="logo-vista" alt="Logo de la empresa" src={cfg.logo.png ? `data:image/png;base64,${cfg.logo.png}` : `data:image/jpeg;base64,${cfg.logo.base64}`} /></div> : <p className="suave">Sin logo.</p>}
+            {puedeEditar && (
+              <div className="fila">
+                <label className="boton-archivo">Subir logo<input type="file" accept="image/*" aria-label="Subir logo" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) await elegirLogo(f); }} /></label>
+                {cfg.logo && <button type="button" onClick={() => void quitarLogo()}>Quitar logo</button>}
+              </div>
+            )}
+          </>
         )}
       </section>
       {puedeEditar && <div className="fila fin"><button type="submit" className="primario chico">Guardar</button></div>}
@@ -81,50 +104,21 @@ function Impresion({ cfg, puedeEditar, alGuardar, alFallar }: Parte) {
   const [pie, setPie] = useState(cfg.pieTicket ?? '');
   const [cuentas, setCuentas] = useState(cfg.cuentasBancarias ?? '');
   const [terminos, setTerminos] = useState(cfg.terminosRecepcion ?? '');
+  const [aprob, setAprob] = useState(!!cfg.aprobacionPorItem);
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
-    try { alGuardar(await api.editarEmpresa({ anchoTicketMm: Number(ancho), pieTicket: pie, cuentasBancarias: cuentas, terminosRecepcion: terminos }), 'Parámetros de impresión guardados.'); } catch (x) { alFallar(x); }
+    try { alGuardar(await api.editarEmpresa({ anchoTicketMm: Number(ancho), pieTicket: pie, cuentasBancarias: cuentas, terminosRecepcion: terminos, aprobacionPorItem: aprob }), 'Parámetros de impresión guardados.'); } catch (x) { alFallar(x); }
   };
   return (
     <form className="form-config" onSubmit={enviar}>
       <div className="dos-col">
         <div className="campo"><label htmlFor="i-ancho">Ancho del ticket (mm) *</label><input id="i-ancho" inputMode="numeric" value={ancho} disabled={!puedeEditar} onChange={(e) => setAncho(e.target.value.replace(/\D/g, ''))} required /></div>
+        <div className="campo check"><label><input type="checkbox" checked={aprob} disabled={!puedeEditar} onChange={(e) => setAprob(e.target.checked)} /> Aprobación por ítem en la orden de servicio</label></div>
         <div className="campo"><label htmlFor="i-pie">Pie del ticket</label><input id="i-pie" value={pie} disabled={!puedeEditar} onChange={(e) => setPie(e.target.value)} /></div>
         <div className="campo ancha"><label htmlFor="i-cuentas">Cuentas bancarias del PDF de la orden</label><textarea id="i-cuentas" rows={2} value={cuentas} disabled={!puedeEditar} onChange={(e) => setCuentas(e.target.value)} /></div>
         <div className="campo ancha"><label htmlFor="i-terminos">Términos y condiciones de la hoja de recepción</label><textarea id="i-terminos" rows={10} value={terminos} disabled={!puedeEditar} onChange={(e) => setTerminos(e.target.value)} /></div>
       </div>
       {puedeEditar && <div className="fila fin"><button type="submit" className="primario chico">Guardar</button></div>}
     </form>
-  );
-}
-
-function Locales({ cfg, puedeEditar, alGuardar, alFallar }: Parte) {
-  return (
-    <div className="tabla">
-      <table>
-        <thead><tr><th>Local</th><th>Dirección</th><th>Teléfono</th><th>Serie de nota de venta</th><th>Serie de boleta</th><th>Serie de factura</th>{puedeEditar && <th />}</tr></thead>
-        <tbody>{cfg.locales.map((l) => <FilaLocal key={l.id} local={l} puedeEditar={puedeEditar} alGuardar={alGuardar} alFallar={alFallar} />)}</tbody>
-      </table>
-    </div>
-  );
-}
-
-function FilaLocal({ local, puedeEditar, alGuardar, alFallar }: { local: LocalEmpresa } & Omit<Parte, 'cfg'>) {
-  const [d, setD] = useState({ direccion: local.direccion ?? '', telefono: local.telefono ?? '', serieNotaVenta: local.serieNotaVenta ?? '', serieBoleta: local.serieBoleta ?? '', serieFactura: local.serieFactura ?? '' });
-  const guardar = async () => { try { alGuardar(await api.editarLocalEmpresa(local.id, d), `${local.nombre}: guardado.`); } catch (x) { alFallar(x); } };
-  const celda = (k: keyof typeof d, etiqueta: string, serie = false) => (
-    <td><input aria-label={`${etiqueta} de ${local.nombre}`} value={d[k]} disabled={!puedeEditar} maxLength={serie ? 4 : 200} className={serie ? 'serie' : ''}
-      onChange={(e) => setD((x) => ({ ...x, [k]: serie ? e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '') : e.target.value }))} /></td>
-  );
-  return (
-    <tr>
-      <td><b>{local.nombre}</b></td>
-      {celda('direccion', 'Dirección')}
-      {celda('telefono', 'Teléfono')}
-      {celda('serieNotaVenta', 'Serie de nota de venta', true)}
-      {celda('serieBoleta', 'Serie de boleta', true)}
-      {celda('serieFactura', 'Serie de factura', true)}
-      {puedeEditar && <td><button type="button" className="primario chico" aria-label={`Guardar ${local.nombre}`} onClick={() => void guardar()}>Guardar</button></td>}
-    </tr>
   );
 }

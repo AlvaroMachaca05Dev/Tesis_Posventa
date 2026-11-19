@@ -1,87 +1,130 @@
 @startuml
 !include _estilo.iuml
-title Clases de cotización, nota de venta, cuentas y bancos
+title Clases de cotización, comprobante, compras, cuentas y bancos
 left to right direction
-enum TipoMovimiento <<enumeration>> {
-  INGRESO
-  EGRESO
-  TRASLADO
+enum TipoIgv <<enumeration>> {
+  GRAVADO
+  EXONERADO
+  INAFECTO
+}
+enum Condicion <<enumeration>> {
+  CONTADO
+  CREDITO
 }
 abstract class DocumentoComercial {
+  #serie: String
+  #numero: Integer
   #codigo: String {unique}
-  #fecha: DateTime
+  #fechaEmision: DateTime
+  #condicion: Condicion = CONTADO
+  #observaciones: String [0..1]
+  /#gravada: Decimal
+  /#igv: Decimal
   /#total: Decimal
+  #estado: String = "EMITIDA"
   +imprimir(in formato: String = "pdf"): Bytes
+  +eliminar(in motivo: String): void
 }
 class Cotizacion {
-  -estado: String = "Borrador"
-  -km: Integer [0..1]
-  -vencimiento: DateTime [0..1]
-  +emitir(): void
-  +pasarAOrden(): OrdenServicio
-}
-class ItemCotizado {
-  -descripcion: String
-  -cantidad: Decimal = 1
-  -precio: Decimal
-  -descuentoPct: Decimal = 0
-  -impuesto: String = "IGV"
+  -validaHasta: DateTime
+  -conIgv: Boolean = true
+  -conDetraccion: Boolean = false
+  /-vencida: Boolean
+  +duplicar(): Cotizacion
+  +emitirComprobante(): NotaVenta
 }
 class NotaVenta {
-  -serie: String
-  -numero: Integer
-  -condicion: String = "Contado"
+  -fechaVencimiento: DateTime [0..1]
+  -conDetraccion: Boolean = false
+  -detraccionPct: Decimal = 0
+  /-detraccion: Decimal
   /-saldo: Decimal
-  +registrarPago(in p: Pago): void
+  +registrarCobro(in a: Abono): void
 }
-class SerieComprobante {
-  -serie: String {unique}
-  -ultimoNumero: Integer = 0
+abstract class LineaComercial {
+  #posicion: Integer = 0
+  #tipo: String
+  #descripcion: String
+  #cantidad: Decimal = 1
+  #precio: Decimal = 0
+  #descuentoPct: Decimal = 0
+  #tipoIgv: TipoIgv = GRAVADO
+  /#total: Decimal
+}
+class DetalleCotizacion
+class DetalleNota
+class CorrelativoSerie {
+  -serie: String
+  -ultimo: Integer = 0
   +siguiente(): Integer
 }
-class FacturaCompra {
-  -numeroProveedor: String
-  /-saldo: Decimal
-}
-class Pago {
+class Abono {
   -fecha: DateTime
-  -importe: Decimal
   -metodo: String
-  -observacion: String [0..1]
+  -concepto: String [0..1]
+  -valor: Decimal
 }
-class CuentaBancaria {
-  -nombre: String
-  -tipo: String
-  /-saldo: Decimal
-  +trasladar(in destino: CuentaBancaria, in importe: Decimal): Movimiento [2]
-}
-class Movimiento {
+class Compra {
+  -tipoDocumento: String = "FACTURA"
+  -serie: String
+  -numero: String
   -fecha: DateTime
-  -tipo: TipoMovimiento
-  -importe: Decimal
+  -condicion: Condicion = CONTADO
+  -fechaVencimiento: DateTime [0..1]
+  -total: Decimal
+  /-saldo: Decimal
+  +registrar(in detalles: DetalleCompra [1..*]): MovimientoInventario [0..*]
+  +eliminar(in motivo: String): void
+}
+class DetalleCompra {
+  -descripcion: String
+  -cantidad: Decimal
+  -costo: Decimal
+  -descuento: Decimal = 0
+  /-total: Decimal
+}
+class PagoCompra {
+  -fecha: DateTime
+  -metodo: String
+  -valor: Decimal
+}
+class CuentasController <<control>> {
+  +cuentasCobrar(): NotaVenta [0..*]
+  +cuentasPagar(): Compra [0..*]
+}
+class CuentaBancaria <<pendiente>> {
+  -nombre: String
+  /-saldo: Decimal
 }
 class Cliente
 class Proveedor
 class OrdenServicio
 class Local
+class Producto
+class MovimientoInventario
 DocumentoComercial <|-- Cotizacion
 DocumentoComercial <|-- NotaVenta
-DocumentoComercial <|-- FacturaCompra
 note top of DocumentoComercial : {complete, disjoint}
-Cotizacion "1" *-- "1..*" ItemCotizado
-Cotizacion "0..*" --> "0..1" OrdenServicio
-Cotizacion "0..*" --> "0..1" Cliente
-NotaVenta "0..*" --> "1" Cliente
-NotaVenta "0..1" --> "0..1" OrdenServicio
-NotaVenta "0..*" --> "1" SerieComprobante
-SerieComprobante "0..*" --> "1" Local
-NotaVenta "1" *-- "0..*" Pago
-FacturaCompra "0..*" --> "1" Proveedor
-FacturaCompra "1" *-- "0..*" Pago : pagos a proveedor
-Pago "0..*" --> "1" CuentaBancaria
-CuentaBancaria "1" *-- "0..*" Movimiento
-CuentaBancaria "0..*" --> "1" Local
-Movimiento ..> TipoMovimiento
-Pago ..> Movimiento : <<create>>
-note bottom of NotaVenta : Documento interno,\nno es factura electrónica.
+LineaComercial <|-- DetalleCotizacion
+LineaComercial <|-- DetalleNota
+Cotizacion "1" *-- "1..*" DetalleCotizacion
+NotaVenta "1" *-- "1..*" DetalleNota
+DocumentoComercial "0..*" --> "1" Cliente
+DocumentoComercial "0..*" --> "1" Local
+NotaVenta "0..1" --> "0..1" OrdenServicio : se emite desde
+NotaVenta ..> CorrelativoSerie : <<call>>
+NotaVenta "0..1" o-- "0..*" Abono : cobros
+OrdenServicio "0..1" o-- "0..*" Abono : adelantos
+Compra "0..*" --> "1" Proveedor
+Compra "0..*" --> "1" Local
+Compra "1" *-- "1..*" DetalleCompra
+Compra "1" *-- "0..*" PagoCompra
+DetalleCompra "0..*" --> "0..1" Producto
+Compra ..> MovimientoInventario : <<create>>
+CuentasController ..> NotaVenta : <<call>>
+CuentasController ..> Compra : <<call>>
+PagoCompra ..> CuentaBancaria : pendiente (RF-091)
+Abono ..> CuentaBancaria : pendiente (RF-091)
+LineaComercial ..> TipoIgv
+note bottom of NotaVenta : Documento interno, no es factura\nelectrónica. Una nota a crédito\ncon saldo es una cuenta por cobrar.
 @enduml

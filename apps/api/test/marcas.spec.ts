@@ -63,4 +63,17 @@ describe('marcas de vehículo', () => {
     expect((await como(ADMIN, 'delete', `/marcas-vehiculo/${libre.id}`)).status).toBe(200);
     expect((await como(ADMIN, 'get', '/marcas-vehiculo')).body.some((x: { id: string }) => x.id === libre.id)).toBe(false);
   });
+  it('la marca de un vehículo queda en el catálogo: si existe se usa su nombre exacto y se suma el modelo; si no, se registra', async () => {
+    const m = (await como(ADMIN, 'post', '/marcas-vehiculo', { nombre: `MARCA E${sx}` })).body;
+    ids.push(m.id);
+    const v = (await como(ADMIN, 'post', '/vehiculos', { clienteId, placa: `MK${sx}2`, marca: `marca e${sx}`, modelo: 'XE' })).body;
+    expect(v.marca).toBe(m.nombre);
+    expect((await prisma.marcaVehiculo.findUniqueOrThrow({ where: { id: m.id } })).modelos).toEqual(['XE']);
+    await como(ADMIN, 'post', '/vehiculos', { clienteId, placa: `MK${sx}3`, marca: `NUEVA${sx}`, modelo: 'N1' });
+    const nueva = await prisma.marcaVehiculo.findFirstOrThrow({ where: { nombre: `NUEVA${sx}` } });
+    ids.push(nueva.id);
+    expect(nueva.modelos).toEqual(['N1']);
+    expect((await como(ADMIN, 'patch', `/vehiculos/${v.id}`, { modelo: 'XE2' })).status).toBe(200);
+    expect((await prisma.marcaVehiculo.findUniqueOrThrow({ where: { id: m.id } })).modelos).toEqual(['XE', 'XE2']);
+  });
 });

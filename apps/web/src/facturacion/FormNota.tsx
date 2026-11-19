@@ -1,6 +1,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { api, CatalogosOds, Orden, TipoIgv } from '../comun/api';
 import { leerNumero, soles } from '../ordenServicio/ordenServicio.util';
+import { useConfirmar } from '../comun/Confirmar';
 
 const TIPOS: [TipoIgv, string][] = [['GRAVADO', 'Gravado'], ['EXONERADO', 'Exonerado'], ['INAFECTO', 'Inafecto']];
 const r2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -17,7 +18,7 @@ export function totalesDe(lineas: { tipo: string; total: number; tipoIgv: TipoIg
 
 /**
  * Nota de venta de una orden (RF-088), en una sola pantalla y sin pestañas (DEC-81).
- * Si la orden aún no tiene nota, se emite; si ya la tiene, se muestra con Imprimir y Anular.
+ * Si la orden aún no tiene nota, se emite; si ya la tiene, se muestra con Imprimir y Eliminar.
  * La serie sale del local del usuario; quien no tiene local no puede emitir.
  */
 export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar, alHecho }: {
@@ -64,17 +65,20 @@ export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar
       setAbonos(o.abonos); setValor(''); setError('');
     } catch (x) { setError((x as Error).message); }
   }
+  const { preguntar, modal: confirmacion } = useConfirmar();
   async function anular() {
     if (!nota) return;
-    const motivo = window.prompt(`¿Por qué anulas la nota de venta ${nota.codigo}? El número no se volverá a usar.`);
-    if (!motivo) return;
-    try { await api.anularNotaVenta(nota.id, motivo); await alHecho(`Nota de venta ${nota.codigo} anulada.`); } catch (x) { setError((x as Error).message); }
+    const pagos = abonos.reduce((a, x) => a + x.valor, 0);
+    const motivo = await preguntar({ titulo: `¿Eliminar la nota de venta ${nota.codigo}?`, motivo: 'obligatorio', mensaje: mensajeEliminarComprobante(pagos) });
+    if (motivo === null) return;
+    try { await api.anularNotaVenta(nota.id, motivo); await alHecho(`Nota de venta ${nota.codigo} eliminada.`); } catch (x) { setError((x as Error).message); }
   }
 
   const fila = (etiqueta: string, valor: string, clase = '') => <div className={'suma ' + clase}><span>{etiqueta}</span>{' '}<b>{valor}</b></div>;
   const titulo = nota ? `Nota de venta ${nota.codigo}` : `Nueva nota de venta · ODS ${orden.codigo}`;
   return (
     <div className="fondo-modal">
+      {confirmacion}
       <form className="modal-form modal-nota" role="dialog" aria-modal="true" aria-label={titulo} onSubmit={emitir}>
         <div className="fila entre"><h2>{titulo}</h2><button type="button" className="cerrar" aria-label="Cerrar" onClick={alCerrar}>×</button></div>
         {error && <p className="error" role="alert">{error}</p>}
@@ -157,7 +161,7 @@ export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar
           </div>
         </div>
         <div className="fila fin">
-          {nota && puedeAnular && <button type="button" className="peligro" onClick={() => void anular()}>Anular</button>}
+          {nota && puedeAnular && <button type="button" className="peligro" onClick={() => void anular()}>Eliminar</button>}
           {nota && <button type="button" onClick={() => alImprimir('Ticket')}>Ticket</button>}
           {nota && <button type="button" onClick={() => alImprimir('PDF')}>PDF</button>}
           <button type="button" onClick={alCerrar}>Salir</button>
@@ -165,5 +169,15 @@ export default function FormNota({ orden, cat, puedeAnular, alImprimir, alCerrar
         </div>
       </form>
     </div>
+  );
+}
+
+/** Al eliminar un comprobante: el número no se reutiliza, los productos vuelven al stock y los pagos quedan registrados. */
+export function mensajeEliminarComprobante(pagos: number) {
+  return (
+    <>
+      <p>El número no se vuelve a usar y los productos vuelven al stock.</p>
+      {pagos > 0 && <p>Los pagos recibidos ({soles(pagos)}) no se borran: quedan registrados como ingreso.</p>}
+    </>
   );
 }

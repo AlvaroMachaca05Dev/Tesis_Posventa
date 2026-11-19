@@ -1,0 +1,195 @@
+import { chromium } from 'playwright';
+const F = 'file:///F:/Tesis/Tesis_Posventa/prototipo/R_Motriz_R8.6.html#sinlogin', dir = process.argv[2] || 'out';
+const b = await chromium.launch({ executablePath: process.env.PW_CHROMIUM });
+const p = await b.newPage({ viewport: { width: 1366, height: 900 } }); p.setDefaultTimeout(5000);
+const errs = []; p.on('pageerror', e => errs.push('pageerror: ' + e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()) });
+let ok = 0, mal = 0; const ck = (n, c, x = '') => { c ? ok++ : mal++; console.log((c ? 'OK   ' : 'FALLA') + ' ' + n + (x !== '' ? ' → ' + x : '')) };
+await p.goto(F); await p.waitForTimeout(500);
+await p.evaluate(() => { timelineVehicle = 'v86a'; simKm = null; go('timeline') }); await p.waitForTimeout(400);
+ck('matriz r86', await p.locator('.r86-tl').count() === 1);
+const filas = await p.locator('.r86m tbody tr').count();
+ck('filas = categorías + historial', filas >= 8, filas);
+const heads = await p.locator('.r86m thead th').count(); ck('columnas', heads > 10, heads);
+await p.screenshot({ path: dir + '/r86-comprimido.png', fullPage: true });
+const cats = await p.locator('.r86m tbody td.r86-k b').allTextContents(); ck('sin categorías repetidas', new Set(cats).size === cats.length, cats.join('|'));
+// cruce futuro
+const btn = p.locator('.r86m tbody tr').first().locator('td .r86-c button').filter({ hasText: /\d+\/\d+/ }).last();
+const txt0 = await btn.textContent(); ck('cruce 0/n', /^0\/\d+$/.test(txt0), txt0);
+await btn.click(); await p.waitForTimeout(150);
+ck('nota abierta sin difuminar', await p.locator('#r86-nota').count() === 1 && !(await p.evaluate(() => document.querySelector('dialog[open]'))));
+await p.screenshot({ path: dir + '/r86-nota.png' });
+await p.locator('#r86-todo').check(); await p.waitForTimeout(200);
+const txt1 = await p.locator('.r86m tbody tr').first().locator('td .r86-c button').filter({ hasText: /\d+\/\d+/ }).last().textContent(); ck('marcar toda la categoría', /^(\d+)\/\1$/.test(txt1), txt1);
+await p.locator('#r86-nota header button').click(); ck('cerrar nota', await p.locator('#r86-nota').count() === 0);
+// cabecera de visita
+const hk = p.locator('.r86m thead th.r86-f').nth(1).locator('input'); await hk.check(); await p.waitForTimeout(200);
+ck('columna completa seleccionada', (await p.locator('.r86m thead th.r86-f').nth(1).locator('.r86-tot').textContent()).split('/')[0] === (await p.locator('.r86m thead th.r86-f').nth(1).locator('.r86-tot').textContent()).split('/')[1]);
+ck('contador de servicios seleccionados', /^[1-9]\d* servicios seleccionados/.test(await p.locator('.reminderbar b').textContent()), await p.locator('.reminderbar b').textContent());
+// pasado 
+const pasados = await p.locator('.r86m tbody tr').first().locator('td button').allTextContents(); ck('pasados con h/e', pasados.some(t => /^\d+\/\d+$/.test(t)), pasados.join(','));
+// historial
+await p.locator('.r86-chip').first().click(); await p.waitForTimeout(150);
+ck('nota de ODS con checks', await p.locator('#r86-nota .r86-checks input').count() > 3, await p.locator('#r86-nota .r86-checks input').count());
+await p.screenshot({ path: dir + '/r86-ods.png' }); await p.keyboard.press('Escape');
+// detalle
+await p.locator('.seg button', { hasText: 'Detalle' }).click(); await p.waitForTimeout(300);
+ck('detalle: una fila por servicio con su categoría en etiqueta', await p.locator('.r86m td.r86-s').count() > 30 && await p.locator('.r86m td.r86-cc .r86-tag').count() === await p.locator('.r86m td.r86-s').count(), await p.locator('.r86m td.r86-s').count());
+ck('etiqueta de categoría horizontal', (await p.locator('.r86m td.r86-cc .r86-tag').first().evaluate(e => getComputedStyle(e).writingMode)) === 'horizontal-tb');
+const orden = await p.locator('.r86m tbody td.r86-cc').allTextContents(); const ult = orden.map((x, i) => /Encend/.test(x) ? i : -1).filter(i => i >= 0);
+ck('afinamiento al final, todo lo demás apiñado arriba', /Encend/.test(orden.at(-1)) && ult.length >= 4 && ult.at(-1) === orden.length - 1 && ult.every((x, i) => i === 0 || x === ult[i - 1] + 1), orden.join('|'));
+ck('cabecera con símbolo de info y sin etiquetas', await p.locator('.r86m thead .r86-info').count() > 10 && await p.locator('.r86m thead .r86-paq').count() === 0);
+ck('contador visible en detalle', await p.locator('.r86m thead th.r86-f .r86-tot').first().isVisible());
+const der = await p.locator('.r86-scroll').evaluate(e => e.scrollWidth - e.clientWidth - e.scrollLeft); ck('abre desplazado a la derecha', der <= 2, der);
+const chip = await p.locator('.r86-chip').evaluateAll(e => e.every(x => x.getBoundingClientRect().height <= 24)); ck('chip de ODS con «sin km» en una línea', chip);
+ck('detalle termina en historial', await p.locator('.r86m tbody tr.r86-hist').count() === 1);
+await p.screenshot({ path: dir + '/r86-detalle.png', fullPage: true });
+// línea amarilla: a la derecha de la última visita vencida
+await p.evaluate(() => { timelineVehicle = 'v1'; simKm = 312000; go('timeline') }); await p.waitForTimeout(400);
+const ven = await p.evaluate(() => { const M = r86Modelo(); const th = [...document.querySelectorAll('.r86m thead th.r86-f')]; return { nVen: M.fut.filter(c => c.vencido).length, tinte: th.filter(e => e.classList.contains('r86-vc')).length, pos: th.findIndex(e => e.classList.contains('r86-hoy2')) + 1 } });
+ck('la línea amarilla queda tras la última visita vencida', ven.nVen === 4 && ven.tinte === 4 && ven.pos === 4, JSON.stringify(ven));
+await p.screenshot({ path: dir + '/r86-hoy.png', clip: { x: 0, y: 300, width: 1366, height: 600 } });
+await p.evaluate(() => { timelineVehicle = 'v86a'; simKm = null; go('timeline') }); await p.waitForTimeout(300);
+// sin scroll vertical interno
+const sc = await p.locator('.r86-scroll').evaluate(e => ({ v: e.scrollHeight > e.clientHeight + 2, oy: getComputedStyle(e).maxHeight }));
+ck('el módulo no tiene scroll vertical interno', !sc.v && sc.oy === 'none', JSON.stringify(sc));
+const una = await p.locator('.r86m tbody td.r86-s').evaluateAll(e => e.every(x => x.getBoundingClientRect().height <= 26)); ck('cada servicio en una línea', una);
+// buscador de vehículo
+await p.locator('#r86-vq').fill('dem-70'); await p.waitForTimeout(150);
+ck('buscador por placa', await p.locator('#r86-vl button').count() === 2, await p.locator('#r86-vl button').count());
+await p.locator('#r86-vl button').nth(1).dispatchEvent('mousedown'); await p.waitForTimeout(300);
+ck('elige el vehículo buscado', /DEM-702/.test(await p.locator('#r86-vq').inputValue()), await p.locator('#r86-vq').inputValue());
+await p.locator('.r86-mas').click(); await p.waitForTimeout(200);
+ck('+ abre el formulario de vehículo', await p.locator('#editor [name=plate]').count() === 1);
+await p.locator('.r86-nc > button').click();
+await p.locator('[data-nc=name]').fill('Cliente de prueba Uno'); await p.locator('[data-nc=doc]').fill('45678912');
+await p.locator('#editor [name=plate]').fill('ZZZ-111');
+await p.locator('#editor [name=brand]').selectOption({ label: 'KIA' }); await p.locator('#editor [name=model]').fill('Rio'); await p.locator('#editor [name=oil]').selectOption({ index: 1 }).catch(() => {});
+await p.locator('#editor button[type=submit]').click(); await p.waitForTimeout(400);
+ck('crea cliente y vehículo, y los selecciona', /ZZZ-111/.test(await p.locator('#r86-vq').inputValue()) && await p.evaluate(() => db.clients.some(c => c.name === 'Cliente de prueba Uno')), await p.locator('#r86-vq').inputValue());
+await p.evaluate(() => { timelineVehicle = 'v86a'; simKm = null; go('timeline') }); await p.waitForTimeout(300);
+await p.locator('.seg button', { hasText: 'Detalle' }).click(); await p.waitForTimeout(200);
+// detalle compacto y pantalla completa
+const alto = await p.locator('.r86m tbody td.r86-s').first().evaluate(e => e.getBoundingClientRect().height); ck('detalle: filas estrechas', alto <= 26, alto);
+const nombresEnUna = await p.locator('.r86m tbody td.r86-s').evaluateAll(e => e.every(x => x.getBoundingClientRect().height <= 26)); ck('detalle: cada servicio en una sola fila', nombresEnUna);
+await p.setViewportSize({ width: 1920, height: 1000 });
+await p.locator('#r86-pc button', { hasText: 'Pantalla completa' }).click(); await p.waitForTimeout(400);
+ck('pantalla completa activa', await p.locator('.r86-fs').count() === 1);
+await p.locator('.r86m tbody tr').nth(2).locator('input[type=checkbox]').first().check(); await p.waitForTimeout(250);
+ck('sigue en pantalla completa tras seleccionar', await p.locator('.r86-fs').count() === 1);
+const vis = await p.locator('.r86m tbody td.r86-s').evaluateAll(e => e.filter(x => { const r = x.getBoundingClientRect(); return r.bottom <= innerHeight && r.top >= 0 }).length);
+const totalS = await p.locator('.r86m td.r86-s').count(); ck('detalle: todos los servicios visibles de un vistazo', vis === totalS, vis + '/' + totalS);
+await p.screenshot({ path: dir + '/r86-detalle-pc.png' });
+await p.locator('.seg button', { hasText: 'Comprimido' }).click(); await p.waitForTimeout(250);
+ck('comprimido en pantalla completa', await p.locator('.r86-fs .r86m').count() === 1 && !(await p.locator('.r86m').evaluate(e => e.classList.contains('r86-det'))));
+await p.screenshot({ path: dir + '/r86-comprimido-pc.png' });
+await p.locator('#r86-pc button', { hasText: 'Solo la línea' }).click(); await p.waitForTimeout(250);
+ck('solo la línea oculta los controles', !(await p.locator('.r86-solo .filterbar').isVisible()) && await p.locator('.r86-flot').isVisible());
+await p.screenshot({ path: dir + '/r86-solo.png' });
+await p.locator('.r86-flot button', { hasText: 'Salir' }).click(); await p.waitForTimeout(250);
+ck('sale desde el botón flotante', await p.locator('.r86-fs').count() === 0);
+await p.locator('#r86-pc button', { hasText: 'Pantalla completa' }).click(); await p.waitForTimeout(250);
+const esq = await p.evaluate(() => { const s = document.querySelector('.r86-scroll'); s.scrollLeft = s.scrollWidth; const th = [...document.querySelectorAll('.r86m thead th.r86-k, .r86m thead th.r86-cc')]; return th.map(e => Math.round(e.getBoundingClientRect().left - s.getBoundingClientRect().left)) });
+ck('esquinas Categoría/Servicio fijas en pantalla completa al desplazar', esq.length >= 1 && esq.every(x => x >= -1 && x <= 90), JSON.stringify(esq));
+await p.locator('#r86-pc button', { hasText: 'Salir' }).click(); await p.waitForTimeout(250);
+ck('sale de pantalla completa', await p.locator('.r86-fs').count() === 0);
+await p.setViewportSize({ width: 1366, height: 900 });
+// aceite 5000 vs 7500
+await p.locator('.seg button', { hasText: 'Comprimido' }).click(); await p.waitForTimeout(200);
+const k = async () => (await p.locator('.r86m thead th.r86-f b').first().textContent()).replace(/\D/g, '');
+const k7 = +await k();
+await p.evaluate(() => { vehicle('v86a').oil = 'Mineral'; render() }); await p.waitForTimeout(300);
+const k5 = +await k(); ck('7.500 sintético vs 5.000 mineral', k7 - 57000 === 7500 && k5 - 57000 === 5000, k7 + ' / ' + k5);
+const fut = await p.evaluate(() => { const M = r86Modelo(); return M.fut.map(c => [c.clave, c.date]) });
+ck('arranca con express, ciclo y medio como máximo y hasta fin de año + 2', fut.length > 0 && fut.length <= 9 && fut[0][0] === 'EXP' && fut.every(x => x[1] <= '2028-12-31'), JSON.stringify(fut));
+// diésel
+await p.evaluate(() => { timelineVehicle = 'v86b'; render() }); await p.waitForTimeout(300);
+ck('diésel carga', await p.locator('.r86m thead th.r86-f').count() >= 4);
+await p.evaluate(() => { timelineVehicle = 'v1'; render() }); await p.waitForTimeout(300);
+ck('DEM-679 carga', await p.locator('.r86-tl').count() === 1);
+await p.screenshot({ path: dir + '/r86-dem679.png' });
+// selección sin repetidos y cotización por ítem o por paquete
+await p.evaluate(() => { timelineVehicle = 'v86a'; simKm = null; R86.sel.clear(); go('timeline') }); await p.waitForTimeout(300);
+const cols = await p.evaluate(() => r86Modelo().fut.map(c => [c.fk, c.clave, c.tags.length]));
+const fkRev = cols.find(c => c[1] === 'REV')?.[0], fkExp = cols.find(c => c[1] === 'EXP')?.[0], fkAf = cols.find(c => c[2] > 0)?.[0];
+ck('hay columnas express, con afinamiento y revisión completa', !!(fkRev && fkExp && fkAf), JSON.stringify(cols.slice(0, 9)));
+// selección parcial: sin paquete completo va directo, por ítem
+await p.evaluate(([fk]) => { const M = r86Modelo(), c = M.fut.find(x => x.fk === fk); r86Poner(M, c, c.lines.slice(0, 2), true); render() }, [fkExp]); await p.waitForTimeout(200);
+await p.locator('.reminderbar button', { hasText: 'Agregar a cotización' }).click(); await p.waitForTimeout(500);
+ck('selección parcial: va directo a la cotización por ítem', !(await p.locator('.r86-opc').count()) && await p.evaluate(() => db.r72quotes.at(-1).lines.length === 2), await p.evaluate(() => db.r72quotes.at(-1).lines.length));
+await p.evaluate(() => closeModal()); await p.waitForTimeout(150);
+// varias visitas completas: se cuentan solo los servicios distintos
+await p.evaluate(() => { R86.sel.clear(); go('timeline') }); await p.waitForTimeout(200);
+await p.evaluate(([a, b, c]) => { for (const fk of [a, b, c]) { const M = r86Modelo(), col = M.fut.find(x => x.fk === fk); r86Poner(M, col, col.lines, true) } render() }, [fkExp, fkAf, fkRev]); await p.waitForTimeout(250);
+const cnt = await p.evaluate(() => ({ unicos: r86Unicos().size, suma: selectedPlanData().length, texto: document.querySelector('.reminderbar b').textContent }));
+ck('el contador no repite servicios', cnt.unicos < cnt.suma && cnt.texto.startsWith(cnt.unicos + ' '), JSON.stringify(cnt));
+const cob = await p.evaluate(() => { const c = r86Cobertura(r86Unicos()); return c });
+ck('la revisión completa consume a los paquetes menores', cob.paq.includes('REV') && !cob.paq.includes('EXP') && !cob.paq.includes('MEN'), JSON.stringify(cob.paq));
+await p.locator('.reminderbar button', { hasText: 'Agregar a cotización' }).click(); await p.waitForTimeout(300);
+ck('pregunta si cotizar por ítem o por paquete', await p.locator('.r86-opc').count() === 2);
+await p.screenshot({ path: dir + '/r86-cotizar-pregunta.png' });
+await p.locator('#modal button', { hasText: 'Agrupar por paquete' }).click(); await p.waitForTimeout(600);
+const cot = await p.evaluate(() => { const q = db.r72quotes.at(-1); return { n: q.lines.length, primera: q.lines[0].name, ficha: !!q.lines[0].ficha, sueltos: q.lines.slice(1).length } });
+ck('visitas completas distintas van como paquetes separados (dos ítems, sin repetir servicios)', cot.primera.startsWith('Revisión completa') && cot.ficha && cot.n === 2 && cot.sueltos === 1, JSON.stringify(cot));
+ck('el paquete trae un ojito y la ficha está oculta', await p.locator('.r86-ojo').count() === 2 && await p.locator('.r86-fichab').count() === 0);
+await p.locator('.r86-ojo').first().click(); await p.waitForTimeout(300);
+ck('el ojito despliega la ficha justo bajo la línea del paquete', await p.locator('.r86-fichab').count() === 1 && await p.locator('.r86-fichab li').count() >= 20 && await p.evaluate(() => !!document.querySelector('.r86-fila-ficha').previousElementSibling.querySelector('.r86-ojo')));
+ck('la ficha solo titula «Servicios:» (sin nombre del paquete ni tiempos aparte)', (await p.locator('.r86-fichab b').textContent()) === 'Servicios:' && !/paquete/i.test(await p.locator('.r86-fichab').textContent()));
+ck('la ficha no muestra precios', !/S\/\s*\d/.test(await p.locator('.r86-fichab').textContent()));
+await p.locator('.r86-ojo').first().click(); await p.waitForTimeout(300);
+ck('el ojito la vuelve a ocultar', await p.locator('.r86-fichab').count() === 0);
+await p.locator('.r86-ojo').first().click(); await p.waitForTimeout(300);
+await p.screenshot({ path: dir + '/r86-cotizar-ficha.png' });
+ck('el ojito va entre «Tipo» e «Ítem»', await p.evaluate(() => { const td = document.querySelector('td.r86-oj .r86-ojo').closest('td'); return td.previousElementSibling.querySelector('select') && td.nextElementSibling.classList.contains('r72-item') }));
+ck('se quitaron los textos H-H / precio final de la línea', await p.evaluate(() => !/H-H|precio final|por unidad/.test([...document.querySelectorAll('#modalbody tbody tr')].map(r => r.textContent).join(' '))));
+await p.evaluate(() => closeModal());
+// orden de servicio: buscador del catálogo, ojito entre Tipo y Detalle y ficha bajo la línea
+await p.evaluate(() => { go('ods') }); await p.waitForTimeout(200);
+await p.getByRole('button', { name: /Nueva orden/ }).first().click(); await p.waitForTimeout(500);
+const det = p.locator('#modalbody tbody .r72-combo input').first();
+ck('la orden de servicio tiene el buscador del catálogo en el detalle', await det.count() === 1);
+await det.click(); await det.fill('Mantenimiento menor'); await p.waitForTimeout(300);
+ck('el buscador ofrece los servicios del catálogo', await p.locator('#modalbody .r72-sug button').count() >= 1 && /Mantenimiento menor/.test(await p.locator('#modalbody .r72-sug button').first().textContent()));
+await p.locator('#modalbody .r72-sug button').first().dispatchEvent('mousedown'); await p.waitForTimeout(400);
+const ln = await p.evaluate(() => { const o = db.orders.find(x => x.draft78) || db.orders.at(-1); const l = o.lines[0]; return { name: l.name, price: l.price, cat: !!l.catalog } });
+ck('al elegir un servicio se carga su nombre y precio', /Mantenimiento menor/.test(ln.name) && ln.price > 0 && ln.cat, JSON.stringify(ln));
+ck('la orden muestra el ojito entre Tipo y Detalle', await p.evaluate(() => { const td = document.querySelector('#modalbody td.r86-oj .r86-ojo')?.closest('td'); return !!td && !!td.previousElementSibling.querySelector('select') && !!td.nextElementSibling.querySelector('.r72-combo') }));
+await p.locator('#modalbody .r86-ojo').click(); await p.waitForTimeout(300);
+ck('la ficha se despliega bajo la línea de la orden', await p.locator('#modalbody .r86-fichab li').count() >= 10 && await p.evaluate(() => !!document.querySelector('#modalbody .r86-fila-ficha').previousElementSibling.querySelector('.r86-ojo')));
+await p.screenshot({ path: dir + '/r86-orden-ficha.png' });
+await p.evaluate(() => closeModal());
+// dos paquetes separados (revisión completa y mayor + afinamiento) y «Guardar cambios»
+await p.evaluate(() => { timelineVehicle = 'v1'; simKm = null; R86.sel.clear(); go('timeline') }); await p.waitForTimeout(300);
+const dos = await p.evaluate(() => { const M = r86Modelo(); const rev = M.fut.find(c => c.clave === 'REV'); const af = M.fut.find(c => c.tags.some(x => /Afin/.test(x))); if (!rev || !af) return null; [rev, af].forEach(c => r86Poner(M, c, c.lines, true)); render(); return [rev.clave, af.clave + '+AF'] });
+ck('hay una visita de revisión completa y otra con afinamiento para probar', !!dos, JSON.stringify(dos));
+await p.waitForTimeout(250);
+const cob2 = await p.evaluate(() => r86Cobertura(r86Unicos()));
+ck('dos visitas completas distintas = dos paquetes (no se funden en uno)', cob2.paq.length === 2 && cob2.paq.includes('REV'), JSON.stringify(cob2));
+await p.locator('.reminderbar button', { hasText: 'Agregar a cotización' }).click(); await p.waitForTimeout(300);
+ck('la pregunta ofrece agrupar por paquete o separar por ítem', /Hay 2 paquetes/.test(await p.locator('#modal').textContent()) && await p.locator('#modal button', { hasText: 'Agrupar por paquete' }).count() === 1 && await p.locator('#modal button', { hasText: 'Separar por ítem' }).count() === 1);
+await p.screenshot({ path: dir + '/r86-dos-paquetes.png' });
+await p.locator('#modal button', { hasText: 'Agrupar por paquete' }).click(); await p.waitForTimeout(500);
+const q2 = await p.evaluate(() => { const q = db.r72quotes.at(-1); return { id: q.id, code: q.code, lineas: q.lines.map(l => l.name) } });
+ck('la cotización lleva los dos paquetes, uno por ítem', q2.lineas.length === 2, JSON.stringify(q2.lineas));
+await p.locator('#modal button', { hasText: /guardar cambios/i }).click(); await p.waitForTimeout(400);
+ck('«Guardar cambios» guarda y cierra la cotización', !(await p.evaluate(() => document.getElementById('modal').open)));
+await p.evaluate(() => go('cotizaciones')); await p.waitForTimeout(300);
+ck('la cotización aparece en el módulo de cotizaciones', (await p.evaluate(() => document.getElementById('view').innerText)).includes(q2.code));
+// una visita «menor + afinamiento» se cotiza como dos paquetes: el mantenimiento y el afinamiento completo, cada uno con su código y precio
+await p.evaluate(() => { timelineVehicle = 'v1'; simKm = null; R86.sel.clear(); go('timeline') }); await p.waitForTimeout(300);
+await p.evaluate(() => { const M = r86Modelo(); const c = M.fut.find(x => x.tags.some(t => /Afin/.test(t)) && x.clave === 'MEN') || M.fut.find(x => x.tags.some(t => /Afin/.test(t))); r86Poner(M, c, c.lines, true); render() }); await p.waitForTimeout(250);
+await p.locator('.reminderbar button', { hasText: 'Agregar a cotización' }).click(); await p.waitForTimeout(300);
+const dlg = await p.locator('#modal').textContent();
+ck('la pregunta lista el mantenimiento y el afinamiento como dos paquetes con código y precio', /Hay 2 paquetes/.test(dlg) && /SV09[56] - Mantenimiento (menor|mayor) · S\/\s*\d/.test(dlg) && /SV07[12] - Afinamiento completo de motor/.test(dlg) && !/Mantenimiento menor \+ afinamiento/.test(dlg), dlg.slice(0, 420).replace(/\s+/g, ' '));
+await p.screenshot({ path: dir + '/r86-menor-afinamiento.png' });
+await p.locator('#modal button', { hasText: 'Agrupar por paquete' }).click(); await p.waitForTimeout(500);
+const ql = await p.evaluate(() => db.r72quotes.at(-1).lines.map(l => l.code + ' ' + l.name + ' ' + l.price));
+ck('la cotización trae dos ítems: mantenimiento y afinamiento, con código y precio', ql.length === 2 && ql.some(x => /^SV09[56]/.test(x)) && ql.some(x => /^SV07[12]/.test(x)) && ql.every(x => !/ null$/.test(x)), JSON.stringify(ql));
+await p.evaluate(() => closeModal());
+// detalle con 20 % más de zoom y revisión completa sin «limpieza o cambio de bujías»
+await p.evaluate(() => { timelineVehicle = 'v1'; R73.tlMode = 'detalle'; R86.pc = false; go('timeline') }); await p.waitForTimeout(300);
+ck('el detalle se ve un 20 % más grande', (await p.locator('.r86-scroll').evaluate(e => getComputedStyle(e).zoom)) === '1.2');
+await p.evaluate(() => { R73.tlMode = 'compacto'; render() }); await p.waitForTimeout(200);
+ck('el comprimido no cambia de tamaño', (await p.locator('.r86-scroll').evaluate(e => getComputedStyle(e).zoom)) === '1');
+ck('la revisión completa ya no lleva la limpieza o cambio de bujías (queda en el afinamiento)', await p.evaluate(() => !R84_PAQ.REV.l.some(x => /bujías/.test(x.n)) && R84_AFI.every(a => a.l.some(x => /bujías/.test(x.n)))));
+ck('sin errores de consola', errs.length === 0, errs.join(' | '));
+console.log(`\n${ok} OK, ${mal} fallas`); await b.close();

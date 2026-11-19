@@ -38,18 +38,23 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-it('Comprobantes: lista las notas con usuario y anulado, y el menú ofrece Ticket y PDF (Anular solo en las vigentes)', async () => {
+it('Comprobantes: lista solo las notas vigentes, con usuario, y el menú ofrece Ver, Ticket, PDF, Duplicar y Eliminar (con motivo en un modal propio)', async () => {
   window.location.hash = '#/notas';
   render(<App />);
   const vigente = (await screen.findByText('NV01-000007')).closest('tr')!;
   expect(within(vigente).getByText('Cajera Demo')).toBeInTheDocument();
   expect(within(vigente).getByText('73867734')).toBeInTheDocument();
   await userEvent.click(within(vigente).getByRole('button', { name: 'Acciones' }));
-  for (const n of ['Ver', 'Ticket', 'PDF', 'Anular']) expect(within(vigente).getByRole('button', { name: n })).toBeInTheDocument();
-  const anulada = screen.getByText('NV01-000006').closest('tr')!;
-  await userEvent.click(within(anulada).getByRole('button', { name: 'Acciones' }));
-  expect(within(anulada).queryByRole('button', { name: 'Anular' })).toBeNull();
-  expect(within(anulada).queryByRole('button', { name: 'Editar' })).toBeNull();
+  for (const n of ['Ver', 'Ticket', 'PDF', 'Duplicar', 'Eliminar']) expect(within(vigente).getByRole('button', { name: n })).toBeInTheDocument();
+  expect(within(vigente).queryByRole('button', { name: 'Anular' })).toBeNull();
+  expect(screen.queryByText('NV01-000006')).toBeNull();
+  await userEvent.click(within(vigente).getByRole('button', { name: 'Eliminar' }));
+  const d = await screen.findByRole('alertdialog', { name: '¿Eliminar la nota de venta NV01-000007?' });
+  expect(within(d).getByRole('button', { name: 'Eliminar' })).toBeDisabled();
+  await userEvent.type(within(d).getByLabelText('Motivo *'), 'Error de digitación');
+  await userEvent.click(within(d).getByRole('button', { name: 'Eliminar' }));
+  expect(await screen.findByText('Nota de venta NV01-000007 eliminada.')).toBeInTheDocument();
+  expect(posts.find((p) => p.ruta === '/notas-venta/n1/anular')?.cuerpo).toEqual({ motivo: 'Error de digitación' });
 });
 
 it('Comprobantes: «+ Nuevo» abre la nota con la carga desde cotización u orden y emite una venta directa con sus pagos', async () => {

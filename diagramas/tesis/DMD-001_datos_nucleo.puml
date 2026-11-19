@@ -187,6 +187,12 @@ entity solicitud_ods {
   creado_en
   resuelto_en
 }
+entity clave_origen {
+  *id
+  sistema, tabla, id_origen (únicos)
+  registro_id
+  cargado_en
+}
 entity bitacora {
   *id
   #orden_id
@@ -233,4 +239,5 @@ orden_servicio ||--o{ bitacora
 orden_servicio ||--o{ solicitud_ods
 bitacora ||--o{ evidencia
 usuario ||--o{ detalle_ods
+note right of clave_origen : Una fila por cada registro migrado del\nsistema anterior (S4): evita duplicados\nal repetir la carga.
 @enduml
