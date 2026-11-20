@@ -107,8 +107,7 @@ describe('facturación: concurrencia (dinero e inventario)', () => {
 });
 
 describe('facturación: permisos y coherencia', () => {
-  // PENDIENTE DE DECISIÓN: ¿el Jefe de taller puede emitir y anular notas? (hoy sí, por tener permiso «ods»).
-  it.skip('H7 el Jefe de taller (sin módulo «notas», rol sin nada de Cajera) no puede emitir una nota de venta desde una ODS (notaVenta.controller.ts:124 exige solo «ods» E)', async () => {
+  it('H7 el Jefe de taller (sin módulo «notas», rol sin nada de Cajera) no puede emitir una nota de venta desde una ODS (notaVenta.controller.ts:124 exige solo «ods» E)', async () => {
     const jefe = await prisma.usuario.findUniqueOrThrow({ where: { correo: JEFE } });
     expect(jefe.localId).toBeTruthy(); // sin local el 409 sería otro motivo
     const o = await nuevaOds([servicio(100)]);
@@ -116,7 +115,7 @@ describe('facturación: permisos y coherencia', () => {
     expect(r.status).toBe(403);
   });
 
-  it.skip('H8 el Jefe de taller no puede anular (eliminar) una nota de venta emitida por caja (notaVenta.controller.ts:186 exige «ods» A, no «notas»)', async () => {
+  it('H8 el Jefe de taller no puede anular (eliminar) una nota de venta emitida por caja (notaVenta.controller.ts:186 exige «ods» A, no «notas»)', async () => {
     const n = await como(CAJERA, 'post', '/notas-venta', { clienteId, items: [{ tipo: 'servicio', descripcion: 'claude_b', cantidad: 1, precio: 50 }] });
     expect(n.status).toBe(201);
     const r = await como(JEFE, 'post', `/notas-venta/${n.body.id}/anular`, { motivo: 'claude_b permiso' });

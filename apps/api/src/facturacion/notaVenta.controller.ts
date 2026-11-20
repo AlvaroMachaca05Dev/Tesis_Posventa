@@ -125,8 +125,9 @@ export class NotaVentaController {
     return o;
   }
 
+  // Emitir y eliminar notas de venta es de caja: el Jefe de taller ve y edita las ODS, pero no factura.
   @Post('ordenes/:id/nota-venta')
-  @Requiere('ods', 'E')
+  @Requiere('notas', 'E')
   async emitir(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
     const o = await this.ordenEmisible(id, empresaDe(s));
     if (o.detalles.length === 0) throw new ConflictException('La ODS no tiene ítems: agrega servicios o productos antes de emitir.');
@@ -196,7 +197,7 @@ export class NotaVentaController {
 
   /** La nota no se borra: queda anulada con su motivo, y el stock vuelve al local (DEC-76). */
   @Post('notas-venta/:id/anular')
-  @Requiere('ods', 'A')
+  @Requiere('notas', 'A')
   async anular(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @Body() b: Record<string, unknown>) {
     const organizacionId = empresaDe(s);
     const x = await this.cargar(id, organizacionId);
