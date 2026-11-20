@@ -83,6 +83,11 @@ export class NotaVentaController {
 
     // El número lo da el servidor en la misma transacción: consecutivo por serie, sin saltos ni repetidos (RN-03).
     const notaId = await this.prisma.$transaction(async (tx) => {
+      // Se bloquea la ODS y se revisa dentro de la transacción: dos emisiones simultáneas no dejan dos notas vigentes.
+      if (p.ordenId) {
+        await tx.$queryRaw`SELECT id FROM "OrdenServicio" WHERE id = ${p.ordenId} FOR UPDATE`;
+        if (await tx.notaVenta.count({ where: { ordenId: p.ordenId, estado: 'EMITIDA' } })) throw new ConflictException('Esta ODS ya tiene una nota de venta vigente.');
+      }
       const c = await tx.correlativoSerie.upsert({ where: { organizacionId_serie: { organizacionId, serie } }, create: { organizacionId, serie, ultimo: 1 }, update: { ultimo: { increment: 1 } } });
       const codigo = codigoNota(serie, c.ultimo);
       const nota = await tx.notaVenta.create({
@@ -157,6 +162,8 @@ export class NotaVentaController {
     if (vehiculoId && !(await this.prisma.vehiculo.findFirst({ where: { id: vehiculoId, organizacionId } }))) throw new BadRequestException('El vehículo no existe.');
     const lineas: Linea[] = parsearItems(b?.items);
     if (lineas.length === 0) throw new ConflictException('Agrega al menos un ítem a la nota de venta.');
+    const productos = [...new Set(lineas.map((l) => l.productoId).filter((x): x is string => !!x))];
+    if (productos.length && (await this.prisma.producto.count({ where: { id: { in: productos }, organizacionId } })) !== productos.length) throw new BadRequestException('Un producto de la nota de venta no existe.');
     return this.crear(s, real, { ordenId, clienteId, vehiculoId, lineas, b });
   }
 
@@ -198,7 +205,9 @@ export class NotaVentaController {
     const motivo = texto(b?.motivo, 500);
     if (!motivo) throw new BadRequestException('Escribe el motivo de la eliminación.');
     await this.prisma.$transaction(async (tx) => {
-      await tx.notaVenta.update({ where: { id }, data: { estado: 'ANULADA', anuladaPorId: real.id, motivoAnulacion: motivo, anuladaEn: new Date() } });
+      // Solo la primera anulación pasa: la condición se evalúa con la fila bloqueada, así el stock vuelve una sola vez.
+      const cambio = await tx.notaVenta.updateMany({ where: { id, estado: 'EMITIDA' }, data: { estado: 'ANULADA', anuladaPorId: real.id, motivoAnulacion: motivo, anuladaEn: new Date() } });
+      if (cambio.count === 0) throw new ConflictException('Esta nota de venta ya fue eliminada.');
       for (const l of x.detalles.filter((d) => d.tipo === 'producto' && d.productoId)) {
         const clave = { productoId_localId: { productoId: l.productoId as string, localId: x.localId } };
         const antes = n((await tx.stockProducto.findUnique({ where: clave }))?.cantidad ?? 0);

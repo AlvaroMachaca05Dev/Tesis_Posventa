@@ -61,7 +61,7 @@ export async function cargarStaging(prisma: PrismaClient, s: Staging, op: Opcion
   if (!org) throw new Error('No hay una empresa activa en la base.');
   const organizacionId = org.id;
   const locales = await prisma.local.findMany({ where: { organizacionId } });
-  const local: Record<string, (typeof locales)[number]> = {};
+  const local: Record<string, (typeof locales)[number]> = Object.create(null); // sin prototipo: una sede «constructor» no resuelve a Object
   for (const sede of ['Union', 'Prohogar']) {
     const l = locales.find((x) => sinTildes(x.nombre).includes(sede.toLowerCase()));
     if (!l) throw new Error(`No hay un local cuyo nombre diga «${sede}».`);
@@ -127,14 +127,17 @@ export async function cargarStaging(prisma: PrismaClient, s: Staging, op: Opcion
   const correosAjenos = new Map((await prisma.usuario.findMany({ select: { id: true, correo: true } })).map((u) => [u.correo, u.id]));
   for (const id of claves.get('Usuario')?.values() ?? []) for (const [c, i] of correosAjenos) if (i === id) correosAjenos.delete(c);
   const rolesDe = new Map<string, string[]>();
+  const correosVistos = new Map<string, string>();
   await cargar('Usuario', s.personas ?? [], (p) => {
     const nombre = texto(p.nombre), correo = texto(p.correo)?.toLowerCase();
     if (!nombre || !correo || !/^[^@\s]+@[^@\s]+$/.test(correo)) return 'Sin nombre o con correo inválido';
     if (correosAjenos.has(correo)) return `El correo ${correo} ya lo usa otro usuario que no viene de ${sistema}`;
+    if (correosVistos.has(correo) && correosVistos.get(correo) !== String(p.clave)) return `El correo ${correo} está repetido en el archivo (${correosVistos.get(correo)})`;
     const rs: string[] = Array.isArray(p.roles) ? p.roles : [];
     const faltan = rs.filter((r) => !roles.has(r));
     if (!rs.length || faltan.length) return `Rol inexistente: ${faltan.join(', ') || '(ninguno)'}`;
     if (p.local && !local[p.local]) return `Sede desconocida: ${p.local}`;
+    correosVistos.set(correo, String(p.clave));
     rolesDe.set(String(p.clave), rs);
     return { datos: { organizacionId, nombre, correo, activo: p.activo !== false, localId: p.local ? local[p.local].id : null } };
   }, async (tx, nuevas, existentes, originales) => {
@@ -195,6 +198,7 @@ export async function cargarStaging(prisma: PrismaClient, s: Staging, op: Opcion
   const codigosAjenos = new Set((await prisma.ordenServicio.findMany({ where: { organizacionId }, select: { id: true, codigo: true } }))
     .filter((o) => !propiasOds.has(o.id)).map((o) => o.codigo));
   const detallesDe = new Map<string, Fila[]>();
+  const codigosVistos = new Map<string, string>();
   let sinServicio = 0;
   await cargar('OrdenServicio', s.ordenes ?? [], (o) => {
     const vehiculoId = idDe('Vehiculo', o.vehiculo), clienteId = idDe('Cliente', o.cliente), creadoPorId = idDe('Usuario', o.creadoPor);
@@ -202,16 +206,18 @@ export async function cargarStaging(prisma: PrismaClient, s: Staging, op: Opcion
     const codigo = texto(o.codigo);
     if (!codigo) return 'Sin código';
     if (codigosAjenos.has(codigo)) return `El código ${codigo} ya existe en la base y no viene de ${sistema}`;
+    if (codigosVistos.has(codigo) && codigosVistos.get(codigo) !== String(o.clave)) return `El código ${codigo} está repetido en el archivo (${codigosVistos.get(codigo)})`;
     if (!vehiculoId || !clienteId) return `Cliente o vehículo sin cargar (${o.cliente} / ${o.vehiculo})`;
     if (!creadoPorId) return `Creador sin cargar: ${o.creadoPor}`;
     if (!local[o.local]) return `Sede desconocida: ${o.local}`;
     if (!fechaInicio) return 'Fecha de ingreso inválida';
     if (!ESTADOS.includes(o.estado)) return `Estado inválido: ${o.estado}`;
+    codigosVistos.set(codigo, String(o.clave));
     const km = numero(o.km);
     const dets: Fila[] = [];
     for (const d of Array.isArray(o.detalles) ? o.detalles : []) {
       const q = numero(d.cantidad), t = numero(d.total);
-      if (!texto(d.clave) || !texto(d.descripcion) || !q || q <= 0 || t === null) { rechazar('DetalleODS', d?.clave, 'Detalle sin clave, descripción, cantidad positiva o total'); continue; }
+      if (!texto(d.clave) || !texto(d.descripcion) || !q || q <= 0 || t === null || Math.abs(t) > 9_999_999_999 || q > 9_999_999) { rechazar('DetalleODS', d?.clave, 'Detalle sin clave, descripción, cantidad positiva o total'); continue; }
       const servicioId = d.servicioCodigo ? servicios.get(d.servicioCodigo) : undefined;
       if (d.servicioCodigo && !servicioId) sinServicio++;
       dets.push({ clave: String(d.clave), datos: { posicion: Math.trunc(numero(d.posicion) ?? 0), tipo: texto(d.tipo) ?? 'servicio', descripcion: String(d.descripcion).slice(0, 500),
@@ -267,13 +273,14 @@ export async function cargarStaging(prisma: PrismaClient, s: Staging, op: Opcion
     .filter((n) => !propiasNotas.has(n.id)).map((n) => `${n.serie}:${n.numero}`));
   const hijos = new Map<string, { dets: Fila[]; abonos: Fila[] }>();
   const maxSerie = new Map<string, number>();
+  const notasVistas = new Map<string, string>();
   await cargar('NotaVenta', s.notas ?? [], (n) => {
     const l = local[n.local];
     const num = numero(n.numero), total = numero(n.total), fecha = fechaLima(n.fechaEmision);
     const clienteId = idDe('Cliente', n.cliente), emitidaPorId = idDe('Usuario', n.emitidaPor);
     if (!l?.serieNotaVenta) return `Sede desconocida o sin serie de nota de venta: ${n.local}`;
-    if (!num || !Number.isInteger(num) || num <= 0) return 'Número inválido';
-    if (total === null || total < 0) return 'Total inválido';
+    if (!num || !Number.isInteger(num) || num <= 0 || num > 2_000_000_000) return 'Número inválido';
+    if (total === null || total < 0 || total > 9_999_999_999) return 'Total inválido';
     if (!fecha) return 'Fecha inválida';
     if (!clienteId) return `Cliente sin cargar: ${n.cliente}`;
     if (!emitidaPorId) return `Emisor sin cargar: ${n.emitidaPor}`;
@@ -281,6 +288,9 @@ export async function cargarStaging(prisma: PrismaClient, s: Staging, op: Opcion
     if (numerosAjenos.has(`${serie}:${num}`)) return `El número ${codigoNota(serie, num)} ya existe en la base y no viene de ${sistema}`;
     const ordenId = n.orden ? idDe('OrdenServicio', n.orden) : null;
     if (n.orden && !ordenId) return `ODS sin cargar: ${n.orden}`;
+    const claveNota = `${serie}:${num}`;
+    if (notasVistas.has(claveNota) && notasVistas.get(claveNota) !== String(n.clave)) return `El número ${codigoNota(serie, num)} está repetido en el archivo (${notasVistas.get(claveNota)})`;
+    notasVistas.set(claveNota, String(n.clave));
     maxSerie.set(serie, Math.max(maxSerie.get(serie) ?? 0, num));
     const dets = (Array.isArray(n.detalles) ? n.detalles : []).filter((d: Fila) => texto(d.clave) && texto(d.descripcion) && numero(d.cantidad)! > 0)
       .map((d: Fila) => ({ clave: String(d.clave), datos: { posicion: Math.trunc(numero(d.posicion) ?? 0), tipo: texto(d.tipo) ?? 'servicio',

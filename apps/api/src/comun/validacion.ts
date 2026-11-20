@@ -17,7 +17,8 @@ export function validarMovil(pais: string, movil: string | null | undefined) {
 }
 
 /** Solo un número o un texto numérico es número: verdadero/falso, listas, objetos, vacío o espacios dan NaN (no 0 ni 1). */
-export const aNumero = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v.trim().replace(',', '.')) : NaN);
+// Solo cifras: «0x10», «1e3», «true» o «[3]» no valen como número (antes Number() los aceptaba).
+export const aNumero = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' && /^[+-]?(\d+([.,]\d*)?|[.,]\d+)$/.test(v.trim()) ? Number(v.trim().replace(',', '.')) : NaN);
 
 /**
  * «Eliminar» de una tabla: si el registro no tiene uso se borra; si la base lo impide porque tiene historial

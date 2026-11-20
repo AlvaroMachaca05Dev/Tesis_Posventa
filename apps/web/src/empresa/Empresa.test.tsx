@@ -59,7 +59,7 @@ it('Impresión guarda el ancho del ticket, el pie, las cuentas y los términos',
   await userEvent.clear(ancho);
   await userEvent.type(ancho, '58');
   await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));
-  await waitFor(() => expect(llamadas.find((l) => l.metodo === 'PATCH')?.cuerpo).toEqual({ anchoTicketMm: 58, pieTicket: 'Gracias', cuentasBancarias: 'BANCO DEMO 000', terminosRecepcion: '1. Cláusula.' }));
+  await waitFor(() => expect(llamadas.find((l) => l.metodo === 'PATCH')?.cuerpo).toEqual({ anchoTicketMm: 58, pieTicket: 'Gracias', cuentasBancarias: 'BANCO DEMO 000', terminosRecepcion: '1. Cláusula.', aprobacionPorItem: false }));
 });
 
 it('con permiso solo de ver no hay botón Guardar y los campos están bloqueados', async () => {

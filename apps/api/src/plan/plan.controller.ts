@@ -86,7 +86,10 @@ export class PlanController {
     if (!antes) throw new NotFoundException('Plan no encontrado.');
     const d: Prisma.PlanPreventivoUpdateInput = {};
     if (b?.nombre !== undefined) { const n = texto(b.nombre, 80); if (!n) throw new BadRequestException('Escribe el nombre del plan.'); d.nombre = n; }
-    if (b?.activo !== undefined) d.activo = !!b.activo;
+    if (b?.activo !== undefined) {
+      if (typeof b.activo !== 'boolean') throw new BadRequestException('Activo es sí o no.');
+      d.activo = b.activo;
+    }
     if (b?.ciclo !== undefined) {
       const c = (b.ciclo ?? {}) as Record<string, unknown>;
       const actual = antes.ciclo as unknown as Ciclo;
@@ -120,8 +123,18 @@ export class PlanController {
     if (!o) throw new NotFoundException('Plan no encontrado.');
     const base = o.codigo.replace(/-COPIA\d*$/, '');
     let n = 1, codigo = `${base}-COPIA`;
-    while (await this.prisma.planPreventivo.findFirst({ where: { organizacionId, codigo } })) codigo = `${base}-COPIA${++n}`;
-    const x = await this.prisma.planPreventivo.create({ data: { organizacionId, codigo, nombre: `${o.nombre.replace(/ \(copia( \d+)?\)$/, '')} (copia${n > 1 ? ' ' + n : ''})`, combustible: o.combustible, uso: o.uso, aceite: o.aceite, ciclo: o.ciclo as Prisma.InputJsonValue, activo: true } });
+    let x: Awaited<ReturnType<typeof this.prisma.planPreventivo.create>> | null = null;
+    // Dos copias simultáneas pueden elegir el mismo código: si el índice único lo rechaza, se prueba el siguiente.
+    for (let intento = 0; !x && intento < 25; intento++) {
+      while (await this.prisma.planPreventivo.findFirst({ where: { organizacionId, codigo } })) codigo = `${base}-COPIA${++n}`;
+      try {
+        x = await this.prisma.planPreventivo.create({ data: { organizacionId, codigo, nombre: `${o.nombre.replace(/ \(copia( \d+)?\)$/, '')} (copia${n > 1 ? ' ' + n : ''})`, combustible: o.combustible, uso: o.uso, aceite: o.aceite, ciclo: o.ciclo as Prisma.InputJsonValue, activo: true } });
+      } catch (e) {
+        if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002')) throw e;
+        codigo = `${base}-COPIA${++n}`;
+      }
+    }
+    if (!x) throw new ConflictException('No se pudo copiar el plan: intenta de nuevo.');
     await auditar(this.prisma, real, s, 'planPreventivo', x.id, null, { codigo: x.codigo, desde: o.codigo }, 'Plan preventivo duplicado');
     return { id: x.id, codigo: x.codigo };
   }

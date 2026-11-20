@@ -35,7 +35,8 @@ export function igual(plan: string, ods: string) {
   const sub = (x: Set<string>, y: Set<string>) => [...x].every((t) => y.has(t));
   return sub(b, a) || sub(a, b);
 }
-export const esAceite = (n: string) => /cambio de aceite/.test(norm(n)) || (/aceite/.test(norm(n)) && /motor/.test(norm(n)) && !/revision/.test(norm(n)));
+// El aceite de caja, diferencial, transmisión, dirección o hidráulico no reinicia el ciclo del aceite de motor.
+export const esAceite = (n: string) => !/\b(caja|diferencial|transmision|direccion|hidraulic\w*|atf)\b/.test(norm(n)) && (/cambio de aceite/.test(norm(n)) || (/aceite/.test(norm(n)) && /motor/.test(norm(n)) && !/revision/.test(norm(n))));
 
 const MES = 30.4375;
 export const sumarMeses = (iso: string, m: number) => { const d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + Math.round(m * MES)); return d.toISOString().slice(0, 10); };

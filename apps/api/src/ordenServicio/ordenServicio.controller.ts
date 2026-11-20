@@ -83,6 +83,25 @@ function estadoVehiculoValido(v: unknown) {
   return limpio;
 }
 type Orden = Prisma.OrdenServicioGetPayload<{ include: typeof INCLUIR }>;
+/** El Técnico (sin otro rol) solo ve las ODS donde está asignado, en la cabecera o en un ítem, y nunca costos ni rentabilidad (DEC-24, DEC-84). */
+const soloTecnico = (s: Sesion) => s.roles.length > 0 && s.roles.every((r) => r === 'Técnico');
+const sinCostos = <T extends { detalles: { costo: number | null; rentabilidadPct: number | null }[] }>(r: T): T => ({ ...r, detalles: r.detalles.map((d) => ({ ...d, costo: null, rentabilidadPct: null })) });
+const cadena = (v: unknown, nombre: string) => {
+  if (v === undefined) return undefined;
+  if (typeof v !== 'string') throw new BadRequestException(`El filtro ${nombre} no es válido.`);
+  return v;
+};
+/** Tipo de imagen por sus primeros bytes; null si no es una foto admitida. */
+function tipoDeImagen(b: Buffer | undefined): string | null {
+  if (!b || b.length < 4) return null;
+  const h = (i: number, ...x: number[]) => x.every((v, k) => b[i + k] === v);
+  if (h(0, 0x89, 0x50, 0x4e, 0x47)) return 'image/png';
+  if (h(0, 0xff, 0xd8, 0xff)) return 'image/jpeg';
+  if (h(0, 0x47, 0x49, 0x46, 0x38)) return 'image/gif';
+  if (b.length >= 12 && h(0, 0x52, 0x49, 0x46, 0x46) && h(8, 0x57, 0x45, 0x42, 0x50)) return 'image/webp';
+  if (b.length >= 12 && h(4, 0x66, 0x74, 0x79, 0x70)) return 'image/heic';
+  return null;
+}
 const persona = (u: { id: string; nombre: string } | null) => (u ? { id: u.id, nombre: u.nombre } : null);
 
 function resumen(o: Orden) {
@@ -145,13 +164,14 @@ function linea(d: Record<string, unknown>, i: number) {
   const descripcion = String(d.descripcion ?? '').trim();
   if (!descripcion || descripcion.length > 300) throw new BadRequestException(`Ítem ${i + 1}: escribe el detalle (hasta 300 caracteres).`);
   const tipo = d.tipo === 'producto' ? 'producto' : 'servicio';
-  const cantidad = r3(Number(d.cantidad ?? 1));
-  const precio = r3(Number(d.precio ?? 0));
+  const o = (v: unknown, def: number) => (v === undefined || v === null || v === '' ? def : aNumero(v));
+  const cantidad = r3(o(d.cantidad, 1));
+  const precio = r3(o(d.precio, 0));
   // Con 6 decimales: un descuento en soles (solapamiento o total editado) se guarda como porcentaje y da el total exacto.
-  const descuentoPct = r6(Number(d.descuentoPct ?? 0));
+  const descuentoPct = r6(o(d.descuentoPct, 0));
   const costo = d.costo === undefined || d.costo === null || d.costo === '' ? null : r3(aNumero(d.costo));
   const rentabilidadPct = d.rentabilidadPct === undefined || d.rentabilidadPct === null || d.rentabilidadPct === '' ? null : r3(aNumero(d.rentabilidadPct));
-  if (![cantidad, precio, descuentoPct].every(Number.isFinite) || cantidad <= 0 || cantidad > 100000 || precio < 0 || precio > 10_000_000 || descuentoPct < 0 || descuentoPct > 100 || (costo != null && (!Number.isFinite(costo) || costo < 0))) {
+  if (![cantidad, precio, descuentoPct].every(Number.isFinite) || cantidad <= 0 || cantidad > 100000 || precio < 0 || precio > 10_000_000 || descuentoPct < 0 || descuentoPct > 100 || (costo != null && (!Number.isFinite(costo) || costo < 0 || costo > 999_999_999)) || (rentabilidadPct != null && (!Number.isFinite(rentabilidadPct) || Math.abs(rentabilidadPct) > 99_999)) || cantidad * precio > 9_999_999_999) {
     throw new BadRequestException(`Ítem ${i + 1}: cantidad, precio, costo o descuento no válidos.`);
   }
   const impuesto = d.impuesto === 'NINGUNO' ? 'NINGUNO' : 'IGV';
@@ -252,9 +272,11 @@ export class OrdenesController {
   async lista(@SesionActual() s: Sesion, @Query() f: { estado?: string; q?: string; clienteId?: string; vehiculoId?: string; desde?: string; hasta?: string; n?: string }) {
     const organizacionId = this.empresa(s);
     const where: Prisma.OrdenServicioWhereInput = { organizacionId, eliminada: false };
-    if (f.estado) where.estado = f.estado;
-    if (f.clienteId) where.clienteId = f.clienteId;
-    if (f.vehiculoId) where.vehiculoId = f.vehiculoId;
+    const estado = cadena(f.estado, 'estado'), clienteId = cadena(f.clienteId, 'cliente'), vehiculoId = cadena(f.vehiculoId, 'vehículo');
+    if (estado) where.estado = estado;
+    if (clienteId) where.clienteId = clienteId;
+    if (vehiculoId) where.vehiculoId = vehiculoId;
+    if (soloTecnico(s)) where.AND = [{ OR: [{ tecnicoId: s.id }, { detalles: { some: { tecnicoId: s.id } } }] }];
     const desde = fechaFiltro(f.desde, false), hasta = fechaFiltro(f.hasta, true);
     if (desde || hasta) where.fechaInicio = { ...(desde ? { gte: desde } : {}), ...(hasta ? { lte: hasta } : {}) };
     const q = String(f.q ?? '').trim();
@@ -263,13 +285,16 @@ export class OrdenesController {
       where.OR = [{ codigo: c }, { cliente: { nombre: c } }, { cliente: { documento: c } }, { vehiculo: { placaNorm: { contains: q.replace(/[^A-Za-z0-9]/g, '').toUpperCase() } } }];
     }
     const lista = await this.prisma.ordenServicio.findMany({ where, include: INCLUIR, orderBy: { fechaInicio: 'desc' }, take: Math.min(Number(f.n) || 50, 200) });
-    return lista.map(resumen);
+    return lista.map((o) => (soloTecnico(s) ? sinCostos(resumen(o)) : resumen(o)));
   }
 
   @Get(':id')
   @Requiere('ods', 'V')
   async una(@SesionActual() s: Sesion, @Param('id') id: string) {
-    return resumen(await this.cargar(id, this.empresa(s)));
+    const o = await this.cargar(id, this.empresa(s));
+    if (!soloTecnico(s)) return resumen(o);
+    if (o.tecnicoId !== s.id && !o.detalles.some((d) => d.tecnicoId === s.id)) throw new NotFoundException('Orden de servicio no encontrada.');
+    return sinCostos(resumen(o));
   }
 
   @Post()
@@ -358,6 +383,10 @@ export class OrdenesController {
     if (b.vehiculoId !== undefined && b.vehiculoId !== o.vehiculoId) {
       const v = await this.prisma.vehiculo.findFirst({ where: { id: String(b.vehiculoId), organizacionId } });
       if (!v) throw new NotFoundException('Vehículo no encontrado.');
+      if (v.clienteId !== o.clienteId) {
+        if (o.abonos.length || o.notas.some((x) => x.estado === 'EMITIDA')) throw new ConflictException('La ODS tiene adelantos o un comprobante vigente: no se cambia a un vehículo de otro cliente.');
+        if (tipoFinal === 'Garantía') throw new ConflictException('Una garantía va con el mismo cliente de la orden de origen: cambia primero el tipo de atención.');
+      }
       await this.limiteVehiculo(v.id, String(d.tipoAtencion ?? o.tipoAtencion), o.id);
       d.vehiculoId = v.id;
       d.clienteId = v.clienteId;
@@ -644,7 +673,9 @@ export class OrdenesController {
       await tx.$queryRaw`SELECT id FROM "OrdenServicio" WHERE id = ${id} FOR UPDATE`;
       const det = await tx.detalleODS.findMany({ where: { ordenId: id } });
       const abs = await tx.abono.findMany({ where: { ordenId: id } });
-      const pendiente = r2(det.reduce((a, d) => a + Number(d.total), 0) - abs.reduce((a, x) => a + Number(x.valor), 0));
+      // Con una nota de venta vigente, el tope es el total de la nota (puede cubrir solo parte de la ODS), no el de la ODS.
+      const nota = await tx.notaVenta.findFirst({ where: { ordenId: id, estado: 'EMITIDA' } });
+      const pendiente = r2((nota ? Number(nota.total) : det.reduce((a, d) => a + Number(d.total), 0)) - abs.reduce((a, x) => a + Number(x.valor), 0));
       if (valor > pendiente) throw new BadRequestException(`El abono supera lo pendiente por pagar (S/ ${pendiente.toFixed(2)}).`);
       const a = await tx.abono.create({ data: { ordenId: id, metodo, concepto, valor, registradoPorId: real.id } });
       await this.bitacora(tx, id, real, `Abono de S/ ${valor.toFixed(2)} (${metodo}).`);
@@ -661,12 +692,15 @@ export class OrdenesController {
   async subirEvidencia(@SesionActual() s: Sesion, @SesionReal() real: Sesion, @Param('id') id: string, @UploadedFile() f?: { originalname: string; mimetype: string; size: number; buffer: Buffer }) {
     const organizacionId = this.empresa(s);
     const o = await this.cargar(id, organizacionId);
+    if (o.estado === 'Cerrada') throw new ConflictException('La ODS está cerrada: no se agregan evidencias.');
     if (!f) throw new BadRequestException('Adjunta una foto.');
-    if (!/^image\//.test(f.mimetype)) throw new BadRequestException('Solo se aceptan fotos.');
+    // Se mira el contenido, no el tipo declarado: un texto o un SVG con scripts no pasa por foto.
+    const tipoReal = tipoDeImagen(f.buffer);
+    if (!tipoReal) throw new BadRequestException('Solo se aceptan fotos (JPG, PNG, GIF, WEBP o HEIC).');
     if (o.evidencias.length >= EVIDENCIA_MAX_POR_ODS) throw new ConflictException(`La ODS ya tiene ${EVIDENCIA_MAX_POR_ODS} fotos (máximo).`);
     const nombre = (Buffer.from(f.originalname, 'latin1').toString('utf8') || 'evidencia').slice(0, 120);
     await this.prisma.$transaction(async (tx) => {
-      await tx.evidenciaIngreso.create({ data: { ordenId: id, nombre, tipo: f.mimetype, tamano: f.size, datos: f.buffer, subidoPorId: real.id } });
+      await tx.evidenciaIngreso.create({ data: { ordenId: id, nombre, tipo: tipoReal, tamano: f.size, datos: f.buffer, subidoPorId: real.id } });
       await this.bitacora(tx, id, real, `Evidencia de ingreso agregada: ${nombre}.`);
     });
     await auditar(this.prisma, real, s, 'evidencia_ingreso', id, null, { nombre, tamano: f.size }, 'Evidencia agregada');
@@ -680,7 +714,7 @@ export class OrdenesController {
     await this.cargar(id, organizacionId);
     const e = await this.prisma.evidenciaIngreso.findFirst({ where: { id: eid, ordenId: id } });
     if (!e) throw new NotFoundException('Evidencia no encontrada.');
-    res.set({ 'Content-Type': e.tipo, 'Content-Disposition': `inline; filename="${encodeURIComponent(e.nombre)}"` });
+    res.set({ 'X-Content-Type-Options': 'nosniff', 'Content-Type': e.tipo, 'Content-Disposition': `inline; filename="${encodeURIComponent(e.nombre)}"` });
     return new StreamableFile(Buffer.from(e.datos));
   }
 
