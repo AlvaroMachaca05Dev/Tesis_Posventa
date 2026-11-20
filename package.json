@@ -9,7 +9,7 @@
   "scripts": {
     "db:dev": "pnpm --filter @posventa/database dev-db",
     "db:migrate": "pnpm --filter @posventa/database migrate",
-    "db:deploy": "pnpm --filter @posventa/database deploy",
+    "db:deploy": "pnpm --filter @posventa/database run deploy",
     "db:seed": "pnpm --filter @posventa/database seed",
     "db:studio": "pnpm --filter @posventa/database studio",
     "db:test-prep": "pnpm --filter @posventa/database test-prep",
